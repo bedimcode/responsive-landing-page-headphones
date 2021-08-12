@@ -1,0 +1,51 @@
+* HOME
+.home__description
+Enjoy award-winning Beats sound with wireless listening freedom and a sleek, streamlined design with comfortable padded earphones, delivering first-rate playback.
+
+* SPECS
+.specs__title
+Connection
+Battery
+Load
+Microphone
+
+.specs__subtitle
+Bluetooth v5.2
+Duration 40h
+Fast charge 4.2-AAC
+Supports Apple Siri <br> and Google
+
+* CASE
+.case__description
+With a comfortable and adaptable case so that you can store it whenever you want, and keep your durability forever.
+
+
+* DISCOUNT
+.discount__title
+Immerse yourself in <br> your music
+
+.discount__description
+Get it now, up to 50% off.
+
+
+* FOOTER
+.footer__link
+Headphones
+Earphones
+Earbuds
+Accesories
+
+Product help
+Register
+Updates
+Provides
+
+.footer__social-link
+https://www.facebook.com/
+https://www.instagram.com/
+https://twitter.com/
+
+.footer__copy-link
+&#169; Bedimcode. All right reserved
+https://www.youtube.com/c/Bedimcode/
+
