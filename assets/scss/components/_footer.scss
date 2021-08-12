@@ -1,0 +1,73 @@
+/*=============== FOOTER ===============*/
+.footer{
+    &__container{
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        row-gap: 2rem;
+    }
+
+    &__logo{
+        width: 2rem;
+    }
+    &__title{
+        font-size: var(--h3-font-size);
+        font-weight: var(--font-medium);
+        margin-bottom: var(--mb-1);
+    }
+    &__links{
+        display: flex;
+        flex-direction: column;
+        row-gap: .5rem;
+    }
+    &__link{
+        color: var(--text-color);
+
+        &:hover{
+            color: var(--white-color);
+        }
+    }
+    &__form{
+        display: flex;
+        column-gap: .5rem;
+        background-color: var(--container-color);
+        padding: .5rem .75rem;
+        border-radius: .5rem;
+        margin-bottom: var(--mb-2);
+    }
+    &__input{
+        background-color: var(--container-color);
+        width: 90%;
+        color: var(--white-color);
+
+        &::placeholder{
+            color: var(--text-color);
+            font-size: var(--normal-font-size);
+            font-family: var(--body-font);
+        }
+    }
+    &__social{
+        display: flex;
+        column-gap: 1.25rem;
+
+        &-link{
+            display: inline-flex;
+            color: var(--white-color);
+            background-color: var(--container-color);
+            padding: .5rem;
+            border-radius: .25rem;
+            font-size: 1rem;
+
+            &:hover{
+                background-color: var(--black-color);
+            }
+        }
+    }
+    &__copy{
+        margin-top: 5rem;
+        text-align: center;
+
+        &-link{
+            font-size: var(--smaller-font-size);
+            color: var(--text-color-light);
+        }
+    }
+}
