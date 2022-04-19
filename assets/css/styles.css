@@ -301,8 +301,16 @@ img{
   column-gap: .75rem;
 }
 /*=============== SPONSOR ===============*/
+.sponsor__img{
+  width: 90px;
+}
 
-
+.sponsor__container{
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  row-gap: 5rem;
+  justify-content: center;
+  align-items: center;
+}
 /*=============== SPECS ===============*/
 
 
