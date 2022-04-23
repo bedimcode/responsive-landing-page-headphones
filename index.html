@@ -18,33 +18,145 @@
     <body>
         <!--=============== HEADER ===============-->
         <header class="header" id="header">
-            
+            <nav class="nav container">
+                <a href="#" class="nav__logo">
+                    <img src="assets/img/logo.png" alt="">
+                </a>
+
+                <div class="nav__menu" id="nav-menu">
+                    <ul class="nav__list">
+                        <li class="nav__item">
+                            <a href="#home" class="nav__link">Home</a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="#specs" class="nav__link">Specs</a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="#case" class="nav__link">Case</a>
+                        </li>
+                        <li class="nav__item">
+                            <a href="#products" class="nav__link">Products</a>
+                        </li>
+                    </ul>
+
+                    <div class="nav__close" id="nav-close">
+                        <i class="ri-close-line"></i>
+                    </div>
+                </div>
+
+                <div class="nav__toggle" id="nav-toggle">
+                    <i class="ri-function-line"></i>
+                </div>
+            </nav>
         </header>
 
         <main class="main">
             <!--=============== HOME ===============-->
             <section class="home section" id="home">
-                
+                <div class="home__container container grid">
+                    <img src="assets/img/home.png" alt="" class="home__img">
+                </div>
+
+                <div class="home__data">
+                    <div class="home__header">
+                        <h1 class="home__title">On ear</h1>
+                        <h2 class="home__subtitle">Beats 3</h2>
+                    </div>
+
+                    <div class="home__footer">
+                        <h3 class="home__title-description">Overview</h3>
+                        <p class="home__description">Enjoy award-winning Beats sound with wireless listening freedom and a sleek,
+                             streamlined design with comfortable padded earphones, delivering first-rate playback.
+                        </p>
+                        <a href="#" class="button button--flex">
+                            <span class="button--flex">
+                                <i class="ri-shopping-bag-line button__icon"></i> Add to Bag
+                            </span>
+                            <span class="home__price">$299</span>
+                        </a>
+                    </div>
+                </div>
             </section>
             
             <!--=============== SPONSOR ===============-->
             <section class="sponsor section">
-                
+                <div class="sponsor__container container grid">
+                    <img src="assets/img/sponsor1.png" alt="" class="sponsor__img">
+                    <img src="assets/img/sponsor2.png" alt="" class="sponsor__img">
+                    <img src="assets/img/sponsor3.png" alt="" class="sponsor__img">
+                    <img src="assets/img/sponsor4.png" alt="" class="sponsor__img">
+                </div>
             </section>
 
             <!--=============== SPECS ===============-->
             <section class="specs section grid" id="specs">
+                <h2 class="section__title section__title-gradient">Specs</h2>
                 
+                <div class="specs__container container grid">
+                    <div class="specs__content grid">
+                        <div class="specs__data">
+                            <i class="ri-bluetooth-line specs__icon"></i>
+                            <h3 class="specs__title">Connection</h3>
+                            <span class="specs__subtitle">Bluetooth v5.2</span>
+                        </div>
+
+                        <div class="specs__data">
+                            <i class="ri-battery-charge-line specs__icon"></i>
+                            <h3 class="specs__title">Battery</h3>
+                            <span class="specs__subtitle">Duration 40h</span>
+                        </div>
+
+                        <div class="specs__data">
+                            <i class="ri-plug-line specs__icon"></i>
+                            <h3 class="specs__title">Load</h3>
+                            <span class="specs__subtitle">Fast charge 4.2-AAC</span>
+                        </div>
+
+                        <div class="specs__data">
+                            <i class="ri-mic-line specs__icon"></i>
+                            <h3 class="specs__title">Microphone</h3>
+                            <span class="specs__subtitle">Supports Apple Siri <br> and Google</span>
+                        </div>
+                    </div>
+
+                    <img src="assets/img/specs.png" alt="" class="specs__img">
+                </div>
             </section>
 
             <!--=============== CASE ===============-->
             <section class="case section grid" id="case">
-                
+                <h2 class="section__title section__title-gradient">Case</h2>
+
+                <div class="case__container container grid">
+                    <div>
+                        <img src="assets/img/case.png" alt="" class="case__img">
+                    </div>
+
+                    <div class="case__data">
+                        <p class="case__description">With a comfortable and adaptable case so that you can store it whenever 
+                            you want, and keep your durability forever.
+                        </p>
+
+                        <a href="#" class="button button--flex">
+                            <i class="ri-information-line button__icon"></i>  More info
+                        </a>
+                    </div>
+                </div>
             </section>
 
             <!--=============== DISCOUNT ===============-->
             <section class="discount section">
-                
+                <div class="discount__container container grid">
+                    <div class="discount__animate">
+                        <h2 class="discount__title">Immerse yourself in <br> your music</h2>
+                        <p class="discount__description">Get it now, up to 50% off.</p>
+                        <a href="#" class="button button--flex">
+                            <i class="ri-shopping-bag-line button__icon"></i> Shop Now
+                        </a>
+                    </div>
+
+                    <img src="assets/img/discount.png" alt="" class="discount__img">
+                </div>
             </section>
 
             <!--=============== PRODUCTS ===============-->
