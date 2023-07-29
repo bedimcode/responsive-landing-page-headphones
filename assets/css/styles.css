@@ -708,10 +708,10 @@ img {
     margin-bottom: var(--mb-2);
   }
   .discount__container {
-    grid-template-columns: 250px max-content;
+    grid-template-columns: repeat(2, 1fr);
     justify-content: center;
     column-gap: 5rem;
-    padding: 3rem 0;
+    padding: 3rem 5rem;
   }
   .discount__title {
     font-size: var(--h2-font-size);
