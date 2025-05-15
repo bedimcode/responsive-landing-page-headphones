@@ -1,0 +1,682 @@
+/* =========================
+   FONTE & RESET
+========================= */
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Audiowide', sans-serif;
+  color: #f5f5f5;
+  background-color: #0a0a0a;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================
+   PARTICLE BACKGROUND
+========================= */
+#particles-js, .video-bg, .overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+#particles-js {
+  z-index: -3;
+}
+
+.video-bg {
+  object-fit: cover;
+  z-index: -2;
+}
+
+.overlay {
+  background: rgba(0, 0, 0, 0.85);
+  z-index: -1;
+}
+
+/* =========================
+   HERO SECTION
+========================= */
+.hero {
+  flex: 1;
+  padding-top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.hero__logo {
+  width: 420px;
+  max-width: 90vw;
+  filter: drop-shadow(0 0 20px #a855f7);
+  transition: transform 0.3s ease;
+}
+
+.hero__logo:hover {
+  transform: scale(1.05);
+}
+
+.hero__title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  color: #fff;
+  text-shadow: 0 0 15px #a855f7;
+}
+
+.hero__subtitle {
+  font-size: 1.2rem;
+  color: #b084f9;
+}
+
+/* =========================
+   MUSIC PLAYER
+========================= */
+.music-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.music-button img {
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 0 10px #a855f7);
+}
+
+.music-button img:hover {
+  transform: scale(1.1);
+}
+
+.music-text {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #ddd;
+  font-family: Arial, sans-serif;
+}
+
+/* =========================
+   BOTÕES
+========================= */
+.button-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 10px 25px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.button--glow {
+  background: #a855f7;
+  color: #fff;
+  box-shadow: 0 0 12px #a855f7, 0 0 24px #7e22ce;
+}
+
+.button--glow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px #c084fc, 0 0 30px #9333ea;
+}
+
+/* =========================
+   FOOTER
+========================= */
+.footer {
+  text-align: center;
+  font-size: 10px; /* Fonte pequena */
+  color: #777; /* Cinza delicado */
+  padding: 15px 0; /* Mais espaço vertical */
+  background: #000; /* Fundo preto */
+  position: relative;
+  margin-top: 15px; /* Empurra o footer bem pra baixo */
+  letter-spacing: 1px; /* Pequeno espaçamento nas letras */
+  width: 100%;
+}
+
+
+/* Navbar */
+.navbar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(15px);
+  padding: 12px 30px;
+  display: flex;
+  justify-content: center;
+  animation: slideDown 1s ease forwards;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Animação da Navbar */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.navbar-container {
+  max-width: 1300px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centraliza no desktop */
+  position: relative;
+}
+
+.navbar-logo {
+  font-family: 'Audiowide', cursive;
+  font-size: 28px;
+  color: #a259ff;
+  text-decoration: none;
+  letter-spacing: 2px;
+  transition: color 0.3s ease;
+  margin-right: auto;
+}
+
+.navbar-logo:hover {
+  color: #ffffff;
+}
+
+.navbar-menu {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+}
+
+.navbar-menu li {
+  display: inline-block;
+  position: relative; /* Necessário para o dropdown */
+}
+
+.navbar-menu a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 500;
+  position: relative;
+  padding: 5px 0;
+  transition: color 0.3s ease;
+}
+
+.navbar-menu a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  display: block;
+  margin-top: 5px;
+  right: 0;
+  background: #a259ff;
+  transition: width 0.3s ease;
+  transform: rotate(0.5deg);
+  transform-origin: right;
+}
+
+.navbar-menu a:hover {
+  color: #a259ff;
+}
+
+.navbar-menu a:hover::after {
+  width: 100%;
+  left: 0;
+  background: #a259ff;
+}
+
+/* Botão Hambúrguer */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.hamburger span {
+  height: 3px;
+  width: 25px;
+  background: #fff;
+  margin: 4px 0;
+  border-radius: 5px;
+  transition: 0.4s;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .navbar-container {
+    justify-content: space-between;
+  }
+
+  .navbar-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(10, 10, 10, 0.95);
+    flex-direction: column;
+    width: 200px;
+    padding: 20px;
+    border-radius: 0 0 10px 10px;
+    display: none;
+  }
+
+  .navbar-menu.active {
+    display: flex;
+  }
+
+  .hamburger {
+    display: flex;
+    margin-right: 22px;
+    margin-top: 30px;
+  }
+}
+
+/* Ajuste para o conteúdo não ficar atrás da navbar */
+.hero {
+  padding-top: 100px;
+}
+
+#countdown {
+  font-family: 'Audiowide', cursive;
+  font-size: 48px;
+  color: #fff;
+  text-shadow: 0 0 8px #a259ff, 0 0 16px #a259ff, 0 0 24px #a259ff;
+  letter-spacing: 2px;
+}
+
+.music-text {
+  color: #b84eff; /* Neon roxo */
+  text-shadow: 0 0 5px #b84eff, 0 0 10px #b84eff, 0 0 20px #b84eff; /* Efeito neon */
+  font-size: 16px;
+  margin-top: 10px;
+  animation: sacudir 0.8s infinite ease-in-out;
+}
+
+/* Animação de sacudir mais forte */
+@keyframes sacudir {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(5deg); }
+  20% { transform: rotate(-5deg); }
+  30% { transform: rotate(5deg); }
+  40% { transform: rotate(-5deg); }
+  50% { transform: rotate(3deg); }
+  60% { transform: rotate(-3deg); }
+  70% { transform: rotate(2deg); }
+  80% { transform: rotate(-2deg); }
+  90% { transform: rotate(1deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Estilo geral da setinha */
+.arrow {
+  margin-left: 5px;
+  font-size: 10px;
+  transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+  color: #ffffff;
+  text-shadow: 0 0 5px #a020f0, 0 0 10px #a020f0;
+}
+
+/* Quando passa o mouse, gira e brilha mais */
+.dropdown:hover .arrow {
+  transform: rotate(180deg);
+  color: #a020f0;
+  text-shadow: 0 0 10px #a020f0, 0 0 20px #a020f0;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background: rgba(0, 0, 0, 0.9);
+  list-style: none;
+  padding: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(160, 32, 240, 0.5);
+  z-index: 100;
+}
+
+.dropdown-menu li {
+  padding: 8px 20px;
+}
+
+.dropdown-menu li a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.dropdown-menu li a:hover {
+  color: #a020f0;
+}
+
+/* Mostrar o menu ao passar o mouse */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* DROPDOWN FUNCIONAL - NÃO REMOVE NADA DO ORIGINAL */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: rgba(10, 10, 10, 0.95);
+  min-width: 180px;
+  padding: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  z-index: 1001;
+  flex-direction: column;
+}
+
+.dropdown-menu li {
+  width: 100%;
+  padding: 10px 20px;
+}
+
+.dropdown-menu li a {
+  color: #fff;
+  font-size: 14px;
+  display: block;
+  transition: background 0.2s;
+}
+
+.dropdown-menu li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #a259ff;
+}
+
+/* DROPDOWN ATIVO PARA MOBILE */
+.dropdown-menu.active {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .dropdown-menu {
+    position: static;
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .dropdown-menu li {
+    padding: 8px 20px;
+  }
+}
+
+.info-box {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 30px auto;
+  width: 80%;
+  max-width: 1000px;
+  color: #ddd;
+}
+
+/* Cabeçalhos dentro da info-box */
+.info-box h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #a259ff; /* Roxo para os títulos */
+  border-bottom: 2px solid #444;
+  padding-bottom: 5px;
+}
+
+/* Listas dentro da info-box */
+.info-box ul {
+  list-style-type: none;
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+
+.info-box ul li {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.info-box hr {
+  border: 1px solid #444;
+  margin: 20px 0;
+}
+
+.accordion {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.accordion-item {
+  background: rgba(0, 0, 0, 0.85); /* Fundo mais escuro com transparência */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Borda mais suave e sutil */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7); /* Sombra escura mais pronunciada */
+  transition: all 0.3s ease;
+}
+
+.accordion-header {
+  font-family: 'Audiowide', cursive;
+  font-size: 1.0rem; /* Fonte ajustada para não ser tão grande */
+  background: rgba(0, 0, 0, 0.9); /* Fundo escuro e transparente */
+  color: #f4f4f4; /* Cor do texto mais clara */
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.3s ease, color 0.3s ease;
+  text-transform: uppercase; /* Deixa o texto mais destacado */
+}
+
+.accordion-header:hover {
+  background: rgba(0, 0, 0, 1); /* Fundo preto sólido no hover */
+  color: #ffcc00; /* Cor amarela para destaque */
+}
+
+.accordion-content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 1.5rem;
+  transition: all 0.4s ease;
+  color: #bbb; /* Texto mais claro */
+  font-size: 0.1rem; /* Reduzido ainda mais para garantir que mais texto caiba */
+  line-height: 1.6; /* Aumenta o espaçamento entre as linhas */
+}
+
+.accordion-item.open .accordion-content {
+  max-height: 3000px; /* Aumentei o max-height para 3000px para permitir mais conteúdo */
+  opacity: 1;
+  padding: 1rem 1.5rem;
+  transition: all 0.5s ease;
+}
+
+.accordion-item.open .accordion-header {
+  background: rgba(0, 0, 0, 0.8); /* Fundo escuro quando aberto */
+  color: #ffcc00; /* Cor do texto quando aberto */
+}
+
+.accordion-item.open .accordion-content {
+  color: #e0e0e0; /* Cor mais clara do texto quando o conteúdo estiver visível */
+}
+
+.accordion-item .accordion-header::after {
+  content: " ▼"; /* Adiciona uma seta para indicar que a seção pode ser expandida */
+}
+
+.accordion-item.open .accordion-header::after {
+  content: " ▲"; /* Seta para indicar que a seção foi expandida */
+}
+
+/* Estilo para a seção de regras */
+.regras-container {
+  background: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente */
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 40px;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  max-width: 800px;
+  margin: 40px auto;
+  color: #ddd; /* Cor do texto */
+  font-family: 'Roboto', sans-serif; /* Alterando a fonte para Roboto */
+}
+
+.regras-container p {
+  margin: 10px 0;
+}
+
+.regras-container p strong {
+  color: #9b59b6; /* Cor roxa para destacar os números */
+}
+
+.regras-container p::before {
+  content: "▫️ "; /* Marcador de ponto antes da regra */
+  color: #9b59b6;
+  font-size: 1.4rem;
+}
+
+.regras-container p:first-child {
+  margin-top: 0;
+}
+
+/* Estilo geral da tabela dark */
+.dark-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  background-color: rgba(0, 0, 0, 0.8); /* Fundo escuro e com transparência */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8); /* Sombra mais forte */
+}
+
+.dark-table th, .dark-table td {
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Bordas mais sutis e discretas */
+  padding: 12px;
+  text-align: center;
+  color: #fff; /* Texto branco */
+  font-family: 'Arial', sans-serif; /* Fonte mais legível e moderna */
+}
+
+.dark-table th {
+  background-color: #6a1b9a; /* Cor roxa para o cabeçalho */
+  color: #fff;
+  font-weight: bold;
+}
+
+.dark-table tr:nth-child(even) {
+  background-color: rgba(50, 50, 50, 0.8); /* Fundo mais claro nas linhas pares */
+}
+
+.dark-table tr:nth-child(odd) {
+  background-color: rgba(25, 25, 25, 0.8); /* Fundo mais escuro nas linhas ímpares */
+}
+
+.dark-table tr:hover {
+  background-color: rgba(100, 100, 100, 0.8); /* Efeito de hover para destacar a linha */
+}
+
+.dark-table td {
+  font-size: 14px;
+}
+
+.dark-table th, .dark-table td {
+  border-radius: 5px;
+}
+
+.dark-table tr:hover td {
+  color: #fff; /* Texto branco no hover */
+}
+
+/* Estilo para a última linha de preços */
+.dark-table .price-row {
+  background-color: #9b59b6; /* Detalhes roxos para as células de preço */
+}
+
+.dark-table .price-row td {
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Estilo para o botão de adicionar ao carrinho */
+.button-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px; /* Reduzido o espaçamento entre o botão e a tabela */
+  margin-bottom: 30px; /* Aumentado o espaçamento entre a tabela e a próxima */
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 10px 25px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.button--glow {
+  background: #a855f7;
+  color: #fff;
+  box-shadow: 0 0 12px #a855f7, 0 0 24px #7e22ce;
+}
+
+.button--glow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px #c084fc, 0 0 30px #9333ea;
+}
+
+/* Para as tabelas */
+.dark-table {
+  margin-bottom: 50px; /* Aumentado o espaçamento entre tabelas */
+}
+
+
