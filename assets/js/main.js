@@ -11,18 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // LENIS SMOOTH SCROLL
     // ==============================
     const lenis = new Lenis({
+        autoRaf: false,
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         touchMultiplier: 2,
     });
 
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    // Sync Lenis with GSAP ScrollTrigger
+    // Single raf source: GSAP ticker drives Lenis which updates ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add((time) => {
         lenis.raf(time * 1000);
@@ -555,13 +550,15 @@ document.addEventListener('DOMContentLoaded', () => {
     gsap.from('.faq-item', {
         scrollTrigger: {
             trigger: '#faq',
-            start: 'top 75%',
+            start: 'top 80%',
+            toggleActions: 'play none none none',
         },
         y: 30,
         opacity: 0,
         stagger: 0.1,
         duration: 0.6,
-        ease: 'power2.out'
+        ease: 'power2.out',
+        clearProps: 'opacity,transform'
     });
 
     // ==============================
