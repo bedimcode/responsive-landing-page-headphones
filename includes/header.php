@@ -1,0 +1,235 @@
+<?php
+/**
+ * Headphones1.Duka — Shared Header
+ * Includes <head>, navbar, cart drawer, quick-view modal
+ * 
+ * Variables available before include:
+ *   $pageTitle       — (required) Page <title>
+ *   $pageDescription — (optional) Meta description
+ *   $pageType        — (optional) 'home' | 'page' | 'product' (default: 'page')
+ *   $bodyClass       — (optional) Extra classes on <body>
+ *   $ogImage         — (optional) OG image path
+ *   $canonical       — (optional) Canonical URL
+ *   $noIndex         — (optional) true to add noindex
+ *   $includeAnimations — (optional) true to load GSAP/Lenis (default: true on home)
+ */
+
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__));
+}
+
+require_once BASE_PATH . '/includes/config.php';
+require_once BASE_PATH . '/includes/functions.php';
+
+// Defaults
+$pageTitle = $pageTitle ?? APP_NAME;
+$pageDescription = $pageDescription ?? 'Beats 3 — Studio-grade wireless headphones with 40h battery, Bluetooth 5.2, and premium sound. Free shipping & 30-day returns.';
+$pageType = $pageType ?? 'page';
+$bodyClass = $bodyClass ?? '';
+$ogImage = $ogImage ?? 'assets/img/home.png';
+$noIndex = $noIndex ?? false;
+$includeAnimations = $includeAnimations ?? ($pageType === 'home');
+
+// Determine base URL for assets (handles subdirectory depth)
+$basePath = rtrim(APP_URL, '/');
+
+// Get cart count for badge
+try {
+    $db = getDB();
+    $cartCount = getCartCount($db);
+} catch (Exception $e) {
+    $cartCount = 0;
+}
+
+// Current page for nav highlighting
+$currentPage = basename($_SERVER['PHP_SELF'], '.php');
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="<?= e($pageDescription) ?>">
+    <meta name="keywords" content="headphones, beats, wireless headphones, premium audio, noise cancelling, ecommerce">
+    <meta name="author" content="Beats Audio">
+    <?php if ($noIndex): ?>
+    <meta name="robots" content="noindex">
+    <?php endif; ?>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="<?= e($pageTitle) ?>">
+    <meta property="og:description" content="<?= e($pageDescription) ?>">
+    <meta property="og:image" content="<?= e($basePath . '/' . $ogImage) ?>">
+    <meta property="og:type" content="<?= $pageType === 'product' ? 'product' : 'website' ?>">
+    <meta property="og:url" content="<?= e($canonical ?? ($_SERVER['REQUEST_URI'] ?? '')) ?>">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= e($pageTitle) ?>">
+    <meta name="twitter:description" content="<?= e($pageDescription) ?>">
+
+    <?php if (!empty($canonical)): ?>
+    <link rel="canonical" href="<?= e($canonical) ?>">
+    <?php endif; ?>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="<?= e($basePath) ?>/assets/img/favicon.png" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <?php include BASE_PATH . '/includes/tailwind-config.php'; ?>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="<?= e($basePath) ?>/assets/css/styles.css">
+
+    <!-- CSRF Token for JS -->
+    <meta name="csrf-token" content="<?= e(csrfToken()) ?>">
+
+    <title><?= e($pageTitle) ?></title>
+</head>
+<body class="bg-dark-950 text-gray-300 font-sans overflow-x-hidden <?= e($bodyClass) ?>">
+
+    <?php
+    // Flash message display
+    $flash = getFlash();
+    if ($flash): ?>
+    <div id="flash-message" class="fixed top-20 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-2xl text-sm font-medium backdrop-blur-xl border transition-all duration-500
+        <?= $flash['type'] === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' : '' ?>
+        <?= $flash['type'] === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' : '' ?>
+        <?= $flash['type'] === 'info' ? 'bg-neon-blue/10 border-neon-blue/20 text-neon-blue' : '' ?>">
+        <?= e($flash['message']) ?>
+    </div>
+    <script>
+        setTimeout(() => {
+            const el = document.getElementById('flash-message');
+            if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }
+        }, 4000);
+    </script>
+    <?php endif; ?>
+
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress" class="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink z-[200] transition-all" style="width: 0%"></div>
+
+    <!-- ============ HEADER / NAVBAR ============ -->
+    <header id="header" class="fixed top-0 left-0 w-full z-[150] transition-all duration-500">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20 transition-all duration-500">
+            <!-- Logo -->
+            <a href="<?= e($basePath) ?>/" class="flex items-center gap-2 z-50">
+                <img src="<?= e($basePath) ?>/assets/img/logo.png" alt="Beats Audio Logo" class="h-8 lg:h-10">
+            </a>
+
+            <!-- Desktop Nav -->
+            <div id="nav-menu" class="nav-menu fixed top-0 left-0 w-full h-screen bg-dark-950/98 backdrop-blur-xl flex flex-col items-center justify-center gap-8 z-40 transition-all duration-500 opacity-0 pointer-events-none lg:static lg:w-auto lg:h-auto lg:bg-transparent lg:flex-row lg:opacity-100 lg:pointer-events-auto lg:backdrop-blur-none">
+                <ul class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                    <?php if ($pageType === 'home'): ?>
+                    <li><a href="#home" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="home">Home</a></li>
+                    <li><a href="#specs" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="specs">Specs</a></li>
+                    <li><a href="#case" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="case">Case</a></li>
+                    <li><a href="#products" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="products">Products</a></li>
+                    <li><a href="#testimonials" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="testimonials">Reviews</a></li>
+                    <li><a href="#faq" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="faq">FAQ</a></li>
+                    <?php else: ?>
+                    <li><a href="<?= e($basePath) ?>/" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative <?= $currentPage === 'index' ? 'active' : '' ?>">Home</a></li>
+                    <li><a href="<?= e($basePath) ?>/#products" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative">Products</a></li>
+                    <li><a href="<?= e($basePath) ?>/contact.php" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative <?= $currentPage === 'contact' ? 'active' : '' ?>">Contact</a></li>
+                    <li><a href="<?= e($basePath) ?>/#faq" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative">FAQ</a></li>
+                    <?php endif; ?>
+                </ul>
+                <!-- Mobile close -->
+                <button id="nav-close" class="absolute top-6 right-6 text-3xl text-white lg:hidden"><i class="ri-close-line"></i></button>
+            </div>
+
+            <!-- Right side: Cart + Auth + Mobile toggle -->
+            <div class="flex items-center gap-4 z-50">
+                <?php if (isLoggedIn()): ?>
+                <a href="<?= e($basePath) ?>/auth/logout.php" class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                    <i class="ri-user-line"></i> <?= e(currentUserName()) ?>
+                </a>
+                <?php else: ?>
+                <a href="<?= e($basePath) ?>/auth/login.php" class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                    <i class="ri-user-line"></i> Sign In
+                </a>
+                <?php endif; ?>
+
+                <!-- Cart Button -->
+                <button id="cart-toggle" class="relative group" aria-label="Open cart">
+                    <i class="ri-shopping-bag-3-line text-xl text-gray-300 group-hover:text-neon-blue transition-colors"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 w-5 h-5 bg-neon-blue text-dark-950 text-xs font-bold rounded-full flex items-center justify-center <?= $cartCount > 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-0' ?> transition-all"><?= $cartCount ?></span>
+                </button>
+                <!-- Mobile Toggle -->
+                <button id="nav-toggle" class="text-2xl text-white lg:hidden" aria-label="Open menu"><i class="ri-menu-4-line"></i></button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ============ CART DRAWER ============ -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[160] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 w-full max-w-md h-full bg-dark-900/95 backdrop-blur-2xl border-l border-white/5 z-[170] translate-x-full transition-transform duration-500 ease-out flex flex-col" role="dialog" aria-label="Shopping cart">
+        <div class="flex items-center justify-between p-6 border-b border-white/5">
+            <h3 class="text-xl font-display font-bold text-white">Your Cart</h3>
+            <button id="cart-close" class="text-2xl text-gray-400 hover:text-white transition-colors"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <p id="cart-empty" class="text-center text-gray-500 py-12">Your cart is empty</p>
+        </div>
+        <div id="cart-footer" class="p-6 border-t border-white/5 hidden">
+            <div class="flex justify-between mb-4">
+                <span class="text-gray-400">Subtotal</span>
+                <span id="cart-total" class="text-xl font-bold text-white">$0</span>
+            </div>
+            <a href="<?= e($basePath) ?>/checkout.php" class="block w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform text-center">
+                Checkout — <span id="cart-total-btn">$0</span>
+            </a>
+            <p class="text-center text-xs text-gray-500 mt-3">Free shipping on orders over $199</p>
+        </div>
+    </aside>
+
+    <!-- ============ QUICK VIEW MODAL ============ -->
+    <div id="quickview-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[180] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <div id="quickview-modal" class="fixed inset-0 z-[190] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-500 scale-95" role="dialog" aria-label="Product quick view">
+        <div class="bg-dark-800/95 backdrop-blur-2xl rounded-3xl border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
+            <button id="quickview-close" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-white transition-colors z-10"><i class="ri-close-line"></i></button>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="flex items-center justify-center bg-gradient-to-br from-dark-900 to-dark-800 rounded-2xl p-8">
+                    <img id="qv-image" src="" alt="Product" class="w-full max-w-[280px] drop-shadow-2xl">
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span class="text-neon-blue text-sm font-medium uppercase tracking-widest mb-2">Beats 3 Series</span>
+                    <h3 id="qv-title" class="text-3xl font-display font-bold text-white mb-2"></h3>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="flex text-yellow-400 text-sm">
+                            <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-half-fill"></i>
+                        </div>
+                        <span class="text-gray-500 text-sm">(2,847 reviews)</span>
+                    </div>
+                    <p id="qv-price" class="text-2xl font-bold text-white mb-4"></p>
+                    <div class="space-y-3 mb-6 text-sm text-gray-400">
+                        <div class="flex items-center gap-3"><i class="ri-bluetooth-line text-neon-blue"></i> Bluetooth 5.2</div>
+                        <div class="flex items-center gap-3"><i class="ri-battery-charge-line text-neon-blue"></i> 40h Battery Life</div>
+                        <div class="flex items-center gap-3"><i class="ri-mic-line text-neon-blue"></i> Built-in Microphone</div>
+                        <div class="flex items-center gap-3"><i class="ri-shield-check-line text-neon-blue"></i> 2-Year Warranty</div>
+                    </div>
+                    <!-- Color swatches in modal -->
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-400 mb-3">Color: <span id="qv-color-name" class="text-white"></span></p>
+                        <div id="qv-colors" class="flex gap-3"></div>
+                    </div>
+                    <button id="qv-add-btn" class="w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2" data-id="" data-name="" data-price="" data-img="">
+                        <i class="ri-shopping-bag-line"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live region for accessibility announcements -->
+    <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <main>

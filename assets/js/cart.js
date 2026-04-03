@@ -9,6 +9,13 @@ const Cart = (() => {
     // ---- State ----
     let items = [];
 
+    // ---- XSS Protection ----
+    function esc(str) {
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
     // ---- DOM refs (lazy-bound) ----
     const el = (id) => document.getElementById(id);
 
@@ -83,18 +90,18 @@ const Cart = (() => {
         }
 
         container.innerHTML = items.map(item => `
-            <div class="cart-item" data-id="${item.id}">
-                <img src="${item.img}" alt="${item.name}">
+            <div class="cart-item" data-id="${esc(item.id)}">
+                <img src="${esc(item.img)}" alt="${esc(item.name)}">
                 <div class="cart-item-info">
-                    <p class="cart-item-name">${item.name}</p>
-                    <p class="cart-item-price">$${item.price}</p>
+                    <p class="cart-item-name">${esc(item.name)}</p>
+                    <p class="cart-item-price">$${esc(item.price)}</p>
                     <div class="cart-item-qty">
-                        <button onclick="Cart.updateQty('${item.id}', -1)" aria-label="Decrease quantity">−</button>
-                        <span>${item.qty}</span>
-                        <button onclick="Cart.updateQty('${item.id}', 1)" aria-label="Increase quantity">+</button>
+                        <button onclick="Cart.updateQty('${esc(item.id)}', -1)" aria-label="Decrease quantity">−</button>
+                        <span>${esc(item.qty)}</span>
+                        <button onclick="Cart.updateQty('${esc(item.id)}', 1)" aria-label="Increase quantity">+</button>
                     </div>
                 </div>
-                <button class="cart-item-remove" onclick="Cart.removeItem('${item.id}')" aria-label="Remove ${item.name}">
+                <button class="cart-item-remove" onclick="Cart.removeItem('${esc(item.id)}')" aria-label="Remove ${esc(item.name)}">
                     <i class="ri-delete-bin-line"></i>
                 </button>
             </div>
@@ -127,7 +134,7 @@ const Cart = (() => {
 
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.innerHTML = `<i class="ri-check-line"></i> <span>${name} added to cart</span>`;
+        toast.innerHTML = `<i class="ri-check-line"></i> <span>${esc(name)} added to cart</span>`;
         document.body.appendChild(toast);
 
         requestAnimationFrame(() => {
@@ -190,5 +197,5 @@ const Cart = (() => {
     }
 
     // Public API
-    return { init, addItem, removeItem, updateQty, openDrawer, closeDrawer };
+    return { init, addItem, removeItem, updateQty, openDrawer, closeDrawer, clear() { items = []; save(); renderCart(); updateBadge(); } };
 })();

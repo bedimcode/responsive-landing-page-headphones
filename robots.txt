@@ -1,0 +1,13 @@
+# Robots.txt — Headphones1.Duka
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+Disallow: /includes/
+Disallow: /sql/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /*.sql$
+
+Sitemap: http://localhost/headphones1.duka/sitemap.xml

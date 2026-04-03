@@ -1,0 +1,54 @@
+# ============================================
+# Headphones1.Duka — Apache Configuration
+# ============================================
+
+# Enable rewrite engine
+RewriteEngine On
+
+# ---- Security Headers ----
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# ---- Prevent directory listing ----
+Options -Indexes
+
+# ---- Block access to sensitive files/folders ----
+<FilesMatch "\.(sql|md|log|env|ini|htpasswd)$">
+    Require all denied
+</FilesMatch>
+
+# Block access to includes, sql, and admin/includes dirs via URL
+RewriteRule ^includes/ - [F,L]
+RewriteRule ^sql/ - [F,L]
+RewriteRule ^admin/includes/ - [F,L]
+
+# ---- Custom error pages ----
+ErrorDocument 404 /headphones1.duka/404.php
+ErrorDocument 403 /headphones1.duka/404.php?code=403
+ErrorDocument 500 /headphones1.duka/404.php?code=500
+
+# ---- GZIP Compression ----
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# ---- Browser Caching ----
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
+
+# ---- Force HTTPS (uncomment for production) ----
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
