@@ -163,7 +163,7 @@ function slugify(string $text): string {
 /**
  * Get or create a cart for the current user/session.
  */
-function getOrCreateCart(PDO $db): int {
+function getOrCreateCart(PDO $db): array {
     $userId = currentUserId();
     $sessionId = session_id();
 
@@ -177,12 +177,12 @@ function getOrCreateCart(PDO $db): int {
 
     $cart = $stmt->fetch();
     if ($cart) {
-        return (int) $cart['id'];
+        return ['id' => (int) $cart['id']];
     }
 
     $stmt = $db->prepare('INSERT INTO cart (session_id, user_id) VALUES (?, ?)');
     $stmt->execute([$sessionId, $userId]);
-    return (int) $db->lastInsertId();
+    return ['id' => (int) $db->lastInsertId()];
 }
 
 /**

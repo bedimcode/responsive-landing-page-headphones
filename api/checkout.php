@@ -85,23 +85,27 @@ try {
     $tax = round($subtotal * 0.08, 2); // 8% tax
     $total = $subtotal + $shipping + $tax;
 
-    // Create order in a transaction
     $db->beginTransaction();
 
     $orderNumber = generateOrderNumber();
     $userId = isLoggedIn() ? currentUserId() : null;
-    $shippingAddress = json_encode([
-        'first_name' => $firstName, 'last_name' => $lastName,
-        'email' => $email, 'phone' => $phone,
-        'address' => $address, 'city' => $city,
-        'state' => $state, 'zip' => $zip, 'country' => $country,
-    ]);
 
     $stmt = $db->prepare('
-        INSERT INTO orders (order_number, user_id, email, shipping_address, subtotal, shipping, tax, total, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, "pending")
+        INSERT INTO orders (
+            order_number, user_id,
+            shipping_name, shipping_email, shipping_phone,
+            shipping_address, shipping_city, shipping_state, shipping_zip, shipping_country,
+            subtotal, shipping_cost, tax, total,
+            payment_method, payment_status, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
-    $stmt->execute([$orderNumber, $userId, $email, $shippingAddress, $subtotal, $shipping, $tax, $total]);
+    $stmt->execute([
+        $orderNumber, $userId,
+        $firstName . ' ' . $lastName, $email, $phone,
+        $address, $city, $state, $zip, $country ?: 'United States',
+        $subtotal, $shipping, $tax, $total,
+        'card', 'pending', 'pending'
+    ]);
     $orderId = $db->lastInsertId();
 
     // Insert order items and decrease stock

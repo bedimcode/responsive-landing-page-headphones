@@ -2,26 +2,20 @@
 /**
  * Login Page
  */
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (!defined('BASE_PATH')) define('BASE_PATH', dirname(__DIR__));
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 
-$pageTitle = 'Sign In — Beats Audio';
-$pageDescription = 'Sign in to your Beats Audio account.';
-$pageType = 'page';
-$noIndex = true;
-
-require_once __DIR__ . '/../includes/header.php';
-
-// Redirect if already logged in
+// All redirects and session changes must happen before any HTML output
 if (isLoggedIn()) {
-    header('Location: ' . APP_URL . '/');
-    exit;
+    redirect(APP_URL . '/');
 }
 
 $error = '';
 $email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!validateCsrf($_POST['_token'] ?? '')) {
+    if (!validateCsrf()) {
         $error = 'Invalid security token. Please try again.';
     } else {
         $email = trim($_POST['email'] ?? '');
@@ -32,11 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             try {
                 $db = getDB();
-                $stmt = $db->prepare('SELECT id, name, email, password, role FROM users WHERE email = ? AND is_active = 1');
+                $stmt = $db->prepare('SELECT id, name, email, password_hash, role FROM users WHERE email = ? AND is_active = 1');
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                if ($user && password_verify($password, $user['password'])) {
+                if ($user && password_verify($password, $user['password_hash'])) {
                     // Regenerate session ID to prevent fixation
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $user['id'];
@@ -53,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
 
-                    $redirect = $_SESSION['redirect_after_login'] ?? APP_URL . '/';
+                    $defaultRedirect = $user['role'] === 'admin' ? APP_URL . '/admin/' : APP_URL . '/';
+                    $redirect = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
                     unset($_SESSION['redirect_after_login']);
                     setFlash('success', 'Welcome back, ' . e($user['name']) . '!');
                     header('Location: ' . $redirect);
@@ -67,6 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// HTML output starts here
+$pageTitle = 'Sign In — Beats Audio';
+$pageDescription = 'Sign in to your Beats Audio account.';
+$pageType = 'page';
+$noIndex = true;
+
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
     <main class="pt-32 pb-24 min-h-[70vh] flex items-center">

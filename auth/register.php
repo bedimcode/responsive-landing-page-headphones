@@ -2,25 +2,20 @@
 /**
  * Register Page
  */
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (!defined('BASE_PATH')) define('BASE_PATH', dirname(__DIR__));
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 
-$pageTitle = 'Create Account — Beats Audio';
-$pageDescription = 'Create your Beats Audio account for faster checkout and order tracking.';
-$pageType = 'page';
-$noIndex = true;
-
-require_once __DIR__ . '/../includes/header.php';
-
+// All redirects and session changes must happen before any HTML output
 if (isLoggedIn()) {
-    header('Location: ' . APP_URL . '/');
-    exit;
+    redirect(APP_URL . '/');
 }
 
 $error = '';
 $name = $email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!validateCsrf($_POST['_token'] ?? '')) {
+    if (!validateCsrf()) {
         $error = 'Invalid security token. Please try again.';
     } else {
         $name = sanitize($_POST['name'] ?? '');
@@ -45,10 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare('SELECT id FROM users WHERE email = ?');
                 $stmt->execute([$email]);
                 if ($stmt->fetch()) {
-                    $error = 'An account with this email already exists. <a href="' . e($basePath) . '/auth/login.php" class="text-neon-blue hover:underline">Sign in instead</a>';
+                    $error = 'An account with this email already exists. <a href="' . e(APP_URL) . '/auth/login.php" class="text-neon-blue hover:underline">Sign in instead</a>';
                 } else {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
-                    $db->prepare('INSERT INTO users (name, email, password) VALUES (?, ?, ?)')->execute([$name, $email, $hash]);
+                    $db->prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)')->execute([$name, $email, $hash]);
 
                     $userId = $db->lastInsertId();
                     session_regenerate_id(true);
@@ -57,8 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_role'] = 'customer';
 
                     setFlash('success', 'Welcome to Beats, ' . e($name) . '! Your account has been created.');
-                    header('Location: ' . APP_URL . '/');
-                    exit;
+                    redirect(APP_URL . '/');
                 }
             } catch (Exception $e) {
                 $error = 'Something went wrong. Please try again.';
@@ -68,6 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// HTML output starts here
+$pageTitle = 'Create Account — Beats Audio';
+$pageDescription = 'Create your Beats Audio account for faster checkout and order tracking.';
+$pageType = 'page';
+$noIndex = true;
+
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
     <main class="pt-32 pb-24 min-h-[70vh] flex items-center">
