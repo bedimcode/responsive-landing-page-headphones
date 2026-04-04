@@ -70,10 +70,10 @@ require_once __DIR__ . '/includes/header.php';
                         <?php else: ?>
                         <div class="text-sm font-medium text-white"><?= e($item['product_name'] ?? 'Product') ?></div>
                         <?php endif; ?>
-                        <div class="text-xs text-gray-500 mt-0.5">Qty: <?= (int) $item['quantity'] ?> × <?= formatPrice($item['price']) ?></div>
+                        <div class="text-xs text-gray-500 mt-0.5">Qty: <?= (int) ($item['quantity'] ?? 0) ?> × <?= formatPrice($item['price'] ?? 0) ?></div>
                     </div>
                     <div class="text-sm font-semibold text-white flex-shrink-0">
-                        <?= formatPrice($item['price'] * $item['quantity']) ?>
+                        <?= formatPrice(($item['price'] ?? 0) * ($item['quantity'] ?? 0)) ?>
                     </div>
                 </div>
                 <?php endforeach; ?>

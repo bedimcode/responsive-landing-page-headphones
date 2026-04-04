@@ -137,8 +137,8 @@ function getFlash(): ?array {
 /**
  * Format a price for display.
  */
-function formatPrice(float $price): string {
-    return '$' . number_format($price, 2);
+function formatPrice(float|null $price): string {
+    return '$' . number_format($price ?? 0, 2);
 }
 
 /**
