@@ -1,14 +1,14 @@
 <div align="center">
 
-# 🎧 Beats Studio — Premium Headphones Landing Page
+# 🎧 Beats Audio — Premium Headphones E-Commerce Store
 
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![PHP](https://img.shields.io/badge/PHP_8+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![GSAP](https://img.shields.io/badge/GSAP-88CE02?style=for-the-badge&logo=greensock&logoColor=black)](https://greensock.com/gsap/)
 
-**A high-converting, immersive e-commerce landing page for premium headphones — built with buttery-smooth GSAP animations, Tailwind CSS, Lenis scroll, and a fully functional localStorage cart.**
+**A full-stack e-commerce platform for premium headphones — featuring user accounts, API-driven cart, multi-payment checkout, admin dashboard, and cinematic GSAP animations.**
 
 [Live Demo →](#) · [Report Bug →](../../issues) · [Request Feature →](../../issues)
 
@@ -20,20 +20,38 @@
 
 ## ✨ Key Features
 
+### Storefront
 | Feature | Description |
 |---------|-------------|
 | 🎬 **GSAP Animations** | Cinematic hero timeline, scroll-triggered reveals, parallax effects, and 3D product card tilts |
-| 🛒 **Working Cart System** | Add-to-cart with localStorage persistence, quantity controls, drawer UI, and toast notifications |
-| 🎨 **Color Swatches** | Interactive hero & quick-view color switching with smooth image transitions |
-| ⏱️ **Countdown Timer** | Session-persisted promotional countdown that survives page refreshes |
+| 🛒 **API-Driven Cart** | Server-side cart with session support for guests and persistent carts for logged-in users |
+| 🎨 **Color Swatches** | Interactive color switching with smooth image transitions on hero and quick-view modal |
+| 💳 **Multi-Payment Checkout** | Cash on Delivery, M-Pesa (Send Money), Bank Transfer, and PayPal |
 | 📱 **Mobile-First Responsive** | Flawless experience from 320px phones to ultra-wide desktops |
 | 🌊 **Lenis Smooth Scroll** | Butter-smooth scrolling synced with GSAP ScrollTrigger |
-| 🔍 **Quick-View Modal** | Product details overlay with gallery-style color switching |
-| 💬 **Testimonials Carousel** | Responsive slider with touch-friendly dot navigation |
-| ❓ **Animated FAQ Accordion** | GSAP-powered expand/collapse with smooth height transitions |
-| 📧 **Newsletter CTA** | Email capture section with inline validation |
-| 📜 **Legal Pages** | Privacy Policy, Terms of Service, and Cookie Policy with consistent footer |
-| ♿ **Accessibility** | `prefers-reduced-motion` support, keyboard navigation, semantic HTML |
+| 🔍 **Quick-View Modal** | Product details overlay with color switching and add-to-cart |
+| 📬 **Contact & Newsletter** | Contact form with DB storage and newsletter subscription |
+
+### User Dashboard
+| Feature | Description |
+|---------|-------------|
+| 👤 **Authentication** | Register, login, logout, forgot password with secure session handling |
+| 📦 **Order Tracking** | View orders with status history, item details, and order timeline |
+| ❤️ **Wishlist** | Save favorite products, add to cart directly from wishlist |
+| 📍 **Address Book** | Manage multiple shipping addresses with default selection |
+| 🔐 **Profile Management** | Update name, email, phone, and change password |
+| 🛒 **Cart Merge** | Guest cart items automatically merge when logging in |
+
+### Admin Panel
+| Feature | Description |
+|---------|-------------|
+| 📊 **Analytics Dashboard** | Revenue charts, order stats, and customer insights |
+| 📦 **Product Management** | Add, edit, and manage products with images and pricing |
+| 🛍️ **Order Management** | View, update status, and track all customer orders |
+| 👥 **Customer Management** | View registered customers and their activity |
+| 💰 **Payment Tracking** | Monitor payment statuses across all orders |
+| ✉️ **Messages & Newsletter** | View contact form messages and manage newsletter subscribers |
+| ⚙️ **Site Settings** | Configure store settings and notifications |
 
 ---
 
@@ -41,48 +59,52 @@
 
 | Technology | Purpose |
 |-----------|---------|
-| **HTML5** | Semantic markup, SEO-friendly structure |
-| **Tailwind CSS** (CDN) | Utility-first styling with custom dark theme & neon accent colors |
-| **Vanilla JavaScript** | Zero-dependency interactions and cart logic |
+| **PHP 8+** | Backend logic, routing, authentication, API endpoints |
+| **MySQL / MariaDB** | Relational database with PDO prepared statements |
+| **Tailwind CSS** (CDN) | Utility-first styling with custom dark theme & neon accents |
+| **Vanilla JavaScript** | Cart interactions, form handling, payment UI |
 | **GSAP 3** + ScrollTrigger | Professional-grade scroll animations and timelines |
 | **Lenis** | Smooth-scroll engine synced with GSAP ticker |
 | **Remix Icons** | Lightweight icon set via CDN |
-| **Google Fonts** | Inter + Space Grotesk for modern typography |
+| **Inter + Space Grotesk** | Modern typography via Google Fonts |
 
 ---
 
 ## 🚀 Getting Started
 
-No build step needed — this is a pure static site.
+### Prerequisites
 
-### Option 1: Open directly
+- **XAMPP** (or any Apache + PHP 8+ + MySQL stack)
+- **Git**
 
-```
-Just double-click index.html in your browser.
-```
-
-### Option 2: VS Code Live Server (recommended)
+### Installation
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/your-username/headphones1.duka.git
+# 1. Clone the repo into your web server directory
+cd C:\xampp\htdocs
+git clone https://github.com/WAIYAH/headphones1.duka.git
 cd headphones1.duka
 
-# 2. Open in VS Code
-code .
+# 2. Create the database
+#    Open phpMyAdmin (http://localhost/phpmyadmin)
+#    Import sql/schema.sql — this creates the database, tables, and seed data
 
-# 3. Install "Live Server" extension, then right-click index.html → "Open with Live Server"
+# 3. Configure environment
+cp .env.example .env
+#    Edit .env with your database credentials (default: root with no password)
+
+# 4. Open in browser
+#    http://localhost/headphones1.duka
 ```
 
-### Option 3: Any static server
+### Default Configuration
 
-```bash
-# Python
-python -m http.server 8080
-
-# Node (npx)
-npx serve .
-```
+| Setting | Value |
+|---------|-------|
+| Database | `headphones1_duka` |
+| DB User | `root` |
+| DB Password | *(empty)* |
+| App URL | `http://localhost/headphones1.duka` |
 
 ---
 
@@ -90,30 +112,70 @@ npx serve .
 
 ```
 headphones1.duka/
-├── index.html              # Main landing page (all sections)
-├── privacy-policy.html     # Privacy Policy legal page
-├── terms-of-service.html   # Terms of Service legal page
-├── cookie-policy.html      # Cookie Policy legal page
-├── preview.png             # Repository preview screenshot
-├── LICENSE                 # MIT License
-├── README.md               # This file
-├── .gitignore
-├── .env.example            # Environment variable template
-└── assets/
-    ├── css/
-    │   └── styles.css      # Custom styles (Lenis, scrollbar, glassmorphism, etc.)
-    ├── img/
-    │   ├── favicon.png     # Site favicon
-    │   ├── logo.png        # Beats logo
-    │   ├── home.png        # Hero headphone image
-    │   ├── case.png        # Carrying case section
-    │   ├── discount.png    # Discount section visual
-    │   ├── specs.png       # Specifications visual
-    │   ├── product1-5.png  # Product catalog images
-    │   └── sponsor1-4.png  # Sponsor / partner logos
-    └── js/
-        ├── main.js         # GSAP animations, Lenis, UI interactions (542 lines)
-        └── cart.js         # Cart module — IIFE with localStorage (168 lines)
+├── index.php                # Landing page (hero, products, testimonials, FAQ)
+├── shop.php                 # Product catalog with filtering
+├── product.php              # Single product detail page
+├── checkout.php             # Checkout with multi-payment options
+├── contact.php              # Contact form
+├── 404.php                  # Custom error page
+│
+├── api/                     # REST API endpoints
+│   ├── cart.php             # Cart CRUD (add, update, remove, get)
+│   ├── checkout.php         # Order placement
+│   ├── contact.php          # Contact form submission
+│   └── newsletter.php       # Newsletter subscription
+│
+├── auth/                    # Authentication
+│   ├── login.php
+│   ├── register.php
+│   ├── logout.php
+│   └── forgot-password.php
+│
+├── account/                 # User dashboard
+│   ├── index.php            # Dashboard overview
+│   ├── orders.php           # Order list with status tabs
+│   ├── order-view.php       # Order detail with timeline
+│   ├── wishlist.php         # Saved products
+│   ├── addresses.php        # Address management
+│   ├── profile.php          # Profile & password settings
+│   └── includes/            # Dashboard layout (header/footer)
+│
+├── admin/                   # Admin panel
+│   ├── index.php            # Analytics dashboard
+│   ├── products.php         # Product management
+│   ├── product-edit.php     # Product editor
+│   ├── orders.php           # Order management
+│   ├── order-view.php       # Order detail
+│   ├── customers.php        # Customer list
+│   ├── payments.php         # Payment tracking
+│   ├── messages.php         # Contact messages
+│   ├── newsletter.php       # Subscriber management
+│   ├── settings.php         # Site configuration
+│   └── includes/            # Admin layout (header/footer)
+│
+├── includes/                # Shared backend
+│   ├── config.php           # Database connection, constants, session
+│   ├── functions.php        # Helper functions (auth, cart, CSRF, etc.)
+│   ├── header.php           # Main site header with cart drawer
+│   ├── footer.php           # Main site footer
+│   └── tailwind-config.php  # Tailwind CDN configuration
+│
+├── legal/                   # Legal pages
+│   ├── privacy-policy.php
+│   ├── terms-of-service.php
+│   └── cookie-policy.php
+│
+├── assets/
+│   ├── css/styles.css       # Custom styles (scrollbar, glassmorphism, etc.)
+│   ├── js/main.js           # GSAP animations, Lenis, UI interactions
+│   ├── js/cart.js           # API-driven cart module
+│   └── img/                 # Product images, logos, icons
+│
+├── sql/schema.sql           # Database schema + seed data
+├── .env                     # Environment configuration
+├── .htaccess                # Apache URL rewriting
+├── robots.txt               # Search engine directives
+└── sitemap.xml              # SEO sitemap
 ```
 
 ---
@@ -132,16 +194,36 @@ headphones1.duka/
 
 ---
 
-## 🌐 Deployment
+## 💳 Payment Methods
 
-This is a static site — deploy anywhere:
+| Method | Details |
+|--------|---------|
+| **Cash on Delivery** | Pay when you receive your order |
+| **M-Pesa** | Send Money to **0715674828** |
+| **Bank Transfer** | Direct bank payment with order reference |
+| **PayPal** | Pay with PayPal account |
+
+---
+
+## 🔒 Security
+
+- CSRF token protection on all forms and API endpoints
+- Password hashing with `password_hash()` (bcrypt)
+- PDO prepared statements (no SQL injection)
+- Input sanitization and validation
+- Session regeneration on login
+- HTTP-only secure session cookies
+- XSS protection via output escaping (`htmlspecialchars`)
+
+---
+
+## 🌐 Deployment
 
 | Platform | How |
 |----------|-----|
-| **Netlify** | Drag & drop the folder, or connect GitHub repo |
-| **Vercel** | `vercel --prod` or connect repo |
-| **GitHub Pages** | Settings → Pages → Deploy from branch |
-| **Cloudflare Pages** | Connect repo, no build command needed |
+| **Shared Hosting** | Upload files, import `sql/schema.sql`, update `.env` |
+| **VPS / DigitalOcean** | Install LAMP stack, clone repo, configure Apache vhost |
+| **XAMPP (Local)** | Clone into `htdocs/`, import schema, configure `.env` |
 
 ---
 
@@ -153,8 +235,8 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
 
 ## 🙏 Credits
 
-- **Original template** by [Bedimcode](https://www.youtube.com/c/Bedimcode) — responsive headphones landing page concept
-- **Overhauled & rebuilt** by **NAKOLA** — complete rewrite with Tailwind CSS, GSAP 3 animations, Lenis smooth scroll, cart system, legal pages, and premium dark theme
+- **Original landing page concept** by [Bedimcode](https://www.youtube.com/c/Bedimcode)
+- **Full-stack e-commerce build** by **NAKOLA** — complete PHP backend, database architecture, user dashboard, admin panel, API-driven cart, multi-payment checkout, and premium dark theme
 
 ---
 
