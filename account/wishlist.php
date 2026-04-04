@@ -45,7 +45,7 @@ require_once __DIR__ . '/includes/header.php';
 <?php else: ?>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
     <?php foreach ($items as $item):
-        $effectivePrice = $item['sale_price'] ?? $item['price'] ?? 0;
+        $effectivePrice = (!empty($item['sale_price'])) ? $item['sale_price'] : ($item['price'] ?? 0);
         $inStock = ($item['stock'] ?? 0) > 0;
     ?>
     <div class="group bg-dark-900/60 border border-white/[.06] rounded-2xl overflow-hidden hover:border-white/10 transition-all">

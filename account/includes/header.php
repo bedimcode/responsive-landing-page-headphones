@@ -142,24 +142,24 @@ $accountNav = [
 
     <!-- Navigation -->
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        <?php foreach ($accountNav as $groupLabel => $items): ?>
+        <?php foreach ($accountNav as $groupLabel => $_navItems): ?>
         <div>
             <div class="px-3 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-[.2em]"><?= $groupLabel ?></div>
             <div class="space-y-0.5">
-                <?php foreach ($items as $item):
-                    $isActive = $currentPage === $item['page']
-                        || ($item['page'] === 'orders' && $currentPage === 'order-view');
+                <?php foreach ($_navItems as $_navItem):
+                    $isActive = $currentPage === $_navItem['page']
+                        || ($_navItem['page'] === 'orders' && $currentPage === 'order-view');
                 ?>
-                <a href="<?= e($item['href']) ?>"
+                <a href="<?= e($_navItem['href']) ?>"
                    class="group flex items-center gap-3 px-3 py-[9px] rounded-xl text-[13px] font-medium transition-all duration-150
                           <?= $isActive ? 'nav-active' : 'text-gray-400 hover:text-white hover:bg-white/[.04]' ?>">
-                    <i class="nav-icon <?= $item['icon'] ?> text-[17px] w-5 text-center flex-shrink-0
+                    <i class="nav-icon <?= $_navItem['icon'] ?> text-[17px] w-5 text-center flex-shrink-0
                               <?= $isActive ? '' : 'text-gray-500 group-hover:text-gray-300' ?> transition-colors"></i>
-                    <span class="flex-1 truncate"><?= e($item['label']) ?></span>
-                    <?php if (!empty($item['badge'])): ?>
+                    <span class="flex-1 truncate"><?= e($_navItem['label']) ?></span>
+                    <?php if (!empty($_navItem['badge'])): ?>
                     <span class="min-w-[20px] h-5 bg-white/[.06] text-gray-400 text-[10px] font-bold rounded-full
                                  flex items-center justify-center px-1.5 flex-shrink-0 leading-none">
-                        <?= (int) $item['badge'] ?>
+                        <?= (int) $_navItem['badge'] ?>
                     </span>
                     <?php endif; ?>
                 </a>
