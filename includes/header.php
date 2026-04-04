@@ -137,7 +137,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     <li><a href="#faq" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="faq">FAQ</a></li>
                     <?php else: ?>
                     <li><a href="<?= e($basePath) ?>/" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative <?= $currentPage === 'index' ? 'active' : '' ?>">Home</a></li>
-                    <li><a href="<?= e($basePath) ?>/#products" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative">Products</a></li>
+                    <li><a href="<?= e($basePath) ?>/shop.php" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative <?= $currentPage === 'shop' ? 'active' : '' ?>">Shop</a></li>
                     <li><a href="<?= e($basePath) ?>/contact.php" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative <?= $currentPage === 'contact' ? 'active' : '' ?>">Contact</a></li>
                     <li><a href="<?= e($basePath) ?>/#faq" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative">FAQ</a></li>
                     <?php endif; ?>
@@ -149,9 +149,39 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             <!-- Right side: Cart + Auth + Mobile toggle -->
             <div class="flex items-center gap-4 z-50">
                 <?php if (isLoggedIn()): ?>
-                <a href="<?= e($basePath) ?>/auth/logout.php" class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
-                    <i class="ri-user-line"></i> <?= e(currentUserName()) ?>
-                </a>
+                <div class="hidden sm:block relative" id="user-dropdown-wrap">
+                    <button id="user-dropdown-btn" class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                        <i class="ri-user-line"></i> <?= e(currentUserName()) ?> <i class="ri-arrow-down-s-line text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="absolute right-0 top-full mt-2 w-48 bg-dark-900/95 backdrop-blur-xl border border-white/[.06] rounded-xl py-2 shadow-2xl opacity-0 pointer-events-none transition-all duration-200 translate-y-1">
+                        <a href="<?= e($basePath) ?>/account/" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/[.04] transition-colors"><i class="ri-dashboard-line"></i> Dashboard</a>
+                        <a href="<?= e($basePath) ?>/account/orders.php" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/[.04] transition-colors"><i class="ri-shopping-bag-line"></i> My Orders</a>
+                        <a href="<?= e($basePath) ?>/account/wishlist.php" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/[.04] transition-colors"><i class="ri-heart-line"></i> Wishlist</a>
+                        <a href="<?= e($basePath) ?>/account/profile.php" class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/[.04] transition-colors"><i class="ri-settings-3-line"></i> Settings</a>
+                        <div class="border-t border-white/[.06] my-1"></div>
+                        <a href="<?= e($basePath) ?>/auth/logout.php" class="flex items-center gap-2.5 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/[.04] transition-colors"><i class="ri-logout-box-r-line"></i> Sign Out</a>
+                    </div>
+                </div>
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const btn = document.getElementById('user-dropdown-btn');
+                    const dd = document.getElementById('user-dropdown');
+                    if (btn && dd) {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const open = dd.classList.contains('pointer-events-none');
+                            dd.classList.toggle('opacity-0', !open);
+                            dd.classList.toggle('pointer-events-none', !open);
+                            dd.classList.toggle('translate-y-1', !open);
+                            dd.classList.toggle('translate-y-0', open);
+                        });
+                        document.addEventListener('click', function() {
+                            dd.classList.add('opacity-0', 'pointer-events-none', 'translate-y-1');
+                            dd.classList.remove('translate-y-0');
+                        });
+                    }
+                });
+                </script>
                 <?php else: ?>
                 <a href="<?= e($basePath) ?>/auth/login.php" class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
                     <i class="ri-user-line"></i> Sign In

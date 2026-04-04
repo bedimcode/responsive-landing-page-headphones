@@ -26,6 +26,15 @@ Options -Indexes
 RewriteRule ^includes/ - [F,L]
 RewriteRule ^sql/ - [F,L]
 RewriteRule ^admin/includes/ - [F,L]
+RewriteRule ^account/includes/ - [F,L]
+RewriteRule ^\.env$ - [F,L]
+RewriteRule ^admin/settings\.json$ - [F,L]
+
+# ---- Clean URLs ----
+RewriteBase /headphones1.duka/
+RewriteRule ^product/([a-z0-9\-]+)/?$ product.php?slug=$1 [L,QSA]
+RewriteRule ^shop/?$ shop.php [L,QSA]
+RewriteRule ^shop/([a-z0-9\-]+)/?$ shop.php?category=$1 [L,QSA]
 
 # ---- Custom error pages ----
 ErrorDocument 404 /headphones1.duka/404.php

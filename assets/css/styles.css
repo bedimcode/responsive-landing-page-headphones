@@ -346,6 +346,48 @@ html.lenis, html.lenis body {
         min-width: 60px;
         padding: 0.5rem 0.25rem;
     }
+    /* Ensure cart drawer doesn't overflow on small screens */
+    #cart-drawer {
+        max-width: 100%;
+    }
+    /* Toast positioning for mobile */
+    .toast {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        transform: translateY(120%);
+    }
+    .toast.show {
+        transform: translateY(0);
+    }
+    /* Fix header height on small screens */
+    #header.scrolled nav {
+        height: 3rem;
+    }
+}
+
+/* ============ TOUCH-FRIENDLY TARGETS ============ */
+@media (hover: none) and (pointer: coarse) {
+    .nav-link,
+    button,
+    a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+    /* Prevent hover states sticking on touch */
+    .product-card:hover > div {
+        box-shadow: none;
+    }
+}
+
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* ============ REDUCED MOTION ============ */

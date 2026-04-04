@@ -8,6 +8,7 @@ Disallow: /sql/
 Disallow: /admin/
 Disallow: /api/
 Disallow: /auth/
+Disallow: /account/
 Disallow: /*.sql$
 
 Sitemap: http://localhost/headphones1.duka/sitemap.xml

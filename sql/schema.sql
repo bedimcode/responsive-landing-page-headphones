@@ -1,6 +1,7 @@
 -- ============================================
 -- Headphones1.Duka — Database Schema
 -- Run this in phpMyAdmin or MySQL CLI
+-- Updated: April 4, 2026 — Added user dashboard tables
 -- ============================================
 
 CREATE DATABASE IF NOT EXISTS headphones1_duka
@@ -65,10 +66,12 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     phone VARCHAR(20) NULL,
+    avatar VARCHAR(255) NULL,
     role ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     reset_token VARCHAR(100) NULL,
     reset_expires DATETIME NULL,
+    last_login TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
@@ -122,6 +125,8 @@ CREATE TABLE orders (
     -- Payment
     payment_method VARCHAR(50) NOT NULL DEFAULT 'card',
     payment_status ENUM('pending', 'paid', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
+    -- Tracking
+    tracking_number VARCHAR(100) NULL,
     -- Notes
     notes TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -145,6 +150,59 @@ CREATE TABLE order_items (
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
     INDEX idx_order (order_id)
+) ENGINE=InnoDB;
+
+-- ============ ORDER STATUS HISTORY ============
+CREATE TABLE order_status_history (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    order_id INT UNSIGNED NOT NULL,
+    old_status VARCHAR(20) NULL,
+    new_status VARCHAR(20) NOT NULL,
+    changed_by INT UNSIGNED NULL,
+    note TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_order (order_id),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB;
+
+-- ============ WISHLISTS ============
+CREATE TABLE wishlists (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    product_id INT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_product (user_id, product_id),
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB;
+
+-- ============ USER ADDRESSES ============
+CREATE TABLE user_addresses (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    label VARCHAR(50) NOT NULL DEFAULT 'Home',
+    address VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100) NULL,
+    zip VARCHAR(20) NOT NULL,
+    country VARCHAR(100) NOT NULL DEFAULT 'United States',
+    is_default TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB;
+
+-- ============ SITE SETTINGS ============
+CREATE TABLE site_settings (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_key (setting_key)
 ) ENGINE=InnoDB;
 
 -- ============ NEWSLETTER ============
@@ -195,3 +253,20 @@ INSERT INTO products (category_id, name, slug, description, short_description, p
 -- ============================================
 INSERT INTO users (name, email, password_hash, role) VALUES
     ('Admin', 'admin@beats3.store', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+
+-- ============================================
+-- SEED DATA — Default Site Settings
+-- ============================================
+INSERT INTO site_settings (setting_key, setting_value) VALUES
+    ('store_name', 'Beats 3 Store'),
+    ('store_email', 'support@beats3.store'),
+    ('store_phone', '+1 (555) 123-4567'),
+    ('store_address', '123 Audio Street, Los Angeles, CA 90001'),
+    ('currency_symbol', '$'),
+    ('currency_code', 'USD'),
+    ('tax_rate', '8'),
+    ('shipping_flat_rate', '9.99'),
+    ('free_shipping_minimum', '100'),
+    ('low_stock_threshold', '10'),
+    ('orders_per_page', '20'),
+    ('maintenance_mode', '0');

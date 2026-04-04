@@ -239,3 +239,210 @@ function getProductById(PDO $db, int $id): ?array {
     $product = $stmt->fetch();
     return $product ?: null;
 }
+
+// ============ USER DASHBOARD HELPERS ============
+
+/**
+ * Get orders for a specific user.
+ */
+function getUserOrders(PDO $db, int $userId, ?int $limit = null, int $offset = 0): array {
+    $sql = 'SELECT o.*, (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) AS item_count
+            FROM orders o WHERE o.user_id = ? ORDER BY o.created_at DESC';
+    if ($limit) {
+        $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
+    }
+    $stmt = $db->prepare($sql);
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Count total orders for a user.
+ */
+function getUserOrderCount(PDO $db, int $userId): int {
+    $stmt = $db->prepare('SELECT COUNT(*) FROM orders WHERE user_id = ?');
+    $stmt->execute([$userId]);
+    return (int) $stmt->fetchColumn();
+}
+
+/**
+ * Get total amount spent by a user.
+ */
+function getUserTotalSpent(PDO $db, int $userId): float {
+    $stmt = $db->prepare('SELECT COALESCE(SUM(total), 0) FROM orders WHERE user_id = ? AND status != ?');
+    $stmt->execute([$userId, 'cancelled']);
+    return (float) $stmt->fetchColumn();
+}
+
+/**
+ * Get saved addresses for a user.
+ */
+function getUserAddresses(PDO $db, int $userId): array {
+    $stmt = $db->prepare('SELECT * FROM user_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC');
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Get wishlist count for a user.
+ */
+function getWishlistCount(PDO $db, int $userId): int {
+    $stmt = $db->prepare('SELECT COUNT(*) FROM wishlists WHERE user_id = ?');
+    $stmt->execute([$userId]);
+    return (int) $stmt->fetchColumn();
+}
+
+/**
+ * Check if a product is in the user's wishlist.
+ */
+function isInWishlist(PDO $db, int $userId, int $productId): bool {
+    $stmt = $db->prepare('SELECT 1 FROM wishlists WHERE user_id = ? AND product_id = ?');
+    $stmt->execute([$userId, $productId]);
+    return (bool) $stmt->fetchColumn();
+}
+
+/**
+ * Get wishlist items with product details.
+ */
+function getWishlistItems(PDO $db, int $userId): array {
+    $stmt = $db->prepare('SELECT w.id AS wishlist_id, w.created_at AS wishlisted_at, p.*
+                          FROM wishlists w JOIN products p ON w.product_id = p.id
+                          WHERE w.user_id = ? ORDER BY w.created_at DESC');
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Get a site setting value.
+ */
+function getSiteSetting(PDO $db, string $key, string $default = ''): string {
+    try {
+        $stmt = $db->prepare('SELECT setting_value FROM site_settings WHERE setting_key = ?');
+        $stmt->execute([$key]);
+        $val = $stmt->fetchColumn();
+        return $val !== false ? $val : $default;
+    } catch (Exception $e) {
+        return $default;
+    }
+}
+
+/**
+ * Render breadcrumb HTML.
+ * $items = [ ['label' => 'Home', 'url' => '/'], ['label' => 'Shop', 'url' => '/shop.php'], ['label' => 'Product'] ]
+ */
+function breadcrumb(array $items): string {
+    $html = '<nav aria-label="Breadcrumb" class="mb-4 sm:mb-6"><ol class="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-gray-500" itemscope itemtype="https://schema.org/BreadcrumbList">';
+    foreach ($items as $i => $item) {
+        $pos = $i + 1;
+        $isLast = $i === count($items) - 1;
+        $html .= '<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">';
+        if (!$isLast && !empty($item['url'])) {
+            $html .= '<a href="' . e($item['url']) . '" itemprop="item" class="hover:text-neon-blue transition-colors"><span itemprop="name">' . e($item['label']) . '</span></a>';
+        } else {
+            $html .= '<span itemprop="name" class="text-gray-300 font-medium">' . e($item['label']) . '</span>';
+        }
+        $html .= '<meta itemprop="position" content="' . $pos . '">';
+        $html .= '</li>';
+        if (!$isLast) {
+            $html .= '<li class="text-gray-700"><i class="ri-arrow-right-s-line text-xs"></i></li>';
+        }
+    }
+    $html .= '</ol></nav>';
+    return $html;
+}
+
+/**
+ * Get status badge classes for order status.
+ */
+function orderStatusBadge(string $status): string {
+    return match($status) {
+        'pending'    => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        'processing' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+        'shipped'    => 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+        'delivered'  => 'bg-green-500/10 text-green-400 border-green-500/20',
+        'cancelled'  => 'bg-red-500/10 text-red-400 border-red-500/20',
+        default      => 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+    };
+}
+
+/**
+ * Get status badge classes for payment status.
+ */
+function paymentStatusBadge(string $status): string {
+    return match($status) {
+        'paid'     => 'bg-green-500/10 text-green-400',
+        'pending'  => 'bg-yellow-500/10 text-yellow-400',
+        'failed'   => 'bg-red-500/10 text-red-400',
+        'refunded' => 'bg-purple-500/10 text-purple-400',
+        default    => 'bg-gray-500/10 text-gray-400',
+    };
+}
+
+/**
+ * Get order status history.
+ */
+function getOrderStatusHistory(PDO $db, int $orderId): array {
+    $stmt = $db->prepare('SELECT osh.*, u.name AS changed_by_name
+                          FROM order_status_history osh
+                          LEFT JOIN users u ON osh.changed_by = u.id
+                          WHERE osh.order_id = ? ORDER BY osh.created_at ASC');
+    $stmt->execute([$orderId]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Get all active products with optional category filter and sorting.
+ */
+function getFilteredProducts(PDO $db, ?string $category = null, string $sort = 'newest', ?string $search = null): array {
+    $sql = 'SELECT p.*, c.name AS category_name, c.slug AS category_slug
+            FROM products p LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.is_active = 1';
+    $params = [];
+
+    if ($category) {
+        $sql .= ' AND c.slug = ?';
+        $params[] = $category;
+    }
+    if ($search) {
+        $sql .= ' AND (p.name LIKE ? OR p.description LIKE ? OR p.color LIKE ?)';
+        $term = '%' . $search . '%';
+        $params[] = $term;
+        $params[] = $term;
+        $params[] = $term;
+    }
+
+    $sql .= match($sort) {
+        'price_asc'  => ' ORDER BY COALESCE(p.sale_price, p.price) ASC',
+        'price_desc' => ' ORDER BY COALESCE(p.sale_price, p.price) DESC',
+        'name_asc'   => ' ORDER BY p.name ASC',
+        'name_desc'  => ' ORDER BY p.name DESC',
+        default      => ' ORDER BY p.featured DESC, p.created_at DESC',
+    };
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Get all categories with product counts.
+ */
+function getCategoriesWithCount(PDO $db): array {
+    $stmt = $db->query('SELECT c.*, COUNT(p.id) AS product_count
+                        FROM categories c
+                        LEFT JOIN products p ON c.id = p.category_id AND p.is_active = 1
+                        GROUP BY c.id ORDER BY c.name ASC');
+    return $stmt->fetchAll();
+}
+
+/**
+ * Time ago helper for user-facing pages.
+ */
+function timeAgo(string $datetime): string {
+    $diff = time() - strtotime($datetime);
+    if ($diff < 60)     return 'just now';
+    if ($diff < 3600)   return floor($diff / 60) . 'm ago';
+    if ($diff < 86400)  return floor($diff / 3600) . 'h ago';
+    if ($diff < 604800) return floor($diff / 86400) . 'd ago';
+    return date('M j, Y', strtotime($datetime));
+}

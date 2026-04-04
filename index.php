@@ -540,4 +540,35 @@ if (!$heroProduct && !empty($products)) {
     </div>
     <?php endif; ?>
 
+<!-- JSON-LD: Organization + WebSite -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Organization",
+            "name": "Beats 3 Store",
+            "url": "<?= APP_URL ?>/",
+            "logo": "<?= APP_URL ?>/assets/img/logo.png",
+            "sameAs": [
+                "https://www.facebook.com/",
+                "https://www.instagram.com/",
+                "https://twitter.com/",
+                "https://www.youtube.com/"
+            ]
+        },
+        {
+            "@type": "WebSite",
+            "name": "Beats 3 Store",
+            "url": "<?= APP_URL ?>/",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "<?= APP_URL ?>/shop.php?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        }
+    ]
+}
+</script>
+
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

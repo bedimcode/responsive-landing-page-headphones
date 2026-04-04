@@ -17,9 +17,9 @@
                 <div>
                     <h4 class="text-white font-semibold mb-6">Products</h4>
                     <ul class="space-y-3">
+                        <li><a href="<?= e($basePath) ?>/shop.php" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">All Products</a></li>
                         <li><a href="<?= e($basePath) ?>/#products" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Headphones</a></li>
                         <li><span class="text-gray-600 text-sm cursor-default" title="Coming Soon">Earphones <span class="text-xs text-gray-700">(Coming Soon)</span></span></li>
-                        <li><span class="text-gray-600 text-sm cursor-default" title="Coming Soon">Earbuds <span class="text-xs text-gray-700">(Coming Soon)</span></span></li>
                         <li><span class="text-gray-600 text-sm cursor-default" title="Coming Soon">Accessories <span class="text-xs text-gray-700">(Coming Soon)</span></span></li>
                     </ul>
                 </div>
