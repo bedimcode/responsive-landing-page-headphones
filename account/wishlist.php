@@ -55,7 +55,7 @@ require_once __DIR__ . '/includes/header.php';
                 <img src="<?= e($basePath) ?>/<?= e($item['image'] ?? '') ?>" alt="<?= e($item['name'] ?? 'Product') ?>"
                      class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
             </div>
-            <?php if ($item['sale_price']): ?>
+            <?php if (!empty($item['sale_price'])): ?>
             <div class="absolute top-3 left-3 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">SALE</div>
             <?php endif; ?>
             <?php if (!$inStock): ?>
