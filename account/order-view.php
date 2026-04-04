@@ -2,8 +2,9 @@
 /**
  * User Dashboard — Order Detail View
  */
-$accountPageTitle = 'Order Details';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+requireAuth();
 
 $db  = getDB();
 $uid = currentUserId();
@@ -11,7 +12,7 @@ $uid = currentUserId();
 $orderId = (int) ($_GET['id'] ?? 0);
 if (!$orderId) {
     setFlash('error', 'Invalid order.');
-    redirect($basePath . '/account/orders.php');
+    redirect(APP_URL . '/account/orders.php');
 }
 
 // Fetch order (must belong to the current user)
@@ -21,7 +22,7 @@ $order = $stmt->fetch();
 
 if (!$order) {
     setFlash('error', 'Order not found.');
-    redirect($basePath . '/account/orders.php');
+    redirect(APP_URL . '/account/orders.php');
 }
 
 // Fetch order items
@@ -33,6 +34,7 @@ $items = $stmt->fetchAll();
 $history = getOrderStatusHistory($db, $orderId);
 
 $accountPageTitle = 'Order #' . $order['order_number'];
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Back link -->

@@ -267,34 +267,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btn) {
         btn.addEventListener('click', function() {
             const qty = parseInt(document.getElementById('qty').value) || 1;
-            const item = {
-                id: this.dataset.id,
-                name: this.dataset.name,
-                price: parseFloat(this.dataset.price),
-                image: this.dataset.img,
-                quantity: qty
-            };
-            // Use cart.js addToCart or dispatch event
-            if (typeof addToCart === 'function') {
-                for (let i = 0; i < qty; i++) addToCart(item.id, item.name, item.price, item.image);
-            } else {
-                let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                const existing = cart.find(c => c.id == item.id);
-                if (existing) { existing.quantity += qty; }
-                else { cart.push(item); }
-                localStorage.setItem('cart', JSON.stringify(cart));
-                window.dispatchEvent(new Event('cartUpdated'));
+            if (typeof Cart !== 'undefined') {
+                Cart.addItem(this.dataset.id, this.dataset.name, parseFloat(this.dataset.price), this.dataset.img, qty);
+                // Feedback
+                const orig = this.innerHTML;
+                this.innerHTML = '<i class="ri-check-line"></i> Added!';
+                this.classList.add('bg-green-500');
+                this.classList.remove('bg-neon-blue');
+                setTimeout(() => {
+                    this.innerHTML = orig;
+                    this.classList.remove('bg-green-500');
+                    this.classList.add('bg-neon-blue');
+                }, 1500);
             }
-            // Feedback
-            const orig = this.innerHTML;
-            this.innerHTML = '<i class="ri-check-line"></i> Added!';
-            this.classList.add('bg-green-500');
-            this.classList.remove('bg-neon-blue');
-            setTimeout(() => {
-                this.innerHTML = orig;
-                this.classList.remove('bg-green-500');
-                this.classList.add('bg-neon-blue');
-            }, 1500);
         });
     }
 

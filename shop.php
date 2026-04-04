@@ -2,13 +2,13 @@
 /**
  * Shop — Product Catalog
  */
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/functions.php';
+
 $pageTitle       = 'Shop';
 $pageDescription = 'Browse our collection of premium Beats 3 wireless headphones. Studio-grade sound, 40-hour battery, and Bluetooth 5.2 in 5 stunning colors.';
 $pageType        = 'page';
 $canonical       = APP_URL . '/shop.php';
-
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/functions.php';
 
 $db = getDB();
 

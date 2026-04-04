@@ -329,13 +329,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const qvOverlay = document.getElementById('quickview-overlay');
     const qvClose = document.getElementById('quickview-close');
 
-    const products = [
-        { id: 'beats3-black', name: 'Beats 3 — Black', price: 249, img: 'assets/img/product1.png', color: 'Black', swatch: '#1a1a1a' },
-        { id: 'beats3-redblack', name: 'Beats 3 — Red Black', price: 249, img: 'assets/img/product2.png', color: 'Red Black', swatch: 'linear-gradient(135deg,#dc2626 50%,#1a1a1a 50%)' },
-        { id: 'beats3-nightblack', name: 'Beats 3 — Night Black', price: 249, img: 'assets/img/product3.png', color: 'Night Black', swatch: '#0f0f0f' },
-        { id: 'beats3-blue', name: 'Beats 3 — Blue', price: 249, img: 'assets/img/product4.png', color: 'Blue', swatch: '#2563eb' },
-        { id: 'beats3-gray', name: 'Beats 3 — Twilight Gray', price: 249, img: 'assets/img/product5.png', color: 'Twilight Gray', swatch: '#6b7280' },
-    ];
+    // Build products from DOM product cards (uses data attributes set by PHP)
+    const products = Array.from(document.querySelectorAll('.product-card')).map(card => ({
+        id: card.dataset.id,
+        name: card.dataset.name,
+        price: parseFloat(card.dataset.price),
+        img: card.dataset.img,
+        color: card.dataset.color || '',
+        swatch: card.dataset.colorHex || '#1a1a1a'
+    }));
 
     function openQuickView(productId) {
         const product = products.find(p => p.id === productId);

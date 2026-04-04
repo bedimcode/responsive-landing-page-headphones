@@ -2,14 +2,15 @@
 /**
  * User Dashboard — Address Book
  */
-$accountPageTitle = 'My Addresses';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+requireAuth();
 
 $db   = getDB();
 $uid  = currentUserId();
 $errors = [];
 
-// Handle add address
+// Handle POST actions BEFORE any HTML output to allow redirects
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_address') {
     if (!validateCsrf()) {
         $errors[] = 'Invalid security token.';
@@ -34,18 +35,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_a
             $stmt = $db->prepare('INSERT INTO user_addresses (user_id, label, address, city, state, zip, country, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([$uid, $label, $address, $city, $state ?: null, $zip, $country, $isDefault]);
             setFlash('success', 'Address added successfully.');
-            redirect($basePath . '/account/addresses.php');
+            redirect(APP_URL . '/account/addresses.php');
         }
     }
 }
 
-// Handle delete address
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_address') {
     if (validateCsrf()) {
         $addrId = (int) ($_POST['address_id'] ?? 0);
         $db->prepare('DELETE FROM user_addresses WHERE id = ? AND user_id = ?')->execute([$addrId, $uid]);
         setFlash('success', 'Address removed.');
-        redirect($basePath . '/account/addresses.php');
+        redirect(APP_URL . '/account/addresses.php');
     }
 }
 
@@ -56,12 +56,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'set_d
         $db->prepare('UPDATE user_addresses SET is_default = 0 WHERE user_id = ?')->execute([$uid]);
         $db->prepare('UPDATE user_addresses SET is_default = 1 WHERE id = ? AND user_id = ?')->execute([$addrId, $uid]);
         setFlash('success', 'Default address updated.');
-        redirect($basePath . '/account/addresses.php');
+        redirect(APP_URL . '/account/addresses.php');
     }
 }
 
 $addresses = getUserAddresses($db, $uid);
 $showForm  = isset($_GET['add']) || !empty($errors);
+
+// Now safe to output HTML
+$accountPageTitle = 'My Addresses';
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Errors -->

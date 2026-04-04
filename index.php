@@ -68,7 +68,7 @@ if (!$heroProduct && !empty($products)) {
                         <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start hero-cta">
                             <?php if ($heroProduct): ?>
                             <button id="hero-add-to-cart" class="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-2xl font-bold text-dark-950 text-lg flex items-center gap-3 hover:scale-105 transition-all duration-300 overflow-hidden add-to-cart-trigger" 
-                                data-id="<?= e($heroProduct['slug']) ?>" 
+                                data-id="<?= (int) $heroProduct['id'] ?>" 
                                 data-name="<?= e($heroProduct['name']) ?>" 
                                 data-price="<?= e($heroProduct['sale_price'] ?? $heroProduct['price']) ?>" 
                                 data-img="<?= e($heroProduct['image']) ?>">
@@ -277,11 +277,12 @@ if (!$heroProduct && !empty($products)) {
                 <div class="products-scroll flex lg:grid lg:grid-cols-<?= min(count($products), 5) ?> gap-6 overflow-x-auto pb-4 snap-x snap-mandatory lg:overflow-visible scrollbar-hide">
                     <?php foreach ($products as $product): ?>
                     <article class="product-card group min-w-[260px] lg:min-w-0 snap-center flex-shrink-0 cursor-pointer" 
-                        data-id="<?= e($product['slug']) ?>" 
+                        data-id="<?= (int) $product['id'] ?>" 
                         data-name="<?= e($product['name']) ?>" 
                         data-price="<?= e($product['sale_price'] ?? $product['price']) ?>" 
                         data-img="<?= e($product['image']) ?>" 
-                        data-color="<?= e($product['color']) ?>">
+                        data-color="<?= e($product['color']) ?>"
+                        data-color-hex="<?= e($product['color_hex'] ?? '#1a1a1a') ?>">
                         <div class="relative p-6 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500 overflow-hidden">
                             <?php if ($product['featured']): ?>
                             <div class="absolute top-3 right-3 text-xs px-2 py-1 bg-neon-blue/10 text-neon-blue rounded-full font-medium"><?= $product['slug'] === 'beats3-blue' ? 'New' : 'Popular' ?></div>
@@ -436,7 +437,7 @@ if (!$heroProduct && !empty($products)) {
                             </div>
                         </div>
 
-                        <button class="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-2xl font-bold text-dark-950 text-lg flex items-center gap-3 hover:scale-105 transition-all duration-300 overflow-hidden add-to-cart-trigger" data-id="beats3-discount" data-name="Beats 3 — Black (50% Off)" data-price="149" data-img="assets/img/home.png">
+                        <button class="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-2xl font-bold text-dark-950 text-lg flex items-center gap-3 hover:scale-105 transition-all duration-300 overflow-hidden add-to-cart-trigger" data-id="<?= (int) $heroProduct['id'] ?>" data-name="<?= e($heroProduct['name']) ?>" data-price="<?= e($heroProduct['sale_price'] ?? $heroProduct['price']) ?>" data-img="<?= e($heroProduct['image']) ?>">
                             <i class="ri-shopping-bag-line text-xl"></i> Shop Now — 50% Off
                             <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12"></div>
                         </button>
@@ -529,7 +530,7 @@ if (!$heroProduct && !empty($products)) {
     <?php if ($heroProduct): ?>
     <div id="floating-cta" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[140] opacity-0 translate-y-10 pointer-events-none transition-all duration-500">
         <button class="flex items-center gap-3 px-6 py-3 bg-dark-900/90 backdrop-blur-xl border border-neon-blue/30 rounded-full shadow-2xl shadow-neon-blue/10 hover:border-neon-blue/60 transition-all add-to-cart-trigger" 
-            data-id="<?= e($heroProduct['slug']) ?>" 
+            data-id="<?= (int) $heroProduct['id'] ?>" 
             data-name="<?= e($heroProduct['name']) ?>" 
             data-price="<?= e($heroProduct['sale_price'] ?? $heroProduct['price']) ?>" 
             data-img="<?= e($heroProduct['image']) ?>">

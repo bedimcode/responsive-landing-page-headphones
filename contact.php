@@ -2,13 +2,14 @@
 /**
  * Contact Page
  */
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/functions.php';
+
 $pageTitle = 'Contact Us — Beats Audio';
 $pageDescription = 'Get in touch with Beats Audio support. We\'re here to help with orders, products, and general inquiries.';
 $pageType = 'page';
 $canonical = APP_URL . '/contact.php';
 
-require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/header.php';
 ?>
 

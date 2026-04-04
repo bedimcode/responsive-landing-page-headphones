@@ -2,8 +2,9 @@
 /**
  * User Dashboard — Wishlist
  */
-$accountPageTitle = 'My Wishlist';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+requireAuth();
 
 $db  = getDB();
 $uid = currentUserId();
@@ -14,11 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'remov
         $productId = (int) ($_POST['product_id'] ?? 0);
         $db->prepare('DELETE FROM wishlists WHERE user_id = ? AND product_id = ?')->execute([$uid, $productId]);
         setFlash('success', 'Item removed from wishlist.');
-        redirect($basePath . '/account/wishlist.php');
+        redirect(APP_URL . '/account/wishlist.php');
     }
 }
 
 $items = getWishlistItems($db, $uid);
+
+$accountPageTitle = 'My Wishlist';
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Header -->

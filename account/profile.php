@@ -2,8 +2,9 @@
 /**
  * User Dashboard — Profile Settings
  */
-$accountPageTitle = 'Profile Settings';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
+requireAuth();
 
 $db   = getDB();
 $uid  = currentUserId();
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
             $stmt->execute([$name, $email, $phone ?: null, $uid]);
             $_SESSION['user_name'] = $name;
             setFlash('success', 'Profile updated successfully.');
-            redirect($basePath . '/account/profile.php');
+            redirect(APP_URL . '/account/profile.php');
         }
     }
 }
@@ -65,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
             $stmt = $db->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
             $stmt->execute([$hash, $uid]);
             setFlash('success', 'Password changed successfully.');
-            redirect($basePath . '/account/profile.php');
+            redirect(APP_URL . '/account/profile.php');
         }
     }
 }
@@ -76,6 +77,9 @@ $stmt = $db->prepare('SELECT * FROM users WHERE id = ?');
 $stmt->execute([$uid]);
 $user = $stmt->fetch();
 $totalOrders = getUserOrderCount($db, $uid);
+
+$accountPageTitle = 'Profile Settings';
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Errors -->

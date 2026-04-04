@@ -91,6 +91,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 
     <!-- CSRF Token for JS -->
     <meta name="csrf-token" content="<?= e(csrfToken()) ?>">
+    <meta name="cart-api" content="<?= e($basePath) ?>/api/cart.php">
 
     <title><?= e($pageTitle) ?></title>
 </head>
