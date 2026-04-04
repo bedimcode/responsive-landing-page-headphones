@@ -45,14 +45,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
                     $db->prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)')->execute([$name, $email, $hash]);
 
-                    $userId = $db->lastInsertId();
+                    $userId = (int) $db->lastInsertId();
+
+                    // Save old session ID for cart migration BEFORE regeneration
+                    $oldSessionId = session_id();
+
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $userId;
                     $_SESSION['user_name'] = $name;
                     $_SESSION['user_role'] = 'customer';
 
+                    // Migrate guest cart to new user account
+                    mergeGuestCartToUser($db, $oldSessionId, $userId);
+
                     setFlash('success', 'Welcome to Beats, ' . e($name) . '! Your account has been created.');
-                    redirect(APP_URL . '/');
+                    $redirect = $_SESSION['redirect_after_login'] ?? APP_URL . '/';
+                    unset($_SESSION['redirect_after_login']);
+                    redirect($redirect);
                 }
             } catch (Exception $e) {
                 $error = 'Something went wrong. Please try again.';

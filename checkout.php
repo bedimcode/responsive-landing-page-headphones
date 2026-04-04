@@ -2,6 +2,16 @@
 /**
  * Checkout Page
  */
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/functions.php';
+
+// Guests must register/login before checkout — cart persists via session
+if (!isLoggedIn()) {
+    $_SESSION['redirect_after_login'] = APP_URL . '/checkout.php';
+    setFlash('success', 'Please create an account or sign in to complete your purchase. Your cart items are saved!');
+    redirect(APP_URL . '/auth/register.php');
+}
+
 $pageTitle = 'Checkout — Beats Audio';
 $pageDescription = 'Complete your Beats Audio purchase securely.';
 $pageType = 'page';

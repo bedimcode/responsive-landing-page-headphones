@@ -39,6 +39,7 @@ $accountNav = [
         ['href' => $basePath . '/account/',              'icon' => 'ri-dashboard-3-line',   'label' => 'Dashboard',   'page' => 'index'],
     ],
     'SHOPPING' => [
+        ['href' => $basePath . '/shop.php',              'icon' => 'ri-store-2-line',       'label' => 'Shop',        'page' => 'shop'],
         ['href' => $basePath . '/account/orders.php',    'icon' => 'ri-shopping-bag-3-line','label' => 'My Orders',   'page' => 'orders',    'badge' => $_acctOrderCount],
         ['href' => $basePath . '/account/wishlist.php',  'icon' => 'ri-heart-3-line',       'label' => 'Wishlist',    'page' => 'wishlist',  'badge' => $wishlistCount],
     ],
@@ -55,6 +56,10 @@ $accountNav = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($accountPageTitle) ?> — My Account · <?= e(APP_NAME) ?></title>
     <meta name="robots" content="noindex, nofollow">
+
+    <!-- CSRF Token & Cart API for JS -->
+    <meta name="csrf-token" content="<?= e(csrfToken()) ?>">
+    <meta name="cart-api" content="<?= e($basePath) ?>/api/cart.php">
 
     <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -88,6 +93,24 @@ $accountNav = [
         .dd-panel{opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
         .dd-panel.open{opacity:1;transform:translateY(0);pointer-events:auto}
         @media print{aside,header,.no-print{display:none!important}.flex-1{margin-left:0!important}}
+        /* Cart Drawer */
+        #cart-drawer.open{transform:translateX(0)}
+        #cart-overlay.open{opacity:1;pointer-events:all}
+        .cart-item{padding:1rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:1rem;display:flex;gap:1rem;align-items:center;animation:cartItemIn .4s cubic-bezier(.25,1,.5,1)}
+        .cart-item img{width:60px;height:60px;object-fit:contain}
+        .cart-item-info{flex:1}
+        .cart-item-name{color:#fff;font-weight:500;font-size:.875rem;margin-bottom:.25rem}
+        .cart-item-price{color:#00d4ff;font-weight:700;font-size:.875rem}
+        .cart-item-qty{display:flex;align-items:center;gap:.5rem;margin-top:.5rem}
+        .cart-item-qty button{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:.875rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+        .cart-item-qty button:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.3)}
+        .cart-item-qty span{color:#fff;font-weight:600;font-size:.875rem;min-width:1.5rem;text-align:center}
+        .cart-item-remove{color:rgba(255,255,255,.3);cursor:pointer;transition:color .2s;font-size:1.25rem;background:none;border:none;padding:.25rem}
+        .cart-item-remove:hover{color:#ef4444}
+        @keyframes cartItemIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+        .toast{position:fixed;bottom:2rem;right:2rem;padding:1rem 1.5rem;background:rgba(10,10,13,.95);backdrop-filter:blur(24px);border:1px solid rgba(0,212,255,.2);border-radius:1rem;color:#fff;font-size:.875rem;font-weight:500;z-index:999;display:flex;align-items:center;gap:.75rem;transform:translateX(120%);transition:transform .5s cubic-bezier(.25,1,.5,1);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+        .toast.show{transform:translateX(0)}
+        .toast i{color:#00d4ff;font-size:1.25rem}
     </style>
 </head>
 <body class="bg-dark-950 text-gray-300 font-sans antialiased min-h-screen flex">
@@ -212,13 +235,14 @@ $accountNav = [
                 <i class="ri-store-2-line text-[15px]"></i>
             </a>
 
-            <!-- Cart -->
-            <a href="<?= e($basePath) ?>/checkout.php"
-               class="w-9 h-9 rounded-xl bg-white/[.04] border border-white/[.06]
+            <!-- Cart toggle (opens drawer) -->
+            <button id="cart-toggle"
+               class="relative w-9 h-9 rounded-xl bg-white/[.04] border border-white/[.06]
                       flex items-center justify-center text-gray-400 hover:text-white transition-colors"
-               title="Cart">
+               title="Cart" aria-label="Open cart">
                 <i class="ri-shopping-cart-2-line text-[15px]"></i>
-            </a>
+                <span id="cart-count" class="absolute -top-1 -right-1 w-4 h-4 bg-neon-blue text-dark-950 text-[9px] font-bold rounded-full flex items-center justify-center opacity-0 scale-0 transition-all">0</span>
+            </button>
 
             <!-- Profile dropdown -->
             <div class="relative" id="profile-wrap">
@@ -264,6 +288,28 @@ $accountNav = [
     </div>
     <?php endif; ?>
 
+    <!-- Cart Drawer -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[160] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 w-full max-w-md h-full bg-dark-900/95 backdrop-blur-2xl border-l border-white/5 z-[170] translate-x-full transition-transform duration-500 ease-out flex flex-col" role="dialog" aria-label="Shopping cart">
+        <div class="flex items-center justify-between p-6 border-b border-white/5">
+            <h3 class="text-xl font-display font-bold text-white">Your Cart</h3>
+            <button id="cart-close" class="text-2xl text-gray-400 hover:text-white transition-colors"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <p id="cart-empty" class="text-center text-gray-500 py-12">Your cart is empty</p>
+        </div>
+        <div id="cart-footer" class="p-6 border-t border-white/5 hidden">
+            <div class="flex justify-between mb-4">
+                <span class="text-gray-400">Subtotal</span>
+                <span id="cart-total" class="text-xl font-bold text-white">$0</span>
+            </div>
+            <a href="<?= e($basePath) ?>/checkout.php" class="block w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform text-center">
+                Checkout — <span id="cart-total-btn">$0</span>
+            </a>
+            <p class="text-center text-xs text-gray-500 mt-3">Free shipping on orders over $199</p>
+        </div>
+    </aside>
+
     <!-- Page content -->
     <main class="flex-1 p-4 sm:p-6">
 
@@ -280,6 +326,12 @@ function closeAllDD(){document.querySelectorAll('.dd-panel').forEach(p=>p.classL
 document.addEventListener('click',e=>{
     if(!e.target.closest('#profile-wrap')) closeAllDD();
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();closeAllDD()}});
+document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+        closeSidebar();
+        closeAllDD();
+        if(typeof Cart!=='undefined') Cart.closeDrawer();
+    }
+});
 window.addEventListener('resize',()=>{if(window.innerWidth>=1024)closeSidebar()});
 </script>

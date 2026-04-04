@@ -186,6 +186,62 @@ function getOrCreateCart(PDO $db): array {
 }
 
 /**
+ * Merge a guest (session-based) cart into a user's account cart.
+ * If the user already has a cart, move items from guest cart into it (summing quantities).
+ * If the user has no cart, simply reassign the guest cart.
+ */
+function mergeGuestCartToUser(PDO $db, string $oldSessionId, int $userId): void {
+    try {
+        // Find guest cart
+        $stmt = $db->prepare('SELECT id FROM cart WHERE session_id = ? AND user_id IS NULL LIMIT 1');
+        $stmt->execute([$oldSessionId]);
+        $guestCart = $stmt->fetch();
+        if (!$guestCart) return;
+
+        $guestCartId = (int) $guestCart['id'];
+
+        // Find existing user cart
+        $stmt = $db->prepare('SELECT id FROM cart WHERE user_id = ? LIMIT 1');
+        $stmt->execute([$userId]);
+        $userCart = $stmt->fetch();
+
+        if (!$userCart) {
+            // No existing user cart — just reassign the guest cart
+            $db->prepare('UPDATE cart SET user_id = ?, session_id = NULL WHERE id = ?')
+               ->execute([$userId, $guestCartId]);
+            return;
+        }
+
+        $userCartId = (int) $userCart['id'];
+
+        // Merge items from guest cart into user cart
+        $guestItems = $db->prepare('SELECT product_id, quantity FROM cart_items WHERE cart_id = ?');
+        $guestItems->execute([$guestCartId]);
+
+        foreach ($guestItems->fetchAll() as $item) {
+            $existing = $db->prepare('SELECT id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?');
+            $existing->execute([$userCartId, $item['product_id']]);
+            $row = $existing->fetch();
+
+            if ($row) {
+                $db->prepare('UPDATE cart_items SET quantity = quantity + ?, updated_at = NOW() WHERE id = ?')
+                   ->execute([$item['quantity'], $row['id']]);
+            } else {
+                $db->prepare('INSERT INTO cart_items (cart_id, product_id, quantity) VALUES (?, ?, ?)')
+                   ->execute([$userCartId, $item['product_id'], $item['quantity']]);
+            }
+        }
+
+        // Remove guest cart and its items
+        $db->prepare('DELETE FROM cart_items WHERE cart_id = ?')->execute([$guestCartId]);
+        $db->prepare('DELETE FROM cart WHERE id = ?')->execute([$guestCartId]);
+    } catch (Exception $e) {
+        // Non-critical — log but don't break login/register
+        error_log('Cart merge failed: ' . $e->getMessage());
+    }
+}
+
+/**
  * Get the total number of items in the cart.
  */
 function getCartCount(PDO $db): int {

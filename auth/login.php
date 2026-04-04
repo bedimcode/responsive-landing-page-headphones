@@ -31,21 +31,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($user && password_verify($password, $user['password_hash'])) {
+                    // Save old session ID for cart migration BEFORE regeneration
+                    $oldSessionId = session_id();
+
                     // Regenerate session ID to prevent fixation
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_name'] = $user['name'];
                     $_SESSION['user_role'] = $user['role'];
 
-                    // Migrate guest cart to user
-                    if (!empty($_SESSION['cart_session_id'])) {
-                        $guestCart = $db->prepare('SELECT id FROM cart WHERE session_id = ? AND user_id IS NULL');
-                        $guestCart->execute([$_SESSION['cart_session_id']]);
-                        $gc = $guestCart->fetch(PDO::FETCH_ASSOC);
-                        if ($gc) {
-                            $db->prepare('UPDATE cart SET user_id = ?, session_id = NULL WHERE id = ?')->execute([$user['id'], $gc['id']]);
-                        }
-                    }
+                    // Migrate guest cart to user account
+                    mergeGuestCartToUser($db, $oldSessionId, (int) $user['id']);
 
                     $defaultRedirect = $user['role'] === 'admin' ? APP_URL . '/admin/' : APP_URL . '/';
                     $redirect = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
