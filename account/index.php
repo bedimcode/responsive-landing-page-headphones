@@ -173,7 +173,7 @@ try {
                 <img src="<?= e($basePath) ?>/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-10 h-10 object-contain rounded-lg bg-dark-800 flex-shrink-0">
                 <div class="flex-1 min-w-0">
                     <div class="text-[12px] sm:text-sm font-medium text-white truncate"><?= e($item['name']) ?></div>
-                    <div class="text-[11px] text-gray-500"><?= e($item['color']) ?></div>
+                    <div class="text-[11px] text-gray-500"><?= e($item['color'] ?? '') ?></div>
                 </div>
                 <div class="text-sm font-semibold text-white flex-shrink-0">
                     <?= formatPrice($item['sale_price'] ?? $item['price']) ?>

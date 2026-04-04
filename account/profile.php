@@ -66,12 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
             $stmt = $db->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
             $stmt->execute([$hash, $uid]);
             setFlash('success', 'Password changed successfully.');
-            redirect(APP_URL . '/account/profile.php');
+            redirect(APP_URL . '/account/profile.php?tab=password');
         }
     }
 }
 
 $activeTab = $_GET['tab'] ?? 'profile';
+// If errors occurred on a POST, show the correct tab
+if (!empty($errors) && ($_POST['action'] ?? '') === 'update_password') {
+    $activeTab = 'password';
+}
 // Refresh user data after potential updates
 $stmt = $db->prepare('SELECT * FROM users WHERE id = ?');
 $stmt->execute([$uid]);
@@ -161,21 +165,21 @@ require_once __DIR__ . '/includes/header.php';
 
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1.5">Full Name</label>
-                    <input type="text" name="name" value="<?= e($user['name']) ?>" required
+                    <input type="text" name="name" value="<?= e(!empty($errors) ? ($_POST['name'] ?? $user['name']) : $user['name']) ?>" required
                            class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white placeholder-gray-600
                                   focus:outline-none focus:border-neon-blue/30 transition-colors">
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1.5">Email Address</label>
-                    <input type="email" name="email" value="<?= e($user['email']) ?>" required
+                    <input type="email" name="email" value="<?= e(!empty($errors) ? ($_POST['email'] ?? $user['email']) : $user['email']) ?>" required
                            class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white placeholder-gray-600
                                   focus:outline-none focus:border-neon-blue/30 transition-colors">
                 </div>
 
                 <div>
                     <label class="block text-xs font-medium text-gray-400 mb-1.5">Phone <span class="text-gray-600">(optional)</span></label>
-                    <input type="tel" name="phone" value="<?= e($user['phone'] ?? '') ?>"
+                    <input type="tel" name="phone" value="<?= e(!empty($errors) ? ($_POST['phone'] ?? $user['phone'] ?? '') : ($user['phone'] ?? '')) ?>"
                            class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white placeholder-gray-600
                                   focus:outline-none focus:border-neon-blue/30 transition-colors">
                 </div>

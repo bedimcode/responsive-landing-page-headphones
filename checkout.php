@@ -160,6 +160,100 @@ $total = $subtotal + $shipping + $tax;
                         <!-- Result Message -->
                         <div id="checkout-result" class="hidden p-4 rounded-2xl text-sm"></div>
 
+                        <!-- Payment Method -->
+                        <div>
+                            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2"><i class="ri-bank-card-line text-neon-blue"></i> Payment Method</h2>
+                            <div class="grid sm:grid-cols-2 gap-3" id="payment-methods">
+                                <!-- Cash on Delivery -->
+                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
+                                    <input type="radio" name="payment_method" value="cod" class="sr-only peer" required>
+                                    <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-hand-coin-line text-green-400 text-xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-semibold text-white">Cash on Delivery</div>
+                                        <div class="text-[11px] text-gray-500">Pay when you receive your order</div>
+                                    </div>
+                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
+                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
+                                    </div>
+                                </label>
+
+                                <!-- M-Pesa -->
+                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
+                                    <input type="radio" name="payment_method" value="mpesa" class="sr-only peer">
+                                    <div class="w-10 h-10 rounded-xl bg-green-600/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-smartphone-line text-green-500 text-xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-semibold text-white">M-Pesa</div>
+                                        <div class="text-[11px] text-gray-500">Send Money to <span class="text-green-400 font-semibold">0715674828</span></div>
+                                    </div>
+                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
+                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
+                                    </div>
+                                </label>
+
+                                <!-- Bank Transfer -->
+                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
+                                    <input type="radio" name="payment_method" value="bank" class="sr-only peer">
+                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-bank-line text-blue-400 text-xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-semibold text-white">Bank Transfer</div>
+                                        <div class="text-[11px] text-gray-500">Direct bank payment</div>
+                                    </div>
+                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
+                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
+                                    </div>
+                                </label>
+
+                                <!-- PayPal -->
+                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
+                                    <input type="radio" name="payment_method" value="paypal" class="sr-only peer">
+                                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="ri-paypal-line text-indigo-400 text-xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-semibold text-white">PayPal</div>
+                                        <div class="text-[11px] text-gray-500">Pay with your PayPal account</div>
+                                    </div>
+                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
+                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- M-Pesa instructions (shown when M-Pesa selected) -->
+                            <div id="mpesa-instructions" class="hidden mt-3 p-4 bg-green-500/5 border border-green-500/10 rounded-xl text-sm">
+                                <div class="flex items-center gap-2 text-green-400 font-semibold mb-2">
+                                    <i class="ri-information-line"></i> M-Pesa Payment Instructions
+                                </div>
+                                <ol class="text-gray-400 space-y-1 list-decimal list-inside text-xs">
+                                    <li>Go to M-Pesa on your phone</li>
+                                    <li>Select <strong class="text-white">Send Money</strong></li>
+                                    <li>Enter number: <strong class="text-green-400">0715674828</strong></li>
+                                    <li>Enter amount: <strong class="text-white"><?= formatPrice($total) ?></strong></li>
+                                    <li>Complete the transaction and place your order</li>
+                                </ol>
+                                <p class="text-[11px] text-gray-500 mt-2">Your order will be confirmed once payment is verified.</p>
+                            </div>
+
+                            <!-- Bank instructions (shown when Bank selected) -->
+                            <div id="bank-instructions" class="hidden mt-3 p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl text-sm">
+                                <div class="flex items-center gap-2 text-blue-400 font-semibold mb-2">
+                                    <i class="ri-information-line"></i> Bank Transfer Details
+                                </div>
+                                <div class="text-gray-400 text-xs space-y-1">
+                                    <p>Transfer <strong class="text-white"><?= formatPrice($total) ?></strong> to the following account:</p>
+                                    <p>Bank: <strong class="text-white">Beats Audio Ltd</strong></p>
+                                    <p>Use your order number as the payment reference.</p>
+                                </div>
+                                <p class="text-[11px] text-gray-500 mt-2">Your order will be confirmed once payment is verified.</p>
+                            </div>
+                        </div>
+
                         <button type="submit" id="checkout-submit" class="w-full px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl font-bold text-dark-950 text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3">
                             <i class="ri-lock-line"></i> Place Order &mdash; <?= formatPrice($total) ?>
                         </button>
@@ -223,6 +317,44 @@ $total = $subtotal + $shipping + $tax;
 
     <?php if (!empty($cartItems)): ?>
     <script>
+    // Payment method selection - toggle instructions & highlight
+    (function() {
+        const radios = document.querySelectorAll('input[name="payment_method"]');
+        const mpesaBox = document.getElementById('mpesa-instructions');
+        const bankBox = document.getElementById('bank-instructions');
+        const labels = document.querySelectorAll('.payment-option');
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Hide all instruction boxes
+                mpesaBox?.classList.add('hidden');
+                bankBox?.classList.add('hidden');
+
+                // Reset all label borders
+                labels.forEach(l => {
+                    l.classList.remove('border-neon-blue/50', 'bg-neon-blue/[.03]');
+                    l.classList.add('border-white/[.06]');
+                });
+
+                // Highlight selected
+                const parent = this.closest('.payment-option');
+                if (parent) {
+                    parent.classList.remove('border-white/[.06]');
+                    parent.classList.add('border-neon-blue/50', 'bg-neon-blue/[.03]');
+                }
+
+                // Show relevant instructions
+                if (this.value === 'mpesa') mpesaBox?.classList.remove('hidden');
+                if (this.value === 'bank') bankBox?.classList.remove('hidden');
+
+                // Update radio indicator dots
+                document.querySelectorAll('.payment-option .w-5 .w-2').forEach(dot => dot.style.transform = 'scale(0)');
+                const dot = parent?.querySelector('.w-5 .w-2');
+                if (dot) dot.style.transform = 'scale(1)';
+            });
+        });
+    })();
+
     document.getElementById('checkout-form')?.addEventListener('submit', async function(e) {
         e.preventDefault();
         const btn = document.getElementById('checkout-submit');

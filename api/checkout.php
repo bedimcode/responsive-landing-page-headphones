@@ -29,7 +29,7 @@ try {
 
     // Get cart items
     $stmt = $db->prepare('
-        SELECT ci.quantity, p.id AS product_id, p.name, p.price, p.sale_price, p.stock
+        SELECT ci.quantity, p.id AS product_id, p.name, p.image, p.price, p.sale_price, p.stock
         FROM cart_items ci
         JOIN products p ON p.id = ci.product_id
         WHERE ci.cart_id = ?
@@ -53,6 +53,7 @@ try {
     $state = sanitize($input['state'] ?? '');
     $zip = sanitize($input['zip'] ?? '');
     $country = sanitize($input['country'] ?? '');
+    $paymentMethod = sanitize($input['payment_method'] ?? '');
 
     $errors = [];
     if (strlen($firstName) < 2) $errors[] = 'First name is required.';
@@ -62,6 +63,11 @@ try {
     if (strlen($city) < 2) $errors[] = 'City is required.';
     if (strlen($zip) < 3) $errors[] = 'ZIP/postal code is required.';
     if (strlen($country) < 2) $errors[] = 'Country is required.';
+
+    $allowedMethods = ['cod', 'mpesa', 'bank', 'paypal'];
+    if (!in_array($paymentMethod, $allowedMethods, true)) {
+        $errors[] = 'Please select a valid payment method.';
+    }
 
     if (!empty($errors)) {
         http_response_code(400);
@@ -104,17 +110,17 @@ try {
         $firstName . ' ' . $lastName, $email, $phone,
         $address, $city, $state, $zip, $country ?: 'United States',
         $subtotal, $shipping, $tax, $total,
-        'card', 'pending', 'pending'
+        $paymentMethod, 'pending', 'pending'
     ]);
     $orderId = $db->lastInsertId();
 
     // Insert order items and decrease stock
-    $itemStmt = $db->prepare('INSERT INTO order_items (order_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)');
+    $itemStmt = $db->prepare('INSERT INTO order_items (order_id, product_id, product_name, product_image, quantity, price) VALUES (?, ?, ?, ?, ?, ?)');
     $stockStmt = $db->prepare('UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?');
 
     foreach ($items as $item) {
         $price = $item['sale_price'] ?: $item['price'];
-        $itemStmt->execute([$orderId, $item['product_id'], $item['name'], $item['quantity'], $price]);
+        $itemStmt->execute([$orderId, $item['product_id'], $item['name'], $item['image'] ?? null, $item['quantity'], $price]);
         $stockStmt->execute([$item['quantity'], $item['product_id'], $item['quantity']]);
     }
 

@@ -27,10 +27,15 @@ if ($search !== '') {
     $params[] = '%' . $search . '%';
 }
 
-// Count
+// Count (filtered)
 $countStmt = $db->prepare("SELECT COUNT(*) FROM orders o $where");
 $countStmt->execute($params);
 $totalOrders = (int) $countStmt->fetchColumn();
+
+// Count (all — for "All" tab badge)
+$allCountStmt = $db->prepare('SELECT COUNT(*) FROM orders WHERE user_id = ?');
+$allCountStmt->execute([$uid]);
+$allOrdersCount = (int) $allCountStmt->fetchColumn();
 $totalPages  = max(1, ceil($totalOrders / $perPage));
 $page        = min($page, $totalPages);
 
@@ -68,7 +73,7 @@ foreach (['pending','processing','shipped','delivered','cancelled'] as $s) {
         <a href="?<?= $search ? 'q=' . urlencode($search) : '' ?>"
            class="px-3 py-2 rounded-xl text-[11px] sm:text-xs font-medium border transition-all
                   <?= !$statusFilter ? 'bg-neon-blue/10 text-neon-blue border-neon-blue/20' : 'bg-dark-900/60 text-gray-400 border-white/[.06] hover:text-white hover:border-white/10' ?>">
-            All <span class="text-gray-600 ml-1"><?= $totalOrders ?></span>
+            All <span class="text-gray-600 ml-1"><?= $allOrdersCount ?></span>
         </a>
         <?php foreach ($statusCounts as $s => $c): if ($c === 0) continue; ?>
         <a href="?status=<?= $s ?><?= $search ? '&q=' . urlencode($search) : '' ?>"

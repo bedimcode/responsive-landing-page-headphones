@@ -58,17 +58,17 @@ require_once __DIR__ . '/includes/header.php';
                 <?php foreach ($items as $item): ?>
                 <div class="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4">
                     <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-dark-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        <?php if ($item['product_image']): ?>
-                        <img src="<?= e($basePath) ?>/<?= e($item['product_image']) ?>" alt="<?= e($item['product_name']) ?>" class="w-full h-full object-contain p-1">
+                        <?php if (!empty($item['product_image'])): ?>
+                        <img src="<?= e($basePath) ?>/<?= e($item['product_image']) ?>" alt="<?= e($item['product_name'] ?? 'Product') ?>" class="w-full h-full object-contain p-1">
                         <?php else: ?>
                         <i class="ri-headphone-line text-2xl text-gray-600"></i>
                         <?php endif; ?>
                     </div>
                     <div class="flex-1 min-w-0">
                         <?php if (!empty($item['product_slug'])): ?>
-                        <a href="<?= e($basePath) ?>/product.php?slug=<?= e($item['product_slug']) ?>" class="text-sm font-medium text-white hover:text-neon-blue transition-colors"><?= e($item['product_name']) ?></a>
+                        <a href="<?= e($basePath) ?>/product.php?slug=<?= e($item['product_slug']) ?>" class="text-sm font-medium text-white hover:text-neon-blue transition-colors"><?= e($item['product_name'] ?? 'Product') ?></a>
                         <?php else: ?>
-                        <div class="text-sm font-medium text-white"><?= e($item['product_name']) ?></div>
+                        <div class="text-sm font-medium text-white"><?= e($item['product_name'] ?? 'Product') ?></div>
                         <?php endif; ?>
                         <div class="text-xs text-gray-500 mt-0.5">Qty: <?= (int) $item['quantity'] ?> × <?= formatPrice($item['price']) ?></div>
                     </div>

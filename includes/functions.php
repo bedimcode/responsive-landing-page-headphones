@@ -361,9 +361,10 @@ function isInWishlist(PDO $db, int $userId, int $productId): bool {
  * Get wishlist items with product details.
  */
 function getWishlistItems(PDO $db, int $userId): array {
-    $stmt = $db->prepare('SELECT w.id AS wishlist_id, w.created_at AS wishlisted_at, p.*
+    $stmt = $db->prepare('SELECT w.id AS wishlist_id, w.product_id, w.created_at AS wishlisted_at,
+                                 p.id, p.name, p.slug, p.price, p.sale_price, p.image, p.color, p.stock
                           FROM wishlists w JOIN products p ON w.product_id = p.id
-                          WHERE w.user_id = ? ORDER BY w.created_at DESC');
+                          WHERE w.user_id = ? AND p.is_active = 1 ORDER BY w.created_at DESC');
     $stmt->execute([$userId]);
     return $stmt->fetchAll();
 }

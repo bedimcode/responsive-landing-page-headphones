@@ -45,14 +45,14 @@ require_once __DIR__ . '/includes/header.php';
 <?php else: ?>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
     <?php foreach ($items as $item):
-        $effectivePrice = $item['sale_price'] ?? $item['price'];
-        $inStock = $item['stock'] > 0;
+        $effectivePrice = $item['sale_price'] ?? $item['price'] ?? 0;
+        $inStock = ($item['stock'] ?? 0) > 0;
     ?>
     <div class="group bg-dark-900/60 border border-white/[.06] rounded-2xl overflow-hidden hover:border-white/10 transition-all">
         <!-- Image -->
-        <a href="<?= e($basePath) ?>/product.php?slug=<?= e($item['slug']) ?>" class="block relative">
+        <a href="<?= e($basePath) ?>/product.php?slug=<?= e($item['slug'] ?? '') ?>" class="block relative">
             <div class="aspect-square bg-dark-800 flex items-center justify-center p-4 sm:p-6">
-                <img src="<?= e($basePath) ?>/<?= e($item['image']) ?>" alt="<?= e($item['name']) ?>"
+                <img src="<?= e($basePath) ?>/<?= e($item['image'] ?? '') ?>" alt="<?= e($item['name'] ?? 'Product') ?>"
                      class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
             </div>
             <?php if ($item['sale_price']): ?>
@@ -67,14 +67,14 @@ require_once __DIR__ . '/includes/header.php';
 
         <!-- Info -->
         <div class="p-4">
-            <a href="<?= e($basePath) ?>/product.php?slug=<?= e($item['slug']) ?>" class="block">
-                <h3 class="font-semibold text-white text-sm truncate group-hover:text-neon-blue transition-colors"><?= e($item['name']) ?></h3>
-                <p class="text-xs text-gray-500 mt-0.5"><?= e($item['color']) ?></p>
+            <a href="<?= e($basePath) ?>/product.php?slug=<?= e($item['slug'] ?? '') ?>" class="block">
+                <h3 class="font-semibold text-white text-sm truncate group-hover:text-neon-blue transition-colors"><?= e($item['name'] ?? 'Product') ?></h3>
+                <p class="text-xs text-gray-500 mt-0.5"><?= e($item['color'] ?? '') ?></p>
             </a>
             <div class="flex items-center gap-2 mt-2">
                 <span class="font-bold text-white text-sm"><?= formatPrice($effectivePrice) ?></span>
-                <?php if ($item['sale_price']): ?>
-                <span class="text-xs text-gray-600 line-through"><?= formatPrice($item['price']) ?></span>
+                <?php if (!empty($item['sale_price'])): ?>
+                <span class="text-xs text-gray-600 line-through"><?= formatPrice($item['price'] ?? 0) ?></span>
                 <?php endif; ?>
             </div>
 
@@ -82,7 +82,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="flex gap-2 mt-3">
                 <?php if ($inStock): ?>
                 <button class="flex-1 add-to-cart-btn flex items-center justify-center gap-1.5 px-3 py-2 bg-neon-blue text-dark-950 text-xs font-semibold rounded-xl hover:bg-neon-blue/90 transition-colors"
-                        data-id="<?= (int) $item['id'] ?>" data-name="<?= e($item['name']) ?>" data-price="<?= $effectivePrice ?>" data-img="<?= e($basePath) ?>/<?= e($item['image']) ?>">
+                        data-id="<?= (int) $item['id'] ?>" data-name="<?= e($item['name'] ?? 'Product') ?>" data-price="<?= $effectivePrice ?>" data-img="<?= e($basePath) ?>/<?= e($item['image'] ?? '') ?>">
                     <i class="ri-shopping-cart-2-line text-sm"></i> Add to Cart
                 </button>
                 <?php else: ?>
@@ -105,7 +105,5 @@ require_once __DIR__ . '/includes/header.php';
     <?php endforeach; ?>
 </div>
 <?php endif; ?>
-
-<script src="<?= e($basePath) ?>/assets/js/cart.js"></script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

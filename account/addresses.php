@@ -102,49 +102,50 @@ require_once __DIR__ . '/includes/header.php';
             <div>
                 <label class="block text-xs font-medium text-gray-400 mb-1.5">Label</label>
                 <select name="label" class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white focus:outline-none focus:border-neon-blue/30 transition-colors">
-                    <option value="Home">Home</option>
-                    <option value="Work">Work</option>
-                    <option value="Other">Other</option>
+                    <option value="Home" <?= ($_POST['label'] ?? '') === 'Home' ? 'selected' : '' ?>>Home</option>
+                    <option value="Work" <?= ($_POST['label'] ?? '') === 'Work' ? 'selected' : '' ?>>Work</option>
+                    <option value="Other" <?= ($_POST['label'] ?? '') === 'Other' ? 'selected' : '' ?>>Other</option>
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-400 mb-1.5">Country</label>
                 <select name="country" required class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white focus:outline-none focus:border-neon-blue/30 transition-colors">
+                    <?php $postCountry = $_POST['country'] ?? ''; ?>
                     <option value="">Select country</option>
-                    <option value="United States" selected>United States</option>
-                    <option value="Canada">Canada</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Australia">Australia</option>
-                    <option value="Germany">Germany</option>
-                    <option value="France">France</option>
-                    <option value="Japan">Japan</option>
-                    <option value="South Korea">South Korea</option>
-                    <option value="Kenya">Kenya</option>
-                    <option value="Nigeria">Nigeria</option>
+                    <option value="United States" <?= $postCountry === 'United States' ? 'selected' : '' ?>>United States</option>
+                    <option value="Canada" <?= $postCountry === 'Canada' ? 'selected' : '' ?>>Canada</option>
+                    <option value="United Kingdom" <?= $postCountry === 'United Kingdom' ? 'selected' : '' ?>>United Kingdom</option>
+                    <option value="Australia" <?= $postCountry === 'Australia' ? 'selected' : '' ?>>Australia</option>
+                    <option value="Germany" <?= $postCountry === 'Germany' ? 'selected' : '' ?>>Germany</option>
+                    <option value="France" <?= $postCountry === 'France' ? 'selected' : '' ?>>France</option>
+                    <option value="Japan" <?= $postCountry === 'Japan' ? 'selected' : '' ?>>Japan</option>
+                    <option value="South Korea" <?= $postCountry === 'South Korea' ? 'selected' : '' ?>>South Korea</option>
+                    <option value="Kenya" <?= $postCountry === 'Kenya' ? 'selected' : '' ?>>Kenya</option>
+                    <option value="Nigeria" <?= $postCountry === 'Nigeria' ? 'selected' : '' ?>>Nigeria</option>
                 </select>
             </div>
         </div>
 
         <div>
             <label class="block text-xs font-medium text-gray-400 mb-1.5">Street Address</label>
-            <input type="text" name="address" required placeholder="123 Main Street, Apt 4B"
+            <input type="text" name="address" required placeholder="123 Main Street, Apt 4B" value="<?= e($_POST['address'] ?? '') ?>"
                    class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-neon-blue/30 transition-colors">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-400 mb-1.5">City</label>
-                <input type="text" name="city" required
+                <input type="text" name="city" required value="<?= e($_POST['city'] ?? '') ?>"
                        class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-neon-blue/30 transition-colors">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-400 mb-1.5">State <span class="text-gray-600">(optional)</span></label>
-                <input type="text" name="state"
+                <input type="text" name="state" value="<?= e($_POST['state'] ?? '') ?>"
                        class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-neon-blue/30 transition-colors">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-400 mb-1.5">ZIP Code</label>
-                <input type="text" name="zip" required
+                <input type="text" name="zip" required value="<?= e($_POST['zip'] ?? '') ?>"
                        class="w-full px-4 py-2.5 bg-dark-950 border border-white/[.08] rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-neon-blue/30 transition-colors">
             </div>
         </div>
