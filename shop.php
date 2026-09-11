@@ -36,7 +36,7 @@ if ($categorySlug) {
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
     <!-- Breadcrumb -->
     <?php
     $crumbs = [['label' => 'Home', 'url' => APP_URL . '/']];
