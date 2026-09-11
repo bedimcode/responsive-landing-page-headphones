@@ -1,0 +1,4 @@
+# Vercel serves only the static display build (see scripts/export-static.php)
+/*
+!/static-site
+!/vercel.json

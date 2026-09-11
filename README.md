@@ -224,6 +224,7 @@ headphones1.duka/
 | **Shared Hosting** | Upload files, import `sql/schema.sql`, update `.env` |
 | **VPS / DigitalOcean** | Install LAMP stack, clone repo, configure Apache vhost |
 | **XAMPP (Local)** | Clone into `htdocs/`, import schema, configure `.env` |
+| **Vercel (display demo)** | With XAMPP running, run `php scripts/export-static.php`, commit `static-site/`, import the repo in Vercel. Storefront only — cart runs in the browser, accounts/checkout disabled |
 
 ---
 

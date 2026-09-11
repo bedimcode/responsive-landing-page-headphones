@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/assets/js/demo-mode.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy — Beats Audio. Learn how we collect, use, and protect your personal information.">
+    <meta name="keywords" content="headphones, beats, wireless headphones, premium audio, noise cancelling, ecommerce">
+    <meta name="author" content="Beats Audio">
+        <meta name="robots" content="noindex">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Privacy Policy — Beats Audio">
+    <meta property="og:description" content="Privacy Policy — Beats Audio. Learn how we collect, use, and protect your personal information.">
+    <meta property="og:image" content="/assets/img/home.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="/legal/privacy-policy">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Privacy Policy — Beats Audio">
+    <meta name="twitter:description" content="Privacy Policy — Beats Audio. Learn how we collect, use, and protect your personal information.">
+
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    dark: { 50: '#f5f5f6', 100: '#e5e5e8', 200: '#cdcdd2', 300: '#aaabb3', 400: '#81828e', 500: '#666773', 600: '#565762', 700: '#494a53', 800: '#141418', 900: '#0a0a0d', 950: '#050507' },
+                    neon: { blue: '#00d4ff', purple: '#a855f7', pink: '#ec4899', cyan: '#06b6d4' },
+                    accent: { DEFAULT: '#00d4ff', light: '#67e8f9', dark: '#0891b2' }
+                },
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                    display: ['Space Grotesk', 'sans-serif']
+                },
+                animation: {
+                    'float': 'float 6s ease-in-out infinite',
+                    'glow': 'glow 2s ease-in-out infinite alternate',
+                    'pulse-slow': 'pulse 3s ease-in-out infinite',
+                    'shimmer': 'shimmer 2s linear infinite',
+                },
+                keyframes: {
+                    float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-20px)' } },
+                    glow: { '0%': { boxShadow: '0 0 5px rgba(0,212,255,0.2), 0 0 20px rgba(0,212,255,0.1)' }, '100%': { boxShadow: '0 0 20px rgba(0,212,255,0.4), 0 0 60px rgba(0,212,255,0.2)' } },
+                    shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } }
+                }
+            }
+        }
+    }
+</script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/assets/css/styles.css">
+
+    <!-- CSRF Token for JS -->
+    <meta name="csrf-token" content="">
+    <meta name="cart-api" content="/api/cart.php">
+
+    <title>Privacy Policy — Beats Audio</title>
+</head>
+<body class="bg-dark-950 text-gray-300 font-sans overflow-x-hidden ">
+
+    
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress" class="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink z-[200] transition-all" style="width: 0%"></div>
+
+    <!-- ============ HEADER / NAVBAR ============ -->
+    <header id="header" class="fixed top-0 left-0 w-full z-[150] transition-all duration-500">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20 transition-all duration-500">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 z-50">
+                <img src="/assets/img/logo.png" alt="Beats Audio Logo" class="h-8 lg:h-10">
+            </a>
+
+            <!-- Desktop Nav -->
+            <div id="nav-menu" class="nav-menu fixed top-0 left-0 w-full h-screen bg-dark-950/98 backdrop-blur-xl flex flex-col items-center justify-center gap-8 z-40 transition-all duration-500 opacity-0 pointer-events-none lg:static lg:w-auto lg:h-auto lg:bg-transparent lg:flex-row lg:opacity-100 lg:pointer-events-auto lg:backdrop-blur-none">
+                <ul class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                                        <li><a href="/" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative ">Home</a></li>
+                    <li><a href="/shop" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative ">Shop</a></li>
+                    <li><a href="/contact" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative ">Contact</a></li>
+                    <li><a href="/#faq" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative">FAQ</a></li>
+                                    </ul>
+                <!-- Mobile close -->
+                <button id="nav-close" class="absolute top-6 right-6 text-3xl text-white lg:hidden"><i class="ri-close-line"></i></button>
+            </div>
+
+            <!-- Right side: Cart + Auth + Mobile toggle -->
+            <div class="flex items-center gap-4 z-50">
+                                <a href="/auth/login" class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                    <i class="ri-user-line"></i> Sign In
+                </a>
+                
+                <!-- Cart Button -->
+                <button id="cart-toggle" class="relative group" aria-label="Open cart">
+                    <i class="ri-shopping-bag-3-line text-xl text-gray-300 group-hover:text-neon-blue transition-colors"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 w-5 h-5 bg-neon-blue text-dark-950 text-xs font-bold rounded-full flex items-center justify-center opacity-0 scale-0 transition-all">0</span>
+                </button>
+                <!-- Mobile Toggle -->
+                <button id="nav-toggle" class="text-2xl text-white lg:hidden" aria-label="Open menu"><i class="ri-menu-4-line"></i></button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ============ CART DRAWER ============ -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[160] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 w-full max-w-md h-full bg-dark-900/95 backdrop-blur-2xl border-l border-white/5 z-[170] translate-x-full transition-transform duration-500 ease-out flex flex-col" role="dialog" aria-label="Shopping cart">
+        <div class="flex items-center justify-between p-6 border-b border-white/5">
+            <h3 class="text-xl font-display font-bold text-white">Your Cart</h3>
+            <button id="cart-close" class="text-2xl text-gray-400 hover:text-white transition-colors"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <p id="cart-empty" class="text-center text-gray-500 py-12">Your cart is empty</p>
+        </div>
+        <div id="cart-footer" class="p-6 border-t border-white/5 hidden">
+            <div class="flex justify-between mb-4">
+                <span class="text-gray-400">Subtotal</span>
+                <span id="cart-total" class="text-xl font-bold text-white">$0</span>
+            </div>
+            <a href="/auth/register" class="block w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform text-center">
+                Checkout — <span id="cart-total-btn">$0</span>
+            </a>
+            <p class="text-center text-xs text-gray-500 mt-3">Free shipping on orders over $199</p>
+        </div>
+    </aside>
+
+    <!-- ============ QUICK VIEW MODAL ============ -->
+    <div id="quickview-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[180] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <div id="quickview-modal" class="fixed inset-0 z-[190] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-500 scale-95" role="dialog" aria-label="Product quick view">
+        <div class="bg-dark-800/95 backdrop-blur-2xl rounded-3xl border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
+            <button id="quickview-close" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-white transition-colors z-10"><i class="ri-close-line"></i></button>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="flex items-center justify-center bg-gradient-to-br from-dark-900 to-dark-800 rounded-2xl p-8">
+                    <img id="qv-image" src="" alt="Product" class="w-full max-w-[280px] drop-shadow-2xl">
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span class="text-neon-blue text-sm font-medium uppercase tracking-widest mb-2">Beats 3 Series</span>
+                    <h3 id="qv-title" class="text-3xl font-display font-bold text-white mb-2"></h3>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="flex text-yellow-400 text-sm">
+                            <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-half-fill"></i>
+                        </div>
+                        <span class="text-gray-500 text-sm">(2,847 reviews)</span>
+                    </div>
+                    <p id="qv-price" class="text-2xl font-bold text-white mb-4"></p>
+                    <div class="space-y-3 mb-6 text-sm text-gray-400">
+                        <div class="flex items-center gap-3"><i class="ri-bluetooth-line text-neon-blue"></i> Bluetooth 5.2</div>
+                        <div class="flex items-center gap-3"><i class="ri-battery-charge-line text-neon-blue"></i> 40h Battery Life</div>
+                        <div class="flex items-center gap-3"><i class="ri-mic-line text-neon-blue"></i> Built-in Microphone</div>
+                        <div class="flex items-center gap-3"><i class="ri-shield-check-line text-neon-blue"></i> 2-Year Warranty</div>
+                    </div>
+                    <!-- Color swatches in modal -->
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-400 mb-3">Color: <span id="qv-color-name" class="text-white"></span></p>
+                        <div id="qv-colors" class="flex gap-3"></div>
+                    </div>
+                    <button id="qv-add-btn" class="w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2" data-id="" data-name="" data-price="" data-img="">
+                        <i class="ri-shopping-bag-line"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live region for accessibility announcements -->
+    <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <main>
+
+    <main class="pt-32 pb-24">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Page Header -->
+            <div class="mb-16">
+                <a href="/" class="inline-flex items-center gap-2 text-gray-500 hover:text-neon-blue text-sm mb-6 transition-colors"><i class="ri-arrow-left-line"></i> Back to Home</a>
+                <span class="block text-neon-blue text-sm font-semibold uppercase tracking-widest">Legal</span>
+                <h1 class="font-display text-4xl lg:text-5xl font-bold text-white mt-3 mb-4">Privacy Policy</h1>
+                <p class="text-gray-500">Last updated: March 22, 2026</p>
+            </div>
+
+            <!-- Content -->
+            <div class="prose-legal space-y-12">
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">1. Introduction</h2>
+                    <p class="text-gray-400 leading-relaxed mb-4">
+                        Beats Audio (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) respects your privacy and is committed to protecting the personal information you share with us. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, make a purchase, or interact with our services.
+                    </p>
+                    <p class="text-gray-400 leading-relaxed">
+                        By using our website, you agree to the collection and use of information in accordance with this policy. If you do not agree with the terms of this Privacy Policy, please do not access or use our services.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">2. Information We Collect</h2>
+                    <h3 class="text-lg font-semibold text-white mb-3">2.1 Personal Information</h3>
+                    <p class="text-gray-400 leading-relaxed mb-4">When you make a purchase or create an account, we may collect:</p>
+                    <ul class="list-disc list-inside text-gray-400 space-y-2 mb-6 ml-4">
+                        <li>Full name and contact information (email address, phone number)</li>
+                        <li>Billing and shipping addresses</li>
+                        <li>Payment information (credit card numbers, billing details) &mdash; processed securely through our payment partners</li>
+                        <li>Order history and transaction details</li>
+                        <li>Account login credentials</li>
+                    </ul>
+
+                    <h3 class="text-lg font-semibold text-white mb-3">2.2 Automatically Collected Information</h3>
+                    <p class="text-gray-400 leading-relaxed mb-4">When you visit our website, we automatically collect:</p>
+                    <ul class="list-disc list-inside text-gray-400 space-y-2 ml-4">
+                        <li>IP address and approximate geolocation</li>
+                        <li>Browser type and version</li>
+                        <li>Device type and operating system</li>
+                        <li>Pages visited, time spent, and navigation paths</li>
+                        <li>Referring website or source</li>
+                        <li>Cookie and tracking technology data (see our <a href="/legal/cookie-policy" class="text-neon-blue hover:underline">Cookie Policy</a>)</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">3. How We Use Your Information</h2>
+                    <p class="text-gray-400 leading-relaxed mb-4">We use the information we collect to:</p>
+                    <ul class="list-disc list-inside text-gray-400 space-y-2 ml-4">
+                        <li>Process and fulfill your orders, including shipping and delivery</li>
+                        <li>Communicate with you about your orders, account, or customer service inquiries</li>
+                        <li>Send promotional emails and newsletters (only with your consent; you may opt out at any time)</li>
+                        <li>Improve our website, products, and services</li>
+                        <li>Prevent fraud and maintain the security of our platform</li>
+                        <li>Comply with legal obligations and enforce our terms</li>
+                        <li>Analyze website usage patterns and optimize user experience</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">4. Information Sharing and Disclosure</h2>
+                    <p class="text-gray-400 leading-relaxed mb-4">We do not sell your personal information. We may share your data with:</p>
+                    <ul class="list-disc list-inside text-gray-400 space-y-2 ml-4">
+                        <li><strong class="text-gray-300">Service providers:</strong> Payment processors, shipping carriers, email service providers, and analytics tools that help us operate our business</li>
+                        <li><strong class="text-gray-300">Legal requirements:</strong> When required by law, subpoena, or government request</li>
+                        <li><strong class="text-gray-300">Business transfers:</strong> In the event of a merger, acquisition, or sale of assets</li>
+                        <li><strong class="text-gray-300">With your consent:</strong> When you have given us explicit permission to share your information</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">5. Data Security</h2>
+                    <p class="text-gray-400 leading-relaxed mb-4">We implement industry-standard security measures to protect your personal information, including:</p>
+                    <ul class="list-disc list-inside text-gray-400 space-y-2 ml-4">
+                        <li>SSL/TLS encryption for all data transmissions</li>
+                        <li>PCI DSS compliance for payment processing</li>
+                        <li>Regular security audits and vulnerability assessments</li>
+                        <li>Access controls and employee training on data protection</li>
+                    </ul>
+                    <p class="text-gray-400 leading-relaxed mt-4">
+                        While we strive to protect your information, no method of electronic transmission or storage is 100% secure. We cannot guarantee absolute security but will notify you promptly in the event of a data breach.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">6. Your Rights and Choices</h2>
+                    <p class="text-gray-400 leading-relaxed mb-4">Depending on your location, you may have the following rights:</p>
+                    <ul class="list-disc list-inside text-gray-400 space-y-2 ml-4">
+                        <li><strong class="text-gray-300">Access:</strong> Request a copy of the personal data we hold about you</li>
+                        <li><strong class="text-gray-300">Correction:</strong> Request correction of inaccurate or incomplete information</li>
+                        <li><strong class="text-gray-300">Deletion:</strong> Request deletion of your personal data (subject to legal obligations)</li>
+                        <li><strong class="text-gray-300">Opt-out:</strong> Unsubscribe from marketing emails at any time via the link in any email</li>
+                        <li><strong class="text-gray-300">Data portability:</strong> Request your data in a structured, machine-readable format</li>
+                        <li><strong class="text-gray-300">Restrict processing:</strong> Request limitation on how we process your data</li>
+                    </ul>
+                    <p class="text-gray-400 leading-relaxed mt-4">
+                        To exercise any of these rights, please contact us at <span class="text-neon-blue">privacy@beatsaudio.com</span>.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">7. Data Retention</h2>
+                    <p class="text-gray-400 leading-relaxed">
+                        We retain your personal information for as long as necessary to fulfill the purposes outlined in this policy, comply with legal obligations, resolve disputes, and enforce our agreements. Order and transaction data is retained for a minimum of 7 years for tax and accounting purposes. You may request deletion of your account and associated data at any time.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">8. Third-Party Links</h2>
+                    <p class="text-gray-400 leading-relaxed">
+                        Our website may contain links to third-party websites or services. We are not responsible for the privacy practices of these external sites. We encourage you to read the privacy policies of any third-party services you interact with.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">9. Children&rsquo;s Privacy</h2>
+                    <p class="text-gray-400 leading-relaxed">
+                        Our services are not directed to individuals under the age of 16. We do not knowingly collect personal information from children. If we become aware that we have collected data from a child under 16, we will take steps to delete that information promptly.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">10. International Data Transfers</h2>
+                    <p class="text-gray-400 leading-relaxed">
+                        Your information may be transferred to and processed in countries other than your own. We ensure that appropriate safeguards are in place, including Standard Contractual Clauses (SCCs) and adherence to applicable data protection frameworks, to protect your data during international transfers.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">11. Changes to This Policy</h2>
+                    <p class="text-gray-400 leading-relaxed">
+                        We may update this Privacy Policy from time to time. When we make changes, we will update the &ldquo;Last updated&rdquo; date at the top of this page and, for significant changes, notify you via email or a prominent notice on our website. Your continued use of our services after changes are posted constitutes acceptance of the updated policy.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-xl font-display font-bold text-white mb-4">12. Contact Us</h2>
+                    <p class="text-gray-400 leading-relaxed mb-4">If you have any questions or concerns about this Privacy Policy, you can reach us at:</p>
+                    <div class="p-6 rounded-2xl border border-white/5 bg-dark-900/30 space-y-2">
+                        <p class="text-gray-300"><strong class="text-white">Beats Audio</strong></p>
+                        <p class="text-gray-400 text-sm">Email: <span class="text-neon-blue">privacy@beatsaudio.com</span></p>
+                        <p class="text-gray-400 text-sm">Address: 8600 Beats Blvd, Culver City, CA 90232, USA</p>
+                        <p class="text-gray-400 text-sm">Response time: Within 30 business days</p>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="border-t border-white/5 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <a href="/" class="inline-block mb-6"><img src="/assets/img/logo.png" alt="Beats Audio Logo" class="h-10"></a>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6">Studio-grade wireless headphones engineered for those who demand the best in sound, comfort, and style.</p>
+                    <div class="flex gap-4">
+                        <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:bg-neon-blue/10 hover:text-neon-blue transition-all" aria-label="Facebook"><i class="ri-facebook-fill"></i></a>
+                        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:bg-neon-pink/10 hover:text-neon-pink transition-all" aria-label="Instagram"><i class="ri-instagram-line"></i></a>
+                        <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:bg-neon-blue/10 hover:text-neon-blue transition-all" aria-label="Twitter"><i class="ri-twitter-x-line"></i></a>
+                        <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all" aria-label="YouTube"><i class="ri-youtube-line"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Products</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/shop" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">All Products</a></li>
+                        <li><a href="/#products" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Headphones</a></li>
+                        <li><span class="text-gray-600 text-sm cursor-default" title="Coming Soon">Earphones <span class="text-xs text-gray-700">(Coming Soon)</span></span></li>
+                        <li><span class="text-gray-600 text-sm cursor-default" title="Coming Soon">Accessories <span class="text-xs text-gray-700">(Coming Soon)</span></span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Support</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/#faq" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">FAQs</a></li>
+                        <li><a href="/contact" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Product Help</a></li>
+                        <li><a href="/contact" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Register Product</a></li>
+                        <li><a href="/#newsletter" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Updates</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">We Accept</h4>
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <div class="px-3 py-2 bg-white/5 rounded-lg text-gray-400 text-xs font-medium"><i class="ri-visa-line text-lg"></i></div>
+                        <div class="px-3 py-2 bg-white/5 rounded-lg text-gray-400 text-xs font-medium"><i class="ri-mastercard-line text-lg"></i></div>
+                        <div class="px-3 py-2 bg-white/5 rounded-lg text-gray-400 text-xs font-medium"><i class="ri-paypal-line text-lg"></i></div>
+                        <div class="px-3 py-2 bg-white/5 rounded-lg text-gray-400 text-xs font-medium"><i class="ri-apple-line text-lg"></i></div>
+                    </div>
+                    <p class="text-gray-500 text-xs">All transactions are secure and encrypted.</p>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-gray-600 text-sm">&copy; 2026 Beats Audio. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="/legal/privacy-policy" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Privacy Policy</a>
+                    <a href="/legal/terms-of-service" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Terms of Service</a>
+                    <a href="/legal/cookie-policy" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============ COOKIE CONSENT BANNER ============ -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 z-[200] p-4 bg-dark-900/95 backdrop-blur-2xl border-t border-white/5 translate-y-full transition-transform duration-500" style="display:none;">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-gray-400 text-sm text-center sm:text-left">We use cookies to enhance your experience. By continuing, you agree to our <a href="/legal/cookie-policy" class="text-neon-blue hover:underline">Cookie Policy</a>.</p>
+            <div class="flex gap-3">
+                <button id="cookie-reject" class="px-4 py-2 text-sm text-gray-400 border border-white/10 rounded-xl hover:bg-white/5 transition-colors">Reject</button>
+                <button id="cookie-accept" class="px-4 py-2 text-sm text-dark-950 bg-neon-blue rounded-xl font-medium hover:bg-neon-blue/90 transition-colors">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ BACK TO TOP ============ -->
+    <a href="#" id="scroll-up" class="fixed bottom-6 right-6 w-12 h-12 bg-dark-900/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center text-neon-blue z-[140] opacity-0 translate-y-10 pointer-events-none transition-all duration-500 hover:border-neon-blue/30 hover:scale-110" aria-label="Back to top">
+        <i class="ri-arrow-up-s-line text-xl"></i>
+    </a>
+
+    <!-- ============ SCRIPTS ============ -->
+        <script src="/assets/js/cart.js"></script>
+    
+    <!-- Cookie consent logic -->
+    <script>
+    (function() {
+        const banner = document.getElementById('cookie-banner');
+        if (!banner) return;
+        if (!localStorage.getItem('cookie_consent')) {
+            banner.style.display = '';
+            setTimeout(() => banner.classList.remove('translate-y-full'), 100);
+        }
+        document.getElementById('cookie-accept')?.addEventListener('click', () => {
+            localStorage.setItem('cookie_consent', 'accepted');
+            banner.classList.add('translate-y-full');
+            setTimeout(() => banner.style.display = 'none', 500);
+        });
+        document.getElementById('cookie-reject')?.addEventListener('click', () => {
+            localStorage.setItem('cookie_consent', 'rejected');
+            banner.classList.add('translate-y-full');
+            setTimeout(() => banner.style.display = 'none', 500);
+        });
+    })();
+    </script>
+
+    <!-- Simple navigation for non-home pages (no GSAP) -->
+        <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Mobile nav
+        const navMenu = document.getElementById('nav-menu');
+        document.getElementById('nav-toggle')?.addEventListener('click', () => navMenu?.classList.add('open'));
+        document.getElementById('nav-close')?.addEventListener('click', () => navMenu?.classList.remove('open'));
+        document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', () => navMenu?.classList.remove('open')));
+
+        // Header scroll
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80) header?.classList.add('scrolled');
+            else header?.classList.remove('scrolled');
+        });
+
+        // Scroll progress
+        const progressBar = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement.scrollHeight - window.innerHeight;
+            if (progressBar && h > 0) progressBar.style.width = (window.scrollY / h * 100) + '%';
+        });
+
+        // Back to top
+        const scrollUp = document.getElementById('scroll-up');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) scrollUp?.classList.add('visible');
+            else scrollUp?.classList.remove('visible');
+        });
+        scrollUp?.addEventListener('click', (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+        // Cart init
+        if (typeof Cart !== 'undefined') Cart.init();
+
+        // Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (typeof Cart !== 'undefined') Cart.closeDrawer();
+                navMenu?.classList.remove('open');
+            }
+        });
+    });
+    </script>
+    </body>
+</html>

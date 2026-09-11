@@ -1,0 +1,400 @@
+/* ============================================
+   BEATS 3 — Premium Landing Page Styles
+   Custom CSS (works alongside Tailwind CDN)
+   ============================================ */
+
+/* ============ SMOOTH SCROLL (Lenis) ============ */
+html.lenis, html.lenis body {
+    height: auto;
+}
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+/* ============ SCROLLBAR ============ */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #050507;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.4);
+}
+
+/* ============ SELECTION ============ */
+::selection {
+    background: rgba(0, 212, 255, 0.3);
+    color: #fff;
+}
+
+/* ============ SCROLLBAR HIDE UTILITY ============ */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ============ HEADER STATES ============ */
+#header {
+    background: transparent;
+}
+#header.scrolled {
+    background: rgba(5, 5, 7, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+#header.scrolled nav {
+    height: 3.5rem;
+}
+
+/* ============ NAV LINK ACTIVE STATE ============ */
+.nav-link.active {
+    color: #00d4ff;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #00d4ff, #a855f7);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+}
+
+/* ============ MOBILE MENU ============ */
+.nav-menu.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ============ COLOR SWATCH ============ */
+.color-swatch.active {
+    border-color: #00d4ff;
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+    transform: scale(1.15);
+}
+
+/* ============ PRODUCT CARDS — 3D TILT ============ */
+.product-card > div {
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease, border-color 0.5s ease;
+}
+.product-card:hover > div {
+    box-shadow: 0 20px 60px rgba(0, 212, 255, 0.08), 0 0 1px rgba(0, 212, 255, 0.3);
+}
+
+/* ============ GLASSMORPHISM CARD UTILITY ============ */
+.glass-card {
+    background: rgba(10, 10, 13, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============ SPEC CARD HOVER GLOW ============ */
+.spec-card {
+    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.spec-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 40px rgba(0, 212, 255, 0.06);
+}
+
+/* ============ TRUST CARD HOVER ============ */
+.trust-card {
+    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.trust-card:hover {
+    transform: translateY(-6px);
+}
+
+/* ============ FAQ ACCORDION ============ */
+.faq-item {
+    transition: all 0.3s ease;
+}
+.faq-item.active {
+    border-color: rgba(0, 212, 255, 0.2);
+}
+.faq-item.active .faq-icon {
+    transform: rotate(45deg);
+    color: #00d4ff;
+}
+.faq-item.active .faq-trigger {
+    color: #00d4ff;
+}
+
+/* ============ CART DRAWER OPEN ============ */
+#cart-drawer.open {
+    transform: translateX(0);
+}
+#cart-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ============ CART ITEM ============ */
+.cart-item {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    animation: cartItemIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.cart-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+.cart-item-info {
+    flex: 1;
+}
+.cart-item-name {
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+.cart-item-price {
+    color: #00d4ff;
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+.cart-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.cart-item-qty button {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cart-item-qty button:hover {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+.cart-item-qty span {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    min-width: 1.5rem;
+    text-align: center;
+}
+.cart-item-remove {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: color 0.2s;
+    font-size: 1.25rem;
+    background: none;
+    border: none;
+    padding: 0.25rem;
+}
+.cart-item-remove:hover {
+    color: #ef4444;
+}
+
+@keyframes cartItemIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ============ QUICKVIEW MODAL OPEN ============ */
+#quickview-modal.open {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
+}
+#quickview-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ============ FLOATING CTA / BACK TO TOP ============ */
+#floating-cta.visible,
+#scroll-up.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: all;
+}
+#scroll-up.visible {
+    transform: translateY(0);
+}
+
+/* ============ ADD TO CART RIPPLE ============ */
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0, 212, 255, 0.3);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+@keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+}
+
+/* ============ TOAST NOTIFICATION ============ */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    background: rgba(10, 10, 13, 0.95);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transform: translateX(120%);
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+.toast.show {
+    transform: translateX(0);
+}
+.toast i {
+    color: #00d4ff;
+    font-size: 1.25rem;
+}
+
+/* ============ TESTIMONIAL DOTS ============ */
+.test-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.test-dot.active {
+    background: #00d4ff;
+    width: 24px;
+    border-radius: 4px;
+}
+
+/* ============ NEWSLETTER SUCCESS ============ */
+.newsletter-success {
+    color: #10b981;
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: fadeInUp 0.5s ease;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ HERO IMAGE TRANSITION ============ */
+#hero-product-img {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+#hero-product-img.switching {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+/* ============ RESPONSIVE FIXES ============ */
+@media (max-width: 640px) {
+    .products-scroll {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    #countdown {
+        gap: 0.5rem;
+    }
+    #countdown span:first-child {
+        font-size: 1.5rem;
+        min-width: 60px;
+        padding: 0.5rem 0.25rem;
+    }
+    /* Ensure cart drawer doesn't overflow on small screens */
+    #cart-drawer {
+        max-width: 100%;
+    }
+    /* Toast positioning for mobile */
+    .toast {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        transform: translateY(120%);
+    }
+    .toast.show {
+        transform: translateY(0);
+    }
+    /* Fix header height on small screens */
+    #header.scrolled nav {
+        height: 3rem;
+    }
+}
+
+/* ============ TOUCH-FRIENDLY TARGETS ============ */
+@media (hover: none) and (pointer: coarse) {
+    .nav-link,
+    button,
+    a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+    /* Prevent hover states sticking on touch */
+    .product-card:hover > div {
+        box-shadow: none;
+    }
+}
+
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
