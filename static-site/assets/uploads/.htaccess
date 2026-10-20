@@ -1,0 +1,8 @@
+# Uploaded files are served as plain files only — never executed
+<FilesMatch "\.(php[0-9]?|phtml|phar|pl|py|cgi|sh|htaccess)$">
+    Require all denied
+</FilesMatch>
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+Options -ExecCGI -Indexes

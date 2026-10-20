@@ -1,13 +1,11 @@
-# Robots.txt — Headphones1.Duka
-# https://www.robotstxt.org/
-
 User-agent: *
 Allow: /
-Disallow: /includes/
-Disallow: /sql/
 Disallow: /admin/
+Disallow: /account/
 Disallow: /api/
 Disallow: /auth/
-Disallow: /account/
-Disallow: /*.sql$
+Disallow: /checkout.php
+Disallow: /includes/
+Disallow: /sql/
+Disallow: /*?q=
 
