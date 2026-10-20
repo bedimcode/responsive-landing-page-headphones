@@ -11,7 +11,7 @@ $db = getDB();
 $statusFilter = $_GET['status'] ?? '';
 $search       = trim($_GET['q'] ?? '');
 $page         = max(1, (int)($_GET['page'] ?? 1));
-$perPage      = 20;
+$perPage      = max(5, (int) setting('orders_per_page')); // Admin → Settings → Commerce
 $offset       = ($page - 1) * $perPage;
 
 $where  = [];
@@ -117,7 +117,7 @@ $statuses = ['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
                         <div class="text-gray-500 text-xs"><?= e($o['shipping_email']) ?></div>
                     </td>
                     <td class="px-4 py-4 text-center text-gray-400 text-sm hidden sm:table-cell"><?= (int)$o['item_count'] ?></td>
-                    <td class="px-4 py-4 text-right font-semibold text-white">$<?= number_format($o['total'], 2) ?></td>
+                    <td class="px-4 py-4 text-right font-semibold text-white"><?= formatPrice($o['total']) ?></td>
                     <td class="px-4 py-4 text-center">
                         <span class="inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold border <?= $statusColors[$o['status']] ?? 'text-gray-400 border-white/10' ?>">
                             <?= ucfirst(e($o['status'])) ?>

@@ -12,7 +12,7 @@ $statusFilter  = $_GET['status']  ?? '';
 $paymentFilter = $_GET['payment'] ?? '';
 $search        = trim($_GET['q']  ?? '');
 $page          = max(1, (int)($_GET['page'] ?? 1));
-$perPage       = 20;
+$perPage       = max(5, (int) setting('orders_per_page')); // Admin → Settings → Commerce
 $offset        = ($page - 1) * $perPage;
 
 $where  = [];
@@ -107,7 +107,7 @@ $payStatusColors = [
                 <i class="<?= $icon ?> text-<?= $color ?>"></i>
             </span>
         </div>
-        <div class="font-display font-bold text-white text-2xl">$<?= number_format($amount, 0) ?></div>
+        <div class="font-display font-bold text-white text-2xl"><?= formatPrice($amount) ?></div>
         <div class="text-[11px] text-gray-500 mt-1"><?= $count ?> transaction<?= $count != 1 ? 's' : '' ?></div>
     </a>
     <?php endforeach; ?>
@@ -172,12 +172,12 @@ $payStatusColors = [
                         <div class="text-gray-600 text-xs"><?= e($p['shipping_email']) ?></div>
                     </td>
                     <td class="px-4 py-4 hidden lg:table-cell">
-                        <span class="text-[12px] text-gray-400"><?= e($p['payment_method'] ?: '—') ?></span>
+                        <span class="text-[12px] text-gray-400"><?= e($p['payment_method'] ? paymentMethodLabel($p['payment_method']) : '—') ?></span>
                     </td>
                     <td class="px-4 py-4 text-right">
-                        <div class="font-semibold text-white">$<?= number_format($p['total'], 2) ?></div>
+                        <div class="font-semibold text-white"><?= formatPrice($p['total']) ?></div>
                         <?php if ($p['tax'] > 0): ?>
-                        <div class="text-[10px] text-gray-600">Tax: $<?= number_format($p['tax'], 2) ?></div>
+                        <div class="text-[10px] text-gray-600">Tax: <?= formatPrice($p['tax']) ?></div>
                         <?php endif; ?>
                     </td>
                     <td class="px-4 py-4 text-center">

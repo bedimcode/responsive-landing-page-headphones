@@ -52,3 +52,9 @@ pnpm-debug.log*
 .parcel-cache/
 .vercel/
 .netlify/
+
+# ---------- Store (server-specific, never commit) ----------
+includes/config.local.php
+assets/uploads/products/*
+!assets/uploads/products/.gitkeep
+admin/settings.json

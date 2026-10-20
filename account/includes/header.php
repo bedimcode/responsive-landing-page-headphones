@@ -54,32 +54,17 @@ $accountNav = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($accountPageTitle) ?> — My Account · <?= e(APP_NAME) ?></title>
+    <title><?= e($accountPageTitle) ?> — My Account · <?= e(storeName()) ?></title>
     <meta name="robots" content="noindex, nofollow">
 
     <!-- CSRF Token & Cart API for JS -->
     <meta name="csrf-token" content="<?= e(csrfToken()) ?>">
     <meta name="cart-api" content="<?= e($basePath) ?>/api/cart.php">
+    <script>window.STORE_CURRENCY = <?= jsonForScript(currencyConfig()) ?>;</script>
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    dark:{50:'#f5f5f6',100:'#e5e5e8',200:'#cdcdd2',300:'#aaabb3',400:'#81828e',
-                          500:'#666773',600:'#565762',700:'#494a53',800:'#141418',900:'#0a0a0d',950:'#050507'},
-                    neon:{blue:'#00d4ff',purple:'#a855f7',pink:'#ec4899',cyan:'#06b6d4'}
-                },
-                fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['Space Grotesk','sans-serif']}
-            }
-        }
-    }
-    </script>
 
     <!-- Icons + Fonts -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -112,6 +97,7 @@ $accountNav = [
         .toast.show{transform:translateX(0)}
         .toast i{color:#00d4ff;font-size:1.25rem}
     </style>
+    <link rel="stylesheet" href="<?= e(assetUrl('assets/css/tailwind.css')) ?>">
 </head>
 <body class="bg-dark-950 text-gray-300 font-sans antialiased min-h-screen flex">
 
@@ -130,7 +116,7 @@ $accountNav = [
                 <i class="ri-headphone-fill text-neon-blue text-lg"></i>
             </div>
             <div class="flex-1 min-w-0">
-                <div class="font-display font-bold text-white text-[15px] leading-tight tracking-tight">Beats Audio</div>
+                <div class="font-display font-bold text-white text-[15px] leading-tight tracking-tight"><?= e(storeName()) ?></div>
                 <div class="text-[10px] text-gray-500 font-medium uppercase tracking-[.18em]">My Account</div>
             </div>
         </a>

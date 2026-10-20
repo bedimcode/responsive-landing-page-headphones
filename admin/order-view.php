@@ -15,22 +15,46 @@ if (!$orderId) {
 
 // Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && validateCsrf()) {
-    $newStatus  = $_POST['status']         ?? '';
-    $newPayment = $_POST['payment_status'] ?? '';
+    $current = $db->prepare('SELECT status, payment_status, tracking_number FROM orders WHERE id = ?');
+    $current->execute([$orderId]);
+    $before = $current->fetch();
+
+    $newStatus   = $_POST['status']         ?? '';
+    $newPayment  = $_POST['payment_status'] ?? '';
+    $tracking    = cleanText($_POST['tracking_number'] ?? '', 100);
+    $note        = cleanText($_POST['note'] ?? '', 500);
+    $notify      = isset($_POST['notify_customer']);
 
     $validStatuses  = ['pending','processing','shipped','delivered','cancelled'];
     $validPayments  = ['pending','paid','failed','refunded'];
 
-    $updates = [];
-    $vals    = [];
+    if ($before && in_array($newStatus, $validStatuses, true) && in_array($newPayment, $validPayments, true)) {
+        $db->beginTransaction();
+        $db->prepare('UPDATE orders SET status = ?, payment_status = ?, tracking_number = ? WHERE id = ?')
+           ->execute([$newStatus, $newPayment, $tracking ?: null, $orderId]);
 
-    if (in_array($newStatus, $validStatuses))  { $updates[] = 'status = ?';          $vals[] = $newStatus; }
-    if (in_array($newPayment, $validPayments)) { $updates[] = 'payment_status = ?';  $vals[] = $newPayment; }
+        // Cancelling puts the items back in stock (once)
+        if ($newStatus === 'cancelled' && $before['status'] !== 'cancelled') {
+            $db->prepare('UPDATE products p JOIN order_items oi ON oi.product_id = p.id SET p.stock = p.stock + oi.quantity WHERE oi.order_id = ?')
+               ->execute([$orderId]);
+        } elseif ($before['status'] === 'cancelled' && $newStatus !== 'cancelled') {
+            $db->prepare('UPDATE products p JOIN order_items oi ON oi.product_id = p.id SET p.stock = GREATEST(0, CAST(p.stock AS SIGNED) - oi.quantity) WHERE oi.order_id = ?')
+               ->execute([$orderId]);
+        }
 
-    if ($updates) {
-        $vals[] = $orderId;
-        $db->prepare('UPDATE orders SET ' . implode(', ', $updates) . ' WHERE id = ?')->execute($vals);
-        setFlash('success', 'Order updated successfully.');
+        $changes = [];
+        if ($newPayment !== $before['payment_status']) $changes[] = 'Payment ' . $newPayment;
+        if ($tracking !== (string) $before['tracking_number'] && $tracking !== '') $changes[] = 'Tracking ' . $tracking;
+        if ($note !== '') $changes[] = $note;
+        if ($newStatus !== $before['status'] || $changes) {
+            recordOrderStatus($db, $orderId, $before['status'], $newStatus, currentUserId(), $changes ? implode(' · ', $changes) : null);
+        }
+        $db->commit();
+
+        if ($notify && $newStatus !== $before['status']) {
+            sendOrderStatusUpdate($db, $orderId);
+        }
+        setFlash('success', 'Order updated' . ($notify && $newStatus !== $before['status'] ? ' and customer emailed.' : '.'));
     }
 
     header('Location: ' . $basePath . '/admin/order-view.php?id=' . $orderId); exit;
@@ -92,47 +116,88 @@ $statusColors = [
                         <div class="text-gray-500 text-xs">Qty: <?= (int)$item['quantity'] ?></div>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <div class="text-white font-semibold text-sm">$<?= number_format($item['price'] * $item['quantity'], 2) ?></div>
-                        <div class="text-gray-500 text-xs">$<?= number_format($item['price'], 2) ?> each</div>
+                        <div class="text-white font-semibold text-sm"><?= formatPrice($item['price'] * $item['quantity']) ?></div>
+                        <div class="text-gray-500 text-xs"><?= formatPrice($item['price']) ?> each</div>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
             <!-- Totals -->
             <div class="px-6 py-4 border-t border-white/5 space-y-2">
-                <div class="flex justify-between text-sm text-gray-400"><span>Subtotal</span><span>$<?= number_format($order['subtotal'], 2) ?></span></div>
-                <div class="flex justify-between text-sm text-gray-400"><span>Shipping</span><span><?= $order['shipping_cost'] > 0 ? '$' . number_format($order['shipping_cost'], 2) : 'Free' ?></span></div>
-                <div class="flex justify-between text-sm text-gray-400"><span>Tax</span><span>$<?= number_format($order['tax'], 2) ?></span></div>
-                <div class="flex justify-between text-base text-white font-bold pt-2 border-t border-white/5"><span>Total</span><span>$<?= number_format($order['total'], 2) ?></span></div>
+                <div class="flex justify-between text-sm text-gray-400"><span>Subtotal</span><span><?= formatPrice($order['subtotal']) ?></span></div>
+                <?php if ($order['discount'] > 0): ?>
+                <div class="flex justify-between text-sm text-green-400"><span>Discount<?= $order['coupon_code'] ? ' (' . e($order['coupon_code']) . ')' : '' ?></span><span><?= formatPrice(-$order['discount']) ?></span></div>
+                <?php endif; ?>
+                <div class="flex justify-between text-sm text-gray-400"><span>Shipping</span><span><?= $order['shipping_cost'] > 0 ? formatPrice($order['shipping_cost']) : 'Free' ?></span></div>
+                <div class="flex justify-between text-sm text-gray-400"><span><?= e(setting('tax_label') ?: 'Tax') ?></span><span><?= formatPrice($order['tax']) ?></span></div>
+                <div class="flex justify-between text-base text-white font-bold pt-2 border-t border-white/5"><span>Total</span><span><?= formatPrice($order['total']) ?></span></div>
             </div>
         </div>
 
         <!-- Update Status -->
         <div class="bg-dark-900/60 border border-white/5 rounded-2xl p-6">
-            <h2 class="font-semibold text-white mb-4">Update Order Status</h2>
-            <form method="POST" class="flex flex-wrap gap-4 items-end">
+            <h2 class="font-semibold text-white mb-4">Update Order</h2>
+            <form method="POST" class="space-y-4">
                 <?= csrfField() ?>
-                <div class="flex-1 min-w-[150px]">
-                    <label class="block text-xs text-gray-500 mb-1.5">Order Status</label>
-                    <select name="status" class="w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm text-white focus:border-neon-blue/50 focus:outline-none transition-colors">
-                        <?php foreach (['pending','processing','shipped','delivered','cancelled'] as $s): ?>
-                        <option value="<?= $s ?>" <?= $order['status'] === $s ? 'selected' : '' ?> class="bg-dark-800"><?= ucfirst($s) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="grid sm:grid-cols-3 gap-4">
+                    <div>
+                        <label for="status" class="block text-xs text-gray-500 mb-1.5">Order Status</label>
+                        <select id="status" name="status" class="w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm text-white focus:border-neon-blue/50 focus:outline-none transition-colors">
+                            <?php foreach (['pending','processing','shipped','delivered','cancelled'] as $s): ?>
+                            <option value="<?= $s ?>" <?= $order['status'] === $s ? 'selected' : '' ?> class="bg-dark-800"><?= ucfirst($s) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="payment_status" class="block text-xs text-gray-500 mb-1.5">Payment Status</label>
+                        <select id="payment_status" name="payment_status" class="w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm text-white focus:border-neon-blue/50 focus:outline-none transition-colors">
+                            <?php foreach (['pending','paid','failed','refunded'] as $s): ?>
+                            <option value="<?= $s ?>" <?= $order['payment_status'] === $s ? 'selected' : '' ?> class="bg-dark-800"><?= ucfirst($s) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tracking_number" class="block text-xs text-gray-500 mb-1.5">Tracking Number</label>
+                        <input id="tracking_number" name="tracking_number" maxlength="100" value="<?= e($order['tracking_number'] ?? '') ?>" placeholder="Optional"
+                               class="w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors">
+                    </div>
                 </div>
-                <div class="flex-1 min-w-[150px]">
-                    <label class="block text-xs text-gray-500 mb-1.5">Payment Status</label>
-                    <select name="payment_status" class="w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm text-white focus:border-neon-blue/50 focus:outline-none transition-colors">
-                        <?php foreach (['pending','paid','failed','refunded'] as $s): ?>
-                        <option value="<?= $s ?>" <?= $order['payment_status'] === $s ? 'selected' : '' ?> class="bg-dark-800"><?= ucfirst($s) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div>
+                    <label for="note" class="block text-xs text-gray-500 mb-1.5">Note for the timeline <span class="text-gray-600">(visible to the customer)</span></label>
+                    <input id="note" name="note" maxlength="500" placeholder="e.g. Dispatched with G4S courier"
+                           class="w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors">
                 </div>
-                <button type="submit" class="px-6 py-3 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl text-sm font-bold text-dark-950 hover:opacity-90 transition-opacity">
-                    Save Changes
-                </button>
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox" name="notify_customer" value="1" checked class="w-4 h-4 rounded border-white/20 bg-dark-800 text-neon-blue focus:ring-neon-blue/50">
+                        Email the customer when the status changes
+                    </label>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl text-sm font-bold text-dark-950 hover:opacity-90 transition-opacity">
+                        Save Changes
+                    </button>
+                </div>
+                <p class="text-[11px] text-gray-600">Cancelling an order puts its items back in stock.</p>
             </form>
         </div>
+
+        <?php $history = getOrderStatusHistory($db, $orderId); if ($history): ?>
+        <!-- Timeline -->
+        <div class="bg-dark-900/60 border border-white/5 rounded-2xl p-6">
+            <h2 class="font-semibold text-white mb-4">Timeline</h2>
+            <ol class="space-y-3 text-sm">
+                <?php foreach (array_reverse($history) as $h): ?>
+                <li class="flex gap-3">
+                    <span class="mt-1.5 w-2 h-2 rounded-full bg-neon-blue/60 flex-shrink-0"></span>
+                    <div>
+                        <span class="text-white"><?= e(ucfirst($h['new_status'])) ?></span>
+                        <?php if ($h['note']): ?><span class="text-gray-400"> — <?= e($h['note']) ?></span><?php endif; ?>
+                        <div class="text-[11px] text-gray-600"><?= date('M j, Y H:i', strtotime($h['created_at'])) ?><?= $h['changed_by_name'] ? ' · ' . e($h['changed_by_name']) : '' ?></div>
+                    </div>
+                </li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
+        <?php endif; ?>
 
     </div><!-- end left col -->
 
@@ -157,8 +222,16 @@ $statusColors = [
                 </div>
                 <div class="flex justify-between gap-2">
                     <dt class="text-gray-500">Payment</dt>
-                    <dd class="text-white"><?= ucfirst(e($order['payment_method'])) ?></dd>
+                    <dd class="text-white"><?= e(paymentMethodLabel($order['payment_method'])) ?> · <span class="<?= paymentStatusBadge($order['payment_status']) ?> px-2 py-0.5 rounded-full text-[10px]"><?= e(ucfirst($order['payment_status'])) ?></span></dd>
                 </div>
+                <?php if ($order['payment_reference']): ?>
+                <div class="flex justify-between gap-2">
+                    <dt class="text-gray-500">Customer&rsquo;s reference</dt>
+                    <dd class="text-neon-blue font-mono"><?= e($order['payment_reference']) ?></dd>
+                </div>
+                <?php elseif ($order['payment_status'] === 'pending' && in_array($order['payment_method'], ['mpesa', 'bank'], true)): ?>
+                <div class="text-[11px] text-yellow-400/80">Waiting for the customer to pay and send a transaction code.</div>
+                <?php endif; ?>
                 <?php if ($order['notes']): ?>
                 <div>
                     <dt class="text-gray-500 mb-1">Notes</dt>

@@ -19,6 +19,13 @@ try {
         exit;
     }
 
+    // CSRF check for changes (X-CSRF-TOKEN header)
+    if ($method !== 'GET' && !validateCsrf()) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Invalid security token. Please refresh the page.']);
+        exit;
+    }
+
     $userId = (int) $_SESSION['user_id'];
 
     // ---------- GET: fetch wishlist ----------

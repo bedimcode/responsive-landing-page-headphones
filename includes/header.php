@@ -21,9 +21,17 @@ if (!defined('BASE_PATH')) {
 require_once BASE_PATH . '/includes/config.php';
 require_once BASE_PATH . '/includes/functions.php';
 
+// Current page for nav highlighting
+$currentPage = basename($_SERVER['PHP_SELF'], '.php');
+
+// Visitors see the maintenance page (admins and the sign-in page stay open)
+if (!str_ends_with($_SERVER['PHP_SELF'], '/auth/login.php')) {
+    maintenanceGate();
+}
+
 // Defaults
-$pageTitle = $pageTitle ?? APP_NAME;
-$pageDescription = $pageDescription ?? 'Beats 3 — Studio-grade wireless headphones with 40h battery, Bluetooth 5.2, and premium sound. Free shipping & 30-day returns.';
+$pageTitle = $pageTitle ?? storeName();
+$pageDescription = $pageDescription ?? setting('store_tagline');
 $pageType = $pageType ?? 'page';
 $bodyClass = $bodyClass ?? '';
 $ogImage = $ogImage ?? 'assets/img/home.png';
@@ -33,6 +41,9 @@ $includeAnimations = $includeAnimations ?? ($pageType === 'home');
 // Determine base URL for assets (handles subdirectory depth)
 $basePath = rtrim(APP_URL, '/');
 
+// Canonical URL: explicit, or this page without its query string
+$canonical = $canonical ?? absoluteUrl(substr(strtok($_SERVER['REQUEST_URI'] ?? '/', '?'), strlen(parse_url(APP_URL, PHP_URL_PATH) ?? '')));
+
 // Get cart count for badge
 try {
     $db = getDB();
@@ -40,9 +51,6 @@ try {
 } catch (Exception $e) {
     $cartCount = 0;
 }
-
-// Current page for nav highlighting
-$currentPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,25 +58,26 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<?= e($pageDescription) ?>">
-    <meta name="keywords" content="headphones, beats, wireless headphones, premium audio, noise cancelling, ecommerce">
-    <meta name="author" content="Beats Audio">
     <?php if ($noIndex): ?>
     <meta name="robots" content="noindex">
     <?php endif; ?>
+    <meta name="theme-color" content="#050507">
 
     <!-- Open Graph -->
+    <meta property="og:site_name" content="<?= e(storeName()) ?>">
     <meta property="og:title" content="<?= e($pageTitle) ?>">
     <meta property="og:description" content="<?= e($pageDescription) ?>">
-    <meta property="og:image" content="<?= e($basePath . '/' . $ogImage) ?>">
+    <meta property="og:image" content="<?= e(absoluteUrl($ogImage)) ?>">
     <meta property="og:type" content="<?= $pageType === 'product' ? 'product' : 'website' ?>">
-    <meta property="og:url" content="<?= e($canonical ?? ($_SERVER['REQUEST_URI'] ?? '')) ?>">
+    <meta property="og:url" content="<?= e($canonical) ?>">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= e($pageTitle) ?>">
     <meta name="twitter:description" content="<?= e($pageDescription) ?>">
+    <meta name="twitter:image" content="<?= e(absoluteUrl($ogImage)) ?>">
 
-    <?php if (!empty($canonical)): ?>
+    <?php if (!$noIndex): ?>
     <link rel="canonical" href="<?= e($canonical) ?>">
     <?php endif; ?>
 
@@ -81,17 +90,18 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Remix Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-
-    <!-- Tailwind CSS CDN -->
-    <?php include BASE_PATH . '/includes/tailwind-config.php'; ?>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?= e($basePath) ?>/assets/css/styles.css">
+    <link rel="stylesheet" href="<?= e(assetUrl('assets/css/styles.css')) ?>">
 
-    <!-- CSRF Token for JS -->
+    <!-- CSRF Token + store config for JS -->
     <meta name="csrf-token" content="<?= e(csrfToken()) ?>">
     <meta name="cart-api" content="<?= e($basePath) ?>/api/cart.php">
+    <script>window.STORE_CURRENCY = <?= jsonForScript(currencyConfig()) ?>;</script>
+
+    <!-- Compiled Tailwind (npm run build:css) — loaded last, like the old CDN build -->
+    <link rel="stylesheet" href="<?= e(assetUrl('assets/css/tailwind.css')) ?>">
 
     <title><?= e($pageTitle) ?></title>
 </head>
@@ -123,7 +133,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20 transition-all duration-500">
             <!-- Logo -->
             <a href="<?= e($basePath) ?>/" class="flex items-center gap-2 z-50">
-                <img src="<?= e($basePath) ?>/assets/img/logo.png" alt="Beats Audio Logo" class="h-8 lg:h-10">
+                <img src="<?= e($basePath) ?>/assets/img/logo.png" alt="<?= e(storeName()) ?>" class="h-8 lg:h-10" width="40" height="40">
             </a>
 
             <!-- Desktop Nav -->
@@ -218,7 +228,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             <a href="<?= e($basePath) ?>/checkout.php" class="block w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform text-center">
                 Checkout — <span id="cart-total-btn">$0</span>
             </a>
-            <p class="text-center text-xs text-gray-500 mt-3">Free shipping on orders over $199</p>
+            <p class="text-center text-xs text-gray-500 mt-3"><?= e(shippingSummary()) ?></p>
         </div>
     </aside>
 
@@ -232,20 +242,17 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     <img id="qv-image" src="" alt="Product" class="w-full max-w-[280px] drop-shadow-2xl">
                 </div>
                 <div class="flex flex-col justify-center">
-                    <span class="text-neon-blue text-sm font-medium uppercase tracking-widest mb-2">Beats 3 Series</span>
+                    <span class="text-neon-blue text-sm font-medium uppercase tracking-widest mb-2">Quick View</span>
                     <h3 id="qv-title" class="text-3xl font-display font-bold text-white mb-2"></h3>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="flex text-yellow-400 text-sm">
-                            <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-half-fill"></i>
-                        </div>
-                        <span class="text-gray-500 text-sm">(2,847 reviews)</span>
-                    </div>
                     <p id="qv-price" class="text-2xl font-bold text-white mb-4"></p>
                     <div class="space-y-3 mb-6 text-sm text-gray-400">
                         <div class="flex items-center gap-3"><i class="ri-bluetooth-line text-neon-blue"></i> Bluetooth 5.2</div>
                         <div class="flex items-center gap-3"><i class="ri-battery-charge-line text-neon-blue"></i> 40h Battery Life</div>
                         <div class="flex items-center gap-3"><i class="ri-mic-line text-neon-blue"></i> Built-in Microphone</div>
-                        <div class="flex items-center gap-3"><i class="ri-shield-check-line text-neon-blue"></i> 2-Year Warranty</div>
+                        <?php if (warrantyText()): ?>
+                        <div class="flex items-center gap-3"><i class="ri-shield-check-line text-neon-blue"></i> <?= e(ucfirst(warrantyText())) ?> Warranty</div>
+                        <?php endif; ?>
+                        <div class="flex items-center gap-3"><i class="ri-truck-line text-neon-blue"></i> <?= e(shippingSummary()) ?></div>
                     </div>
                     <!-- Color swatches in modal -->
                     <div class="mb-6">
@@ -255,6 +262,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                     <button id="qv-add-btn" class="w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2" data-id="" data-name="" data-price="" data-img="">
                         <i class="ri-shopping-bag-line"></i> Add to Cart
                     </button>
+                    <a id="qv-link" href="<?= e($basePath) ?>/shop.php" class="mt-3 text-center text-sm text-gray-400 hover:text-neon-blue transition-colors">View full details <i class="ri-arrow-right-line"></i></a>
                 </div>
             </div>
         </div>

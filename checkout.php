@@ -8,23 +8,23 @@ require_once __DIR__ . '/includes/functions.php';
 // Guests must register/login before checkout — cart persists via session
 if (!isLoggedIn()) {
     $_SESSION['redirect_after_login'] = APP_URL . '/checkout.php';
-    setFlash('success', 'Please create an account or sign in to complete your purchase. Your cart items are saved!');
+    setFlash('info', 'Please create an account or sign in to complete your purchase. Your cart items are saved!');
     redirect(APP_URL . '/auth/register.php');
 }
 
-$pageTitle = 'Checkout — Beats Audio';
-$pageDescription = 'Complete your Beats Audio purchase securely.';
+$pageTitle = 'Checkout — ' . storeName();
+$pageDescription = 'Complete your ' . storeName() . ' purchase.';
 $pageType = 'page';
 $noIndex = true;
 
 require_once __DIR__ . '/includes/header.php';
 
-// Get cart for server-side display
+// Cart, customer profile and default address for pre-filling the form
 try {
     $db = getDB();
     $cart = getOrCreateCart($db);
     $stmt = $db->prepare('
-        SELECT ci.id, ci.quantity, p.name, p.color, p.price, p.sale_price, p.image, p.stock
+        SELECT ci.id, ci.quantity, p.name, p.color, p.price, p.sale_price, p.image, p.stock, p.is_active
         FROM cart_items ci
         JOIN products p ON p.id = ci.product_id
         WHERE ci.cart_id = ?
@@ -32,18 +32,34 @@ try {
     ');
     $stmt->execute([$cart['id']]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $db->prepare('SELECT name, email, phone FROM users WHERE id = ?');
+    $stmt->execute([currentUserId()]);
+    $customer = $stmt->fetch() ?: [];
+    $address = getUserAddresses($db, currentUserId())[0] ?? [];
 } catch (Exception $e) {
     $cartItems = [];
+    $customer = $address = [];
 }
 
 $subtotal = 0;
+$problems = [];
 foreach ($cartItems as $item) {
-    $price = $item['sale_price'] ?: $item['price'];
-    $subtotal += $price * $item['quantity'];
+    $subtotal += effectivePrice($item) * $item['quantity'];
+    if (!$item['is_active']) $problems[] = $item['name'] . ' is no longer available.';
+    elseif ($item['quantity'] > $item['stock']) $problems[] = $item['name'] . ($item['stock'] > 0 ? ' only has ' . $item['stock'] . ' left.' : ' is sold out.');
 }
-$shipping = $subtotal >= 100 ? 0 : 9.99;
-$tax = round($subtotal * 0.08, 2);
-$total = $subtotal + $shipping + $tax;
+$totals  = calculateTotals($subtotal);
+$methods = paymentMethods();
+
+[$firstName, $lastName] = array_pad(explode(' ', $customer['name'] ?? '', 2), 2, '');
+$country   = $address['country'] ?? setting('default_country');
+$countries = array_unique(array_merge([setting('default_country')], [
+    'Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Ethiopia', 'Nigeria', 'Ghana', 'South Africa',
+    'United States', 'Canada', 'United Kingdom', 'Ireland', 'Germany', 'France', 'Netherlands',
+    'United Arab Emirates', 'India', 'Australia', 'Japan',
+]));
+$field = 'w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors';
 ?>
 
     <main class="pt-32 pb-24 min-h-[70vh]">
@@ -51,7 +67,7 @@ $total = $subtotal + $shipping + $tax;
 
             <!-- Page Header -->
             <div class="mb-12">
-                <a href="<?= e($basePath) ?>/" class="inline-flex items-center gap-2 text-gray-500 hover:text-neon-blue text-sm mb-6 transition-colors"><i class="ri-arrow-left-line"></i> Continue Shopping</a>
+                <a href="<?= e($basePath) ?>/shop.php" class="inline-flex items-center gap-2 text-gray-500 hover:text-neon-blue text-sm mb-6 transition-colors"><i class="ri-arrow-left-line"></i> Continue Shopping</a>
                 <h1 class="font-display text-3xl lg:text-4xl font-bold text-white">Checkout</h1>
             </div>
 
@@ -61,9 +77,17 @@ $total = $subtotal + $shipping + $tax;
                 <i class="ri-shopping-bag-line text-6xl text-gray-700 mb-6 block"></i>
                 <h2 class="text-xl font-semibold text-white mb-3">Your cart is empty</h2>
                 <p class="text-gray-500 mb-8">Add some products before checking out.</p>
-                <a href="<?= e($basePath) ?>/#products" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-2xl font-bold text-dark-950 hover:scale-105 transition-transform">
+                <a href="<?= e($basePath) ?>/shop.php" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-2xl font-bold text-dark-950 hover:scale-105 transition-transform">
                     <i class="ri-shopping-bag-line"></i> Browse Products
                 </a>
+            </div>
+
+            <?php elseif (!$methods): ?>
+            <!-- Store not configured for payments -->
+            <div class="max-w-lg mx-auto text-center py-16 px-6 rounded-2xl border border-yellow-500/20 bg-yellow-500/5">
+                <i class="ri-tools-line text-5xl text-yellow-400 mb-4 block"></i>
+                <h2 class="text-xl font-semibold text-white mb-2">Checkout is temporarily unavailable</h2>
+                <p class="text-gray-400 text-sm">We&rsquo;re updating our payment options. Please <a href="<?= e($basePath) ?>/contact.php" class="text-neon-blue hover:underline">contact us</a> to order.</p>
             </div>
 
             <?php else: ?>
@@ -71,7 +95,16 @@ $total = $subtotal + $shipping + $tax;
 
                 <!-- Shipping Form -->
                 <div class="lg:col-span-2">
-                    <form id="checkout-form" class="space-y-8">
+                    <?php if ($problems): ?>
+                    <div class="mb-8 p-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 text-sm">
+                        <p class="font-semibold mb-1"><i class="ri-error-warning-line"></i> Please update your cart before ordering:</p>
+                        <ul class="list-disc list-inside space-y-0.5">
+                            <?php foreach ($problems as $problem): ?><li><?= e($problem) ?></li><?php endforeach; ?>
+                        </ul>
+                    </div>
+                    <?php endif; ?>
+
+                    <form id="checkout-form" class="space-y-8" novalidate>
                         <?= csrfField() ?>
 
                         <!-- Contact -->
@@ -80,29 +113,21 @@ $total = $subtotal + $shipping + $tax;
                             <div class="grid sm:grid-cols-2 gap-4">
                                 <div>
                                     <label for="first_name" class="block text-sm text-gray-400 mb-1.5">First Name</label>
-                                    <input type="text" id="first_name" name="first_name" required
-                                        class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                        placeholder="John" value="<?= e(isLoggedIn() ? explode(' ', currentUserName())[0] : '') ?>">
+                                    <input type="text" id="first_name" name="first_name" required maxlength="50" autocomplete="given-name" class="<?= $field ?>" value="<?= e($firstName) ?>">
                                 </div>
                                 <div>
                                     <label for="last_name" class="block text-sm text-gray-400 mb-1.5">Last Name</label>
-                                    <input type="text" id="last_name" name="last_name" required
-                                        class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                        placeholder="Doe">
+                                    <input type="text" id="last_name" name="last_name" required maxlength="49" autocomplete="family-name" class="<?= $field ?>" value="<?= e($lastName) ?>">
                                 </div>
                             </div>
                             <div class="grid sm:grid-cols-2 gap-4 mt-4">
                                 <div>
                                     <label for="checkout-email" class="block text-sm text-gray-400 mb-1.5">Email</label>
-                                    <input type="email" id="checkout-email" name="email" required
-                                        class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                        placeholder="you@example.com">
+                                    <input type="email" id="checkout-email" name="email" required maxlength="255" autocomplete="email" class="<?= $field ?>" value="<?= e($customer['email'] ?? '') ?>">
                                 </div>
                                 <div>
-                                    <label for="phone" class="block text-sm text-gray-400 mb-1.5">Phone (optional)</label>
-                                    <input type="tel" id="phone" name="phone"
-                                        class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                        placeholder="+1 (555) 123-4567">
+                                    <label for="phone" class="block text-sm text-gray-400 mb-1.5">Phone <span class="text-gray-600">(for delivery)</span></label>
+                                    <input type="tel" id="phone" name="phone" required maxlength="20" autocomplete="tel" class="<?= $field ?>" placeholder="+254 712 345 678" value="<?= e($customer['phone'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>
@@ -113,154 +138,86 @@ $total = $subtotal + $shipping + $tax;
                             <div class="space-y-4">
                                 <div>
                                     <label for="address" class="block text-sm text-gray-400 mb-1.5">Street Address</label>
-                                    <input type="text" id="address" name="address" required
-                                        class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                        placeholder="123 Main Street, Apt 4B">
+                                    <input type="text" id="address" name="address" required maxlength="255" autocomplete="street-address" class="<?= $field ?>" placeholder="Street, building, apartment" value="<?= e($address['address'] ?? '') ?>">
                                 </div>
                                 <div class="grid sm:grid-cols-3 gap-4">
                                     <div>
-                                        <label for="city" class="block text-sm text-gray-400 mb-1.5">City</label>
-                                        <input type="text" id="city" name="city" required
-                                            class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                            placeholder="Los Angeles">
+                                        <label for="city" class="block text-sm text-gray-400 mb-1.5">City / Town</label>
+                                        <input type="text" id="city" name="city" required maxlength="100" autocomplete="address-level2" class="<?= $field ?>" value="<?= e($address['city'] ?? '') ?>">
                                     </div>
                                     <div>
-                                        <label for="state" class="block text-sm text-gray-400 mb-1.5">State / Province</label>
-                                        <input type="text" id="state" name="state"
-                                            class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                            placeholder="CA">
+                                        <label for="state" class="block text-sm text-gray-400 mb-1.5">County / State</label>
+                                        <input type="text" id="state" name="state" maxlength="100" autocomplete="address-level1" class="<?= $field ?>" value="<?= e($address['state'] ?? '') ?>">
                                     </div>
                                     <div>
-                                        <label for="zip" class="block text-sm text-gray-400 mb-1.5">ZIP / Postal Code</label>
-                                        <input type="text" id="zip" name="zip" required
-                                            class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
-                                            placeholder="90001">
+                                        <label for="zip" class="block text-sm text-gray-400 mb-1.5">Postal Code</label>
+                                        <input type="text" id="zip" name="zip" maxlength="20" autocomplete="postal-code" class="<?= $field ?>" value="<?= e($address['zip'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div>
                                     <label for="country" class="block text-sm text-gray-400 mb-1.5">Country</label>
-                                    <select id="country" name="country" required
-                                        class="w-full px-4 py-3 bg-dark-900/60 border border-white/10 rounded-xl text-white focus:border-neon-blue/50 focus:outline-none transition-colors">
-                                        <option value="" class="bg-dark-900">Select country</option>
-                                        <option value="US" selected class="bg-dark-900">United States</option>
-                                        <option value="CA" class="bg-dark-900">Canada</option>
-                                        <option value="GB" class="bg-dark-900">United Kingdom</option>
-                                        <option value="AU" class="bg-dark-900">Australia</option>
-                                        <option value="DE" class="bg-dark-900">Germany</option>
-                                        <option value="FR" class="bg-dark-900">France</option>
-                                        <option value="JP" class="bg-dark-900">Japan</option>
-                                        <option value="KE" class="bg-dark-900">Kenya</option>
-                                        <option value="NG" class="bg-dark-900">Nigeria</option>
-                                        <option value="ZA" class="bg-dark-900">South Africa</option>
+                                    <select id="country" name="country" required autocomplete="country-name" class="<?= $field ?>">
+                                        <?php foreach ($countries as $c): ?>
+                                        <option value="<?= e($c) ?>" class="bg-dark-900" <?= $c === $country ? 'selected' : '' ?>><?= e($c) ?></option>
+                                        <?php endforeach; ?>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Result Message -->
-                        <div id="checkout-result" class="hidden p-4 rounded-2xl text-sm"></div>
-
                         <!-- Payment Method -->
                         <div>
-                            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2"><i class="ri-bank-card-line text-neon-blue"></i> Payment Method</h2>
+                            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2"><i class="ri-wallet-3-line text-neon-blue"></i> Payment Method</h2>
                             <div class="grid sm:grid-cols-2 gap-3" id="payment-methods">
-                                <!-- Cash on Delivery -->
-                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
-                                    <input type="radio" name="payment_method" value="cod" class="sr-only peer" required>
-                                    <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                                        <i class="ri-hand-coin-line text-green-400 text-xl"></i>
+                                <?php $first = true; foreach ($methods as $code => $m): ?>
+                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 <?= $first ? 'border-neon-blue/50' : 'border-white/[.06]' ?> rounded-xl cursor-pointer hover:border-white/10 transition-all">
+                                    <input type="radio" name="payment_method" value="<?= e($code) ?>" class="sr-only" <?= $first ? 'checked' : '' ?>>
+                                    <div class="w-10 h-10 rounded-xl <?= e($m['color']) ?> flex items-center justify-center flex-shrink-0">
+                                        <i class="<?= e($m['icon']) ?> text-xl"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-semibold text-white">Cash on Delivery</div>
-                                        <div class="text-[11px] text-gray-500">Pay when you receive your order</div>
+                                        <div class="text-sm font-semibold text-white"><?= e($m['label']) ?></div>
+                                        <div class="text-[11px] text-gray-500 truncate"><?= e($m['hint']) ?></div>
                                     </div>
-                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
-                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
-                                    </div>
+                                    <i class="payment-check ri-checkbox-circle-fill text-neon-blue text-xl <?= $first ? '' : 'invisible' ?>"></i>
                                 </label>
-
-                                <!-- M-Pesa -->
-                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
-                                    <input type="radio" name="payment_method" value="mpesa" class="sr-only peer">
-                                    <div class="w-10 h-10 rounded-xl bg-green-600/10 flex items-center justify-center flex-shrink-0">
-                                        <i class="ri-smartphone-line text-green-500 text-xl"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-semibold text-white">M-Pesa</div>
-                                        <div class="text-[11px] text-gray-500">Send Money to <span class="text-green-400 font-semibold">0715674828</span></div>
-                                    </div>
-                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
-                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
-                                    </div>
-                                </label>
-
-                                <!-- Bank Transfer -->
-                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
-                                    <input type="radio" name="payment_method" value="bank" class="sr-only peer">
-                                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                                        <i class="ri-bank-line text-blue-400 text-xl"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-semibold text-white">Bank Transfer</div>
-                                        <div class="text-[11px] text-gray-500">Direct bank payment</div>
-                                    </div>
-                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
-                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
-                                    </div>
-                                </label>
-
-                                <!-- PayPal -->
-                                <label class="payment-option relative flex items-center gap-3 p-4 bg-dark-900/60 border-2 border-white/[.06] rounded-xl cursor-pointer hover:border-white/10 transition-all">
-                                    <input type="radio" name="payment_method" value="paypal" class="sr-only peer">
-                                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
-                                        <i class="ri-paypal-line text-indigo-400 text-xl"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-semibold text-white">PayPal</div>
-                                        <div class="text-[11px] text-gray-500">Pay with your PayPal account</div>
-                                    </div>
-                                    <div class="w-5 h-5 rounded-full border-2 border-gray-600 flex items-center justify-center peer-checked:border-neon-blue peer-checked:bg-neon-blue/20 transition-all">
-                                        <div class="w-2 h-2 rounded-full bg-neon-blue scale-0 peer-checked:scale-100 transition-transform"></div>
-                                    </div>
-                                </label>
+                                <?php $first = false; endforeach; ?>
                             </div>
 
-                            <!-- M-Pesa instructions (shown when M-Pesa selected) -->
-                            <div id="mpesa-instructions" class="hidden mt-3 p-4 bg-green-500/5 border border-green-500/10 rounded-xl text-sm">
-                                <div class="flex items-center gap-2 text-green-400 font-semibold mb-2">
-                                    <i class="ri-information-line"></i> M-Pesa Payment Instructions
-                                </div>
+                            <!-- What happens next, per method -->
+                            <?php foreach ($methods as $code => $m):
+                                $how = paymentInstructions($code, 'your order number', $totals['total']); ?>
+                            <div class="payment-info <?= $code === array_key_first($methods) ? '' : 'hidden' ?> mt-3 p-4 bg-white/[.02] border border-white/[.06] rounded-xl text-sm" data-method="<?= e($code) ?>">
+                                <?php if ($how): ?>
+                                <div class="text-white font-semibold mb-2 flex items-center gap-2"><i class="ri-information-line text-neon-blue"></i> <?= e($how['title']) ?> (after you place the order)</div>
                                 <ol class="text-gray-400 space-y-1 list-decimal list-inside text-xs">
-                                    <li>Go to M-Pesa on your phone</li>
-                                    <li>Select <strong class="text-white">Send Money</strong></li>
-                                    <li>Enter number: <strong class="text-green-400">0715674828</strong></li>
-                                    <li>Enter amount: <strong class="text-white"><?= formatPrice($total) ?></strong></li>
-                                    <li>Complete the transaction and place your order</li>
+                                    <?php foreach ($how['steps'] as $step): ?>
+                                    <?php if (str_starts_with($step, 'Amount: ')): // kept in sync with the coupon total by JS ?>
+                                    <li>Amount: <span class="js-pay-amount"><?= formatPrice($totals['total']) ?></span></li>
+                                    <?php else: ?>
+                                    <li><?= e($step) ?></li>
+                                    <?php endif; ?>
+                                    <?php endforeach; ?>
                                 </ol>
-                                <p class="text-[11px] text-gray-500 mt-2">Your order will be confirmed once payment is verified.</p>
+                                <p class="text-[11px] text-gray-500 mt-2"><?= e($how['note']) ?></p>
+                                <?php else: ?>
+                                <p class="text-gray-400 text-xs"><i class="ri-information-line text-neon-blue"></i> Pay the courier in cash or mobile money when your order arrives. Please have the exact amount ready.</p>
+                                <?php endif; ?>
                             </div>
-
-                            <!-- Bank instructions (shown when Bank selected) -->
-                            <div id="bank-instructions" class="hidden mt-3 p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl text-sm">
-                                <div class="flex items-center gap-2 text-blue-400 font-semibold mb-2">
-                                    <i class="ri-information-line"></i> Bank Transfer Details
-                                </div>
-                                <div class="text-gray-400 text-xs space-y-1">
-                                    <p>Transfer <strong class="text-white"><?= formatPrice($total) ?></strong> to the following account:</p>
-                                    <p>Bank: <strong class="text-white">Beats Audio Ltd</strong></p>
-                                    <p>Use your order number as the payment reference.</p>
-                                </div>
-                                <p class="text-[11px] text-gray-500 mt-2">Your order will be confirmed once payment is verified.</p>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
 
-                        <button type="submit" id="checkout-submit" class="w-full px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl font-bold text-dark-950 text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3">
-                            <i class="ri-lock-line"></i> Place Order &mdash; <?= formatPrice($total) ?>
+                        <!-- Result Message -->
+                        <div id="checkout-result" class="hidden p-4 rounded-2xl text-sm" role="alert"></div>
+
+                        <button type="submit" id="checkout-submit" <?= $problems ? 'disabled' : '' ?> class="w-full px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl font-bold text-dark-950 text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 disabled:opacity-40 disabled:hover:scale-100">
+                            <i class="ri-check-double-line"></i> Place Order &mdash; <span id="submit-total"><?= formatPrice($totals['total']) ?></span>
                         </button>
 
                         <p class="text-center text-gray-600 text-xs">
-                            <i class="ri-shield-check-line"></i> Your payment is secure. By placing this order you agree to our
-                            <a href="<?= e($basePath) ?>/legal/terms-of-service.php" class="text-gray-500 hover:text-neon-blue">Terms</a>.
+                            By placing this order you agree to our
+                            <a href="<?= e($basePath) ?>/legal/terms-of-service.php" class="text-gray-500 hover:text-neon-blue">Terms of Service</a>
+                            and <a href="<?= e($basePath) ?>/legal/privacy-policy.php" class="text-gray-500 hover:text-neon-blue">Privacy Policy</a>.
                         </p>
                     </form>
                 </div>
@@ -272,42 +229,56 @@ $total = $subtotal + $shipping + $tax;
 
                         <div class="space-y-4 mb-6 max-h-[300px] overflow-y-auto">
                             <?php foreach ($cartItems as $item): ?>
-                            <?php $effectivePrice = $item['sale_price'] ?: $item['price']; ?>
                             <div class="flex items-center gap-3">
-                                <img src="<?= e($basePath . '/' . $item['image']) ?>" alt="<?= e($item['color']) ?>" class="w-14 h-14 object-contain bg-dark-800 rounded-xl p-1" loading="lazy">
+                                <img src="<?= e($basePath . '/' . $item['image']) ?>" alt="<?= e($item['name']) ?>" class="w-14 h-14 object-contain bg-dark-800 rounded-xl p-1" loading="lazy">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-white text-sm font-medium truncate"><?= e($item['name']) ?></p>
-                                    <p class="text-gray-500 text-xs"><?= e($item['color']) ?> &times; <?= (int) $item['quantity'] ?></p>
+                                    <p class="text-gray-500 text-xs"><?= e($item['color'] ?? '') ?> &times; <?= (int) $item['quantity'] ?></p>
                                 </div>
-                                <span class="text-white text-sm font-medium"><?= formatPrice($effectivePrice * $item['quantity']) ?></span>
+                                <span class="text-white text-sm font-medium"><?= formatPrice(effectivePrice($item) * $item['quantity']) ?></span>
                             </div>
                             <?php endforeach; ?>
+                        </div>
+
+                        <!-- Coupon -->
+                        <div class="mb-5">
+                            <label for="coupon-code" class="block text-xs text-gray-500 mb-1.5">Coupon code</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="coupon-code" maxlength="40" autocomplete="off" class="flex-1 min-w-0 px-3 py-2.5 bg-dark-900/60 border border-white/10 rounded-xl text-sm text-white uppercase placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none" placeholder="e.g. WELCOME10">
+                                <button type="button" id="coupon-apply" class="px-4 py-2.5 rounded-xl text-sm font-semibold border border-neon-blue/30 text-neon-blue hover:bg-neon-blue/10 transition-colors">Apply</button>
+                            </div>
+                            <p id="coupon-message" class="text-xs mt-1.5 hidden"></p>
                         </div>
 
                         <div class="space-y-3 pt-4 border-t border-white/5 text-sm">
                             <div class="flex justify-between text-gray-400">
                                 <span>Subtotal</span>
-                                <span><?= formatPrice($subtotal) ?></span>
+                                <span id="sum-subtotal"><?= formatPrice($totals['subtotal']) ?></span>
+                            </div>
+                            <div id="row-discount" class="flex justify-between text-green-400 hidden">
+                                <span>Discount <span id="sum-coupon" class="font-mono text-xs"></span></span>
+                                <span id="sum-discount"></span>
                             </div>
                             <div class="flex justify-between text-gray-400">
                                 <span>Shipping</span>
-                                <span><?= $shipping === 0 ? '<span class="text-green-400">Free</span>' : formatPrice($shipping) ?></span>
+                                <span id="sum-shipping"><?= $totals['shipping'] > 0 ? formatPrice($totals['shipping']) : '<span class="text-green-400">Free</span>' ?></span>
                             </div>
                             <div class="flex justify-between text-gray-400">
-                                <span>Tax (8%)</span>
-                                <span><?= formatPrice($tax) ?></span>
+                                <span><?= e(taxLabel()) ?></span>
+                                <span id="sum-tax"><?= formatPrice($totals['tax']) ?></span>
                             </div>
                             <div class="flex justify-between text-white font-bold text-lg pt-3 border-t border-white/5">
                                 <span>Total</span>
-                                <span class="bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent"><?= formatPrice($total) ?></span>
+                                <span id="sum-total" class="bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent"><?= formatPrice($totals['total']) ?></span>
                             </div>
                         </div>
 
-                        <?php if ($subtotal < 100): ?>
+                        <?php if ($totals['free_remaining'] > 0): ?>
                         <p class="text-xs text-orange-400 mt-4 flex items-center gap-1">
-                            <i class="ri-truck-line"></i> Add <?= formatPrice(100 - $subtotal) ?> more for free shipping!
+                            <i class="ri-truck-line"></i> Add <?= formatPrice($totals['free_remaining']) ?> more for free shipping!
                         </p>
                         <?php endif; ?>
+                        <p class="text-xs text-gray-500 mt-3 flex items-center gap-1"><i class="ri-time-line"></i> Delivery in <?= e(setting('delivery_estimate')) ?></p>
                     </div>
                 </div>
             </div>
@@ -315,93 +286,119 @@ $total = $subtotal + $shipping + $tax;
         </div>
     </main>
 
-    <?php if (!empty($cartItems)): ?>
+    <?php if (!empty($cartItems) && $methods): ?>
     <script>
-    // Payment method selection - toggle instructions & highlight
     (function() {
-        const radios = document.querySelectorAll('input[name="payment_method"]');
-        const mpesaBox = document.getElementById('mpesa-instructions');
-        const bankBox = document.getElementById('bank-instructions');
-        const labels = document.querySelectorAll('.payment-option');
+        const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const form = document.getElementById('checkout-form');
+        const result = document.getElementById('checkout-result');
+        let appliedCoupon = '';
 
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                // Hide all instruction boxes
-                mpesaBox?.classList.add('hidden');
-                bankBox?.classList.add('hidden');
-
-                // Reset all label borders
-                labels.forEach(l => {
-                    l.classList.remove('border-neon-blue/50', 'bg-neon-blue/[.03]');
-                    l.classList.add('border-white/[.06]');
+        // ---- Payment method selection: highlight + show what happens next ----
+        form.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                form.querySelectorAll('.payment-option').forEach(label => {
+                    const on = label.contains(radio);
+                    label.classList.toggle('border-neon-blue/50', on);
+                    label.classList.toggle('border-white/[.06]', !on);
+                    label.querySelector('.payment-check').classList.toggle('invisible', !on);
                 });
-
-                // Highlight selected
-                const parent = this.closest('.payment-option');
-                if (parent) {
-                    parent.classList.remove('border-white/[.06]');
-                    parent.classList.add('border-neon-blue/50', 'bg-neon-blue/[.03]');
-                }
-
-                // Show relevant instructions
-                if (this.value === 'mpesa') mpesaBox?.classList.remove('hidden');
-                if (this.value === 'bank') bankBox?.classList.remove('hidden');
-
-                // Update radio indicator dots
-                document.querySelectorAll('.payment-option .w-5 .w-2').forEach(dot => dot.style.transform = 'scale(0)');
-                const dot = parent?.querySelector('.w-5 .w-2');
-                if (dot) dot.style.transform = 'scale(1)';
+                form.querySelectorAll('.payment-info').forEach(box => box.classList.toggle('hidden', box.dataset.method !== radio.value));
             });
         });
-    })();
 
-    document.getElementById('checkout-form')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('checkout-submit');
-        const result = document.getElementById('checkout-result');
-        const form = this;
-
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Processing...';
-
-        try {
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-            const res = await fetch('<?= e($basePath) ?>/api/checkout.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken || '' },
-                body: JSON.stringify(data)
-            });
-            const json = await res.json();
-
-            result.classList.remove('hidden', 'bg-red-500/10', 'border-red-500/20', 'text-red-400', 'bg-green-500/10', 'border-green-500/20', 'text-green-400');
-
-            if (json.success) {
-                result.classList.add('bg-green-500/10', 'border', 'border-green-500/20', 'text-green-400');
-                result.innerHTML = '<div class="text-center"><i class="ri-check-double-line text-3xl block mb-2"></i><strong>' + json.message + '</strong><br>Order #' + json.order_number + '<br>Total: ' + json.total + '</div>';
-                form.style.display = 'none';
-
-                // Clear local Cart
-                if (typeof Cart !== 'undefined') Cart.clear();
-                // Update cart badge
-                const badge = document.querySelector('.cart-count');
-                if (badge) { badge.textContent = '0'; badge.classList.add('hidden'); }
-            } else {
-                result.classList.add('bg-red-500/10', 'border', 'border-red-500/20', 'text-red-400');
-                result.innerHTML = '<i class="ri-error-warning-line"></i> ' + json.message;
-                btn.disabled = false;
-                btn.innerHTML = '<i class="ri-lock-line"></i> Place Order';
-            }
-        } catch (err) {
-            result.classList.remove('hidden');
-            result.classList.add('bg-red-500/10', 'border', 'border-red-500/20', 'text-red-400');
-            result.textContent = 'Network error. Please try again.';
-            btn.disabled = false;
-            btn.innerHTML = '<i class="ri-lock-line"></i> Place Order';
+        // ---- Coupon ----
+        const couponInput = document.getElementById('coupon-code');
+        const couponMsg = document.getElementById('coupon-message');
+        const sumIds = ['sum-shipping', 'sum-tax', 'sum-total', 'submit-total'];
+        const original = Object.fromEntries(sumIds.map(id => [id, document.getElementById(id).innerHTML]));
+        function showCouponMessage(text, ok) {
+            couponMsg.textContent = text;
+            couponMsg.className = 'text-xs mt-1.5 ' + (ok ? 'text-green-400' : 'text-red-400');
         }
-    });
+        // Back to the no-coupon totals rendered by the server
+        function clearCoupon() {
+            appliedCoupon = '';
+            document.getElementById('row-discount').classList.add('hidden');
+            sumIds.forEach(id => document.getElementById(id).innerHTML = original[id]);
+            document.querySelectorAll('.js-pay-amount').forEach(el => el.innerHTML = original['sum-total']);
+        }
+        async function applyCoupon() {
+            const code = couponInput.value.trim().toUpperCase();
+            if (!code) return;
+            try {
+                const res = await fetch('<?= e($basePath) ?>/api/coupon.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
+                    body: JSON.stringify({ code, email: document.getElementById('checkout-email').value })
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    clearCoupon();
+                    showCouponMessage(data.message, false);
+                    return;
+                }
+                appliedCoupon = data.code;
+                showCouponMessage(data.message, true);
+                document.getElementById('row-discount').classList.remove('hidden');
+                document.getElementById('sum-coupon').textContent = '(' + data.code + ')';
+                document.getElementById('sum-discount').textContent = data.totals.discount;
+                document.getElementById('sum-shipping').textContent = data.shipping_free ? 'Free' : data.totals.shipping;
+                document.getElementById('sum-tax').textContent = data.totals.tax;
+                document.getElementById('sum-total').textContent = data.totals.total;
+                document.getElementById('submit-total').textContent = data.totals.total;
+                document.querySelectorAll('.js-pay-amount').forEach(el => el.textContent = data.totals.total);
+            } catch (e) {
+                showCouponMessage('Could not check the coupon. Please try again.', false);
+            }
+        }
+        document.getElementById('coupon-apply').addEventListener('click', applyCoupon);
+        couponInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } });
+
+        // ---- Place order ----
+        function showResult(message, ok) {
+            result.textContent = message;
+            result.className = 'p-4 rounded-2xl text-sm border ' + (ok ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400');
+            result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!form.reportValidity()) return;
+            const btn = document.getElementById('checkout-submit');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Placing your order…';
+
+            try {
+                const data = Object.fromEntries(new FormData(form));
+                data.coupon_code = appliedCoupon;
+                const res = await fetch('<?= e($basePath) ?>/api/checkout.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
+                    body: JSON.stringify(data)
+                });
+                const json = await res.json();
+                if (json.success) {
+                    showResult(json.message + ' Order #' + json.order_number + ' — taking you to your order…', true);
+                    window.location.href = json.redirect;
+                    return;
+                }
+                if (json.field === 'coupon') {
+                    clearCoupon();
+                    showCouponMessage(json.message, false);
+                }
+                showResult(json.message || 'We could not place your order. Please try again.', false);
+                if (json.redirect && res.status === 401) window.location.href = json.redirect;
+            } catch (err) {
+                showResult('Network error. Please check your connection and try again.', false);
+            }
+            btn.disabled = false;
+            btn.innerHTML = original;
+        });
+    })();
     </script>
     <?php endif; ?>
 

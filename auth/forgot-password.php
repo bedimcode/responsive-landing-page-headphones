@@ -1,35 +1,58 @@
 <?php
 /**
- * Forgot Password Page
+ * Forgot Password Page — emails a one-time reset link
  */
-$pageTitle = 'Reset Password — Beats Audio';
-$pageDescription = 'Reset your Beats Audio account password.';
-$pageType = 'page';
-$noIndex = true;
+if (!defined('BASE_PATH')) define('BASE_PATH', dirname(__DIR__));
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 
-require_once __DIR__ . '/../includes/header.php';
-
+// All redirects must happen before any HTML output
 if (isLoggedIn()) {
-    header('Location: ' . APP_URL . '/');
-    exit;
+    redirect(APP_URL . '/');
 }
 
 $success = false;
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!validateCsrf($_POST['_token'] ?? '')) {
+    if (!validateCsrf()) {
         $error = 'Invalid security token. Please try again.';
     } else {
-        $email = trim($_POST['email'] ?? '');
+        $email = cleanText($_POST['email'] ?? '', 255);
         if (!isValidEmail($email)) {
             $error = 'Please enter a valid email address.';
         } else {
-            // Always show success to prevent email enumeration
-            $success = true;
+            try {
+                $db = getDB();
+                if (!tooManyAttempts($db, 'reset', $email, 3, 30)) {
+                    recordAttempt($db, 'reset', $email);
+
+                    $stmt = $db->prepare('SELECT id, name, email FROM users WHERE email = ? AND is_active = 1');
+                    $stmt->execute([$email]);
+                    if ($user = $stmt->fetch()) {
+                        // Only a hash of the token is stored; the email carries the token itself
+                        $token = bin2hex(random_bytes(32));
+                        $db->prepare('UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?')
+                           ->execute([hash('sha256', $token), date('Y-m-d H:i:s', time() + 3600), $user['id']]);
+                        sendPasswordReset($user['email'], $user['name'], absoluteUrl('/auth/reset-password.php?token=' . $token . '&id=' . $user['id']));
+                    }
+                }
+                // Same answer whether or not the account exists (prevents email enumeration)
+                $success = true;
+            } catch (Exception $e) {
+                error_log('Password reset request failed: ' . $e->getMessage());
+                $error = 'Something went wrong. Please try again.';
+            }
         }
     }
 }
+
+$pageTitle = 'Reset Password — ' . storeName();
+$pageDescription = 'Reset your ' . storeName() . ' account password.';
+$pageType = 'page';
+$noIndex = true;
+
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
     <main class="pt-32 pb-24 min-h-[70vh] flex items-center">
@@ -43,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="p-6 rounded-2xl bg-green-500/10 border border-green-500/20 text-center">
                 <i class="ri-mail-check-line text-4xl text-green-400 mb-3 block"></i>
                 <h2 class="text-white font-semibold text-lg mb-2">Check Your Email</h2>
-                <p class="text-gray-400 text-sm">If an account exists with that email, you&rsquo;ll receive a password reset link shortly.</p>
+                <p class="text-gray-400 text-sm">If an account exists with that email, you&rsquo;ll receive a password reset link shortly. The link expires in 60 minutes.</p>
                 <a href="<?= e($basePath) ?>/auth/login.php" class="inline-flex items-center gap-2 mt-6 text-neon-blue hover:underline text-sm font-medium">
                     <i class="ri-arrow-left-line"></i> Back to Sign In
                 </a>

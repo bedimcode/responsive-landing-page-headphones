@@ -1,7 +1,10 @@
 -- ============================================
 -- Headphones1.Duka — Database Schema
--- Run this in phpMyAdmin or MySQL CLI
--- Updated: April 4, 2026 — Added user dashboard tables
+-- Run this in phpMyAdmin or MySQL CLI (fresh installs only).
+-- Existing databases: run `php scripts/migrate.php` or use
+-- Admin → Settings → System instead of re-importing.
+-- Shared hosting: if your host already created the database, delete the
+-- CREATE DATABASE and USE lines below and import into that database.
 -- ============================================
 
 CREATE DATABASE IF NOT EXISTS headphones1_duka
@@ -110,6 +113,8 @@ CREATE TABLE orders (
     order_number VARCHAR(30) NOT NULL UNIQUE,
     status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
     subtotal DECIMAL(10,2) NOT NULL,
+    discount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    coupon_code VARCHAR(40) NULL,
     shipping_cost DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     tax DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     total DECIMAL(10,2) NOT NULL,
@@ -125,6 +130,7 @@ CREATE TABLE orders (
     -- Payment
     payment_method VARCHAR(50) NOT NULL DEFAULT 'card',
     payment_status ENUM('pending', 'paid', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
+    payment_reference VARCHAR(100) NULL,
     -- Tracking
     tracking_number VARCHAR(100) NULL,
     -- Notes
@@ -210,8 +216,50 @@ CREATE TABLE newsletter (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    token VARCHAR(64) NULL UNIQUE,
     subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_email (email)
+) ENGINE=InnoDB;
+
+-- ============ COUPONS ============
+CREATE TABLE coupons (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(40) NOT NULL UNIQUE,
+    description VARCHAR(255) NULL,
+    type ENUM('percent', 'fixed') NOT NULL DEFAULT 'percent',
+    value DECIMAL(10,2) NOT NULL,
+    min_subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    max_uses INT UNSIGNED NULL,
+    used_count INT UNSIGNED NOT NULL DEFAULT 0,
+    once_per_customer TINYINT(1) NOT NULL DEFAULT 0,
+    starts_at DATETIME NULL,
+    expires_at DATETIME NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ============ TESTIMONIALS ============
+CREATE TABLE testimonials (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    role VARCHAR(100) NULL,
+    quote TEXT NOT NULL,
+    rating TINYINT UNSIGNED NOT NULL DEFAULT 5,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ============ AUTH ATTEMPTS (login / reset throttling) ============
+CREATE TABLE auth_attempts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    action VARCHAR(30) NOT NULL,
+    attempt_key VARCHAR(255) NOT NULL,
+    ip VARCHAR(45) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_action_key (action, attempt_key, created_at),
+    INDEX idx_action_ip (action, ip, created_at)
 ) ENGINE=InnoDB;
 
 -- ============ CONTACT MESSAGES ============
@@ -248,25 +296,30 @@ INSERT INTO products (category_id, name, slug, description, short_description, p
 
 -- ============================================
 -- SEED DATA — Default Admin User
--- Password: Admin@123 (change immediately after first login)
--- Hash generated with password_hash('Admin@123', PASSWORD_DEFAULT)
+-- Email: admin@beats3.store · Password: Admin@123
+-- Change both right after your first login (Admin → My Profile);
+-- the dashboard shows a warning until you do.
 -- ============================================
 INSERT INTO users (name, email, password_hash, role) VALUES
-    ('Admin', 'admin@beats3.store', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+    ('Admin', 'admin@beats3.store', '$2y$10$zD7OCUVTdLXQXklGC7oS/.rY5iihnXJ4F5C1hK3sjXbPcmCjrT2f2', 'admin');
 
 -- ============================================
--- SEED DATA — Default Site Settings
+-- SITE SETTINGS
+-- No rows needed: defaults live in settingDefaults() (includes/functions.php)
+-- and anything saved in Admin → Settings is stored in site_settings.
 -- ============================================
-INSERT INTO site_settings (setting_key, setting_value) VALUES
-    ('store_name', 'Beats 3 Store'),
-    ('store_email', 'support@beats3.store'),
-    ('store_phone', '+1 (555) 123-4567'),
-    ('store_address', '123 Audio Street, Los Angeles, CA 90001'),
-    ('currency_symbol', '$'),
-    ('currency_code', 'USD'),
-    ('tax_rate', '8'),
-    ('shipping_flat_rate', '9.99'),
-    ('free_shipping_minimum', '100'),
-    ('low_stock_threshold', '10'),
-    ('orders_per_page', '20'),
-    ('maintenance_mode', '0');
+
+-- ============================================
+-- SEED DATA — Demo coupons and sample testimonials
+-- Replace with your own in Admin → Coupons and Admin → Testimonials.
+-- ============================================
+INSERT INTO coupons (code, description, type, value, once_per_customer, expires_at) VALUES
+    ('HOLIDAY10', 'Holiday sale — 10% off any order', 'percent', 10, 0, '2026-12-31 23:59:59'),
+    ('WELCOME10', 'Newsletter welcome — 10% off a first order', 'percent', 10, 1, NULL);
+
+INSERT INTO testimonials (name, role, quote, rating, sort_order) VALUES
+    ('James Rodriguez', 'Music Producer', 'The sound quality is absolutely insane. These are now my daily drivers in the studio. The bass is deep without being muddy.', 5, 1),
+    ('Sarah Kim', 'Travel Blogger', '40 hours of battery is no joke. I use these on long flights and still have charge left when I land.', 5, 2),
+    ('Marcus Thompson', 'Tech Reviewer', 'The build quality feels premium, the cushions are like clouds, and they fold flat for my backpack.', 4, 3),
+    ('Aisha Nakamura', 'Audio Engineer', 'Clear mids, controlled highs and a fun low end. They look great too.', 5, 4),
+    ('Carlos Perez', 'Fitness Coach', 'Fast charging is a lifesaver. Ten minutes on the cable gave me enough for my whole workout.', 5, 5);

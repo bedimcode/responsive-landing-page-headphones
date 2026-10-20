@@ -17,7 +17,7 @@ try {
     if ($method === 'GET') {
         $cart = getOrCreateCart($db);
         $stmt = $db->prepare('
-            SELECT ci.id, ci.quantity, p.id AS product_id, p.name, p.slug, p.color, p.price, p.sale_price, p.image, p.stock
+            SELECT ci.id, ci.quantity, p.id AS product_id, p.name, p.slug, p.color, p.price, p.sale_price, p.image, p.stock, p.is_active
             FROM cart_items ci
             JOIN products p ON p.id = ci.product_id
             WHERE ci.cart_id = ?
@@ -28,7 +28,7 @@ try {
 
         $total = 0;
         foreach ($items as &$item) {
-            $item['effective_price'] = $item['sale_price'] ?: $item['price'];
+            $item['effective_price'] = effectivePrice($item);
             $item['line_total'] = $item['effective_price'] * $item['quantity'];
             $total += $item['line_total'];
         }
@@ -40,12 +40,12 @@ try {
 
     // ---------- POST methods require CSRF ----------
     if ($method === 'POST') {
+        maintenanceGate(true);
         $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
         $action = $input['action'] ?? '';
 
-        // CSRF check
-        $token = $input['_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
-        if (!validateCsrf($token)) {
+        // CSRF check (X-CSRF-TOKEN header)
+        if (!validateCsrf()) {
             http_response_code(403);
             echo json_encode(['success' => false, 'message' => 'Invalid security token. Please refresh the page.']);
             exit;
@@ -59,7 +59,7 @@ try {
             $qty = max(1, (int) ($input['quantity'] ?? 1));
 
             $product = getProductById($db, $productId);
-            if (!$product) {
+            if (!$product || !$product['is_active']) {
                 http_response_code(404);
                 echo json_encode(['success' => false, 'message' => 'Product not found.']);
                 exit;

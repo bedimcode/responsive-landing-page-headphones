@@ -146,54 +146,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==============================
     const heroImg = document.getElementById('hero-product-img');
     const heroAddBtn = document.getElementById('hero-add-to-cart');
+    const heroPrice = document.getElementById('hero-price');
     const colorSwatches = document.querySelectorAll('#hero-colors .color-swatch');
 
-    const colorNames = {
-        'black': 'Beats 3 — Black',
-        'red-black': 'Beats 3 — Red Black',
-        'night-black': 'Beats 3 — Night Black',
-        'blue': 'Beats 3 — Blue',
-        'gray': 'Beats 3 — Twilight Gray'
-    };
-
+    // Each swatch carries its product's id, name, price and image (set by PHP)
     colorSwatches.forEach(swatch => {
         swatch.addEventListener('click', () => {
             colorSwatches.forEach(s => s.classList.remove('active'));
             swatch.classList.add('active');
 
-            const newImg = swatch.dataset.img;
-            const color = swatch.dataset.color;
-
             // Animate image swap
             heroImg.classList.add('switching');
             setTimeout(() => {
-                heroImg.src = newImg;
-                heroImg.alt = `Beats 3 Wireless Headphones in ${swatch.title}`;
+                heroImg.src = swatch.dataset.img;
+                heroImg.alt = swatch.dataset.name;
                 heroImg.classList.remove('switching');
             }, 300);
 
-            // Update hero add-to-cart button data
+            // Point the hero add-to-cart button at the chosen product
             if (heroAddBtn) {
-                heroAddBtn.dataset.id = 'beats3-' + color;
-                heroAddBtn.dataset.name = colorNames[color] || 'Beats 3';
-                heroAddBtn.dataset.img = newImg;
+                heroAddBtn.dataset.id = swatch.dataset.id;
+                heroAddBtn.dataset.name = swatch.dataset.name;
+                heroAddBtn.dataset.price = swatch.dataset.price;
+                heroAddBtn.dataset.img = swatch.dataset.img;
             }
+            if (heroPrice) heroPrice.textContent = swatch.dataset.priceLabel;
         });
-    });
-
-    // ==============================
-    // SPONSOR SECTION ANIMATION
-    // ==============================
-    gsap.from('.sponsor-item', {
-        scrollTrigger: {
-            trigger: '#sponsors',
-            start: 'top 85%',
-        },
-        y: 30,
-        opacity: 0,
-        stagger: 0.1,
-        duration: 0.8,
-        ease: 'power2.out'
     });
 
     // ==============================
@@ -335,8 +313,10 @@ document.addEventListener('DOMContentLoaded', () => {
         name: card.dataset.name,
         price: parseFloat(card.dataset.price),
         img: card.dataset.img,
-        color: card.dataset.color || '',
-        swatch: card.dataset.colorHex || '#1a1a1a'
+        url: card.dataset.url || '',
+        color: card.dataset.color || card.dataset.name,
+        swatch: card.dataset.colorHex || '#1a1a1a',
+        inStock: !!card.querySelector('.add-to-cart-btn')
     }));
 
     function openQuickView(productId) {
@@ -344,24 +324,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!product) return;
 
         document.getElementById('qv-image').src = product.img;
+        document.getElementById('qv-image').alt = product.name;
         document.getElementById('qv-title').textContent = product.color;
-        document.getElementById('qv-price').textContent = '$' + product.price;
+        document.getElementById('qv-price').textContent = Cart.formatMoney(product.price);
         document.getElementById('qv-color-name').textContent = product.color;
+        const qvLink = document.getElementById('qv-link');
+        if (qvLink && product.url) qvLink.href = product.url;
 
         const addBtn = document.getElementById('qv-add-btn');
         addBtn.dataset.id = product.id;
         addBtn.dataset.name = product.name;
         addBtn.dataset.price = product.price;
         addBtn.dataset.img = product.img;
+        addBtn.disabled = !product.inStock;
+        addBtn.classList.toggle('opacity-40', !product.inStock);
+        addBtn.lastChild.textContent = product.inStock ? ' Add to Cart' : ' Out of Stock';
 
-        // Render color swatches in modal
+        // Render color swatches in modal (built with DOM APIs — no HTML injection)
         const colorsContainer = document.getElementById('qv-colors');
-        colorsContainer.innerHTML = products.map(p => `
-            <button class="w-7 h-7 rounded-full border-2 transition-all hover:scale-110 ${p.id === product.id ? 'border-white/50 scale-110' : 'border-transparent'}"
-                style="background: ${p.swatch}" title="${p.color}"
-                onclick="document.getElementById('quickview-modal').dispatchEvent(new CustomEvent('switchColor', {detail: '${p.id}'}))">
-            </button>
-        `).join('');
+        colorsContainer.replaceChildren(...products.map(p => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = `w-7 h-7 rounded-full border-2 transition-all hover:scale-110 ${p.id === product.id ? 'border-white/50 scale-110' : 'border-transparent'}`;
+            b.style.background = p.swatch;
+            b.title = p.color;
+            b.setAttribute('aria-label', p.color);
+            b.addEventListener('click', () => openQuickView(p.id));
+            return b;
+        }));
 
         qvModal.classList.add('open');
         qvOverlay.classList.add('open');
@@ -373,11 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
         qvOverlay?.classList.remove('open');
         document.documentElement.classList.remove('lenis-stopped');
     }
-
-    // Switch color inside quickview
-    qvModal?.addEventListener('switchColor', (e) => {
-        openQuickView(e.detail);
-    });
 
     // Click product card image area to open quickview
     document.querySelectorAll('.product-card').forEach(card => {
@@ -409,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function goToSlide(index) {
+        if (!slider) return;
         currentSlide = Math.max(0, Math.min(index, getMaxSlide()));
         const slideWidth = 100 / getSlidesPerView();
         gsap.to(slider, {
@@ -441,60 +427,67 @@ document.addEventListener('DOMContentLoaded', () => {
         goToSlide(Math.min(currentSlide, getMaxSlide()));
     });
 
-    // Testimonials scroll reveal
-    gsap.from('.testimonial-slide', {
-        scrollTrigger: {
-            trigger: '#testimonials',
-            start: 'top 75%',
-        },
-        y: 40,
-        opacity: 0,
-        stagger: 0.1,
-        duration: 0.8,
-        ease: 'power2.out'
-    });
+    // Testimonials scroll reveal (section is hidden when there are no testimonials)
+    if (slides.length) {
+        gsap.from('.testimonial-slide', {
+            scrollTrigger: {
+                trigger: '#testimonials',
+                start: 'top 75%',
+            },
+            y: 40,
+            opacity: 0,
+            stagger: 0.1,
+            duration: 0.8,
+            ease: 'power2.out'
+        });
+    }
 
     // ==============================
-    // DISCOUNT SECTION ANIMATION
+    // PROMOTION SECTION ANIMATION
     // ==============================
-    gsap.from('.discount-text', {
-        scrollTrigger: {
-            trigger: '.discount-text',
-            start: 'top 80%',
-        },
-        x: -50,
-        opacity: 0,
-        duration: 1,
-        ease: 'power2.out'
-    });
+    if (document.getElementById('offer')) {
+        gsap.from('.discount-text', {
+            scrollTrigger: {
+                trigger: '.discount-text',
+                start: 'top 80%',
+            },
+            x: -50,
+            opacity: 0,
+            duration: 1,
+            ease: 'power2.out'
+        });
 
-    gsap.from('.discount-image', {
-        scrollTrigger: {
-            trigger: '.discount-image',
-            start: 'top 85%',
-        },
-        x: 50,
-        opacity: 0,
-        duration: 1,
-        ease: 'power2.out'
-    });
+        gsap.from('.discount-image', {
+            scrollTrigger: {
+                trigger: '.discount-image',
+                start: 'top 85%',
+            },
+            x: 50,
+            opacity: 0,
+            duration: 1,
+            ease: 'power2.out'
+        });
+    }
 
     // ==============================
     // COUNTDOWN TIMER
     // ==============================
     function startCountdown() {
-        // Set end date to 7 days from now (persisted per session)
-        let endTime = sessionStorage.getItem('beats3_countdown_end');
-        if (!endTime) {
-            endTime = Date.now() + 7 * 24 * 60 * 60 * 1000;
-            sessionStorage.setItem('beats3_countdown_end', endTime);
-        }
-        endTime = Number(endTime);
+        // Counts down to the promotion end date set in Admin → Settings → Marketing
+        const countdown = document.getElementById('countdown');
+        const endTime = Number(countdown?.dataset.ends);
+        if (!endTime) return;
 
+        let timer = null;
         function tick() {
             const now = Date.now();
             let diff = endTime - now;
-            if (diff <= 0) diff = 0;
+            if (diff <= 0) {
+                // Offer is over: hide the whole promotion instead of showing 00:00
+                document.getElementById('offer')?.remove();
+                clearInterval(timer);
+                return;
+            }
 
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -513,9 +506,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         tick();
-        setInterval(tick, 1000);
+        timer = setInterval(tick, 1000);
     }
     startCountdown();
+
+    // Promo code: click to copy
+    document.querySelectorAll('.promo-code').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(btn.dataset.code);
+                Cart.showToast(`Code ${btn.dataset.code} copied — paste it at checkout`, false, true);
+            } catch (e) {
+                Cart.showToast(`Use code ${btn.dataset.code} at checkout`, false, true);
+            }
+        });
+    });
 
     // ==============================
     // FAQ ACCORDION (GSAP)
@@ -567,13 +572,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // NEWSLETTER FORM
     // ==============================
     const newsletterForm = document.getElementById('newsletter-form');
-    newsletterForm?.addEventListener('submit', (e) => {
+    newsletterForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const emailInput = document.getElementById('newsletter-email');
+        const submitBtn = newsletterForm.querySelector('button[type="submit"]');
         if (!emailInput?.value) return;
 
-        // Replace form with success message
-        newsletterForm.innerHTML = '<p class="newsletter-success"><i class="ri-check-line"></i> Thank you! Check your inbox for your 10% off code.</p>';
+        submitBtn.disabled = true;
+        try {
+            const res = await fetch(newsletterForm.getAttribute('action'), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({ email: emailInput.value })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const msg = document.createElement('p');
+                msg.className = 'newsletter-success';
+                msg.innerHTML = '<i class="ri-check-line"></i> ';
+                msg.append(data.message);
+                newsletterForm.replaceWith(msg);
+            } else {
+                Cart.showToast(data.message || 'Could not subscribe. Please try again.', true);
+                submitBtn.disabled = false;
+            }
+        } catch (err) {
+            Cart.showToast('Network error. Please try again.', true);
+            submitBtn.disabled = false;
+        }
     });
 
     // ==============================

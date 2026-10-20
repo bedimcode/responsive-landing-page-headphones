@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCsrf()) {
         $error = 'Invalid security token. Please try again.';
     } else {
-        $name = sanitize($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
+        $name = cleanText($_POST['name'] ?? '', 100);
+        $email = cleanText($_POST['email'] ?? '', 255);
         $password = $_POST['password'] ?? '';
         $confirm = $_POST['password_confirm'] ?? '';
 
         $errors = [];
-        if (strlen($name) < 2) $errors[] = 'Name must be at least 2 characters.';
+        if (mb_strlen($name) < 2) $errors[] = 'Name must be at least 2 characters.';
         if (!isValidEmail($email)) $errors[] = 'Please enter a valid email address.';
         if (strlen($password) < 8) $errors[] = 'Password must be at least 8 characters.';
         if (!preg_match('/[A-Z]/', $password) || !preg_match('/[0-9]/', $password)) {
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Migrate guest cart to new user account
                     mergeGuestCartToUser($db, $oldSessionId, $userId);
 
-                    setFlash('success', 'Welcome to Beats, ' . e($name) . '! Your account has been created.');
+                    setFlash('success', 'Welcome to ' . storeName() . ', ' . $name . '! Your account has been created.');
                     $redirect = $_SESSION['redirect_after_login'] ?? APP_URL . '/';
                     unset($_SESSION['redirect_after_login']);
                     redirect($redirect);
@@ -73,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // HTML output starts here
-$pageTitle = 'Create Account — Beats Audio';
-$pageDescription = 'Create your Beats Audio account for faster checkout and order tracking.';
+$pageTitle = 'Create Account — ' . storeName();
+$pageDescription = 'Create your ' . storeName() . ' account for faster checkout and order tracking.';
 $pageType = 'page';
 $noIndex = true;
 
@@ -85,7 +85,7 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="text-center mb-10">
                 <h1 class="font-display text-3xl lg:text-4xl font-bold text-white mb-2">Create Account</h1>
-                <p class="text-gray-500">Join the Beats community for exclusive benefits</p>
+                <p class="text-gray-500">Track orders, save addresses and check out faster</p>
             </div>
 
             <?php if ($error): ?>

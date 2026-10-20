@@ -5,17 +5,20 @@
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/functions.php';
 
-$pageTitle       = 'Shop';
-$pageDescription = 'Browse our collection of premium Beats 3 wireless headphones. Studio-grade sound, 40-hour battery, and Bluetooth 5.2 in 5 stunning colors.';
+$pageTitle       = 'Shop — ' . storeName();
+$pageDescription = 'Browse our collection of premium wireless headphones. Studio-grade sound, 40-hour battery and Bluetooth 5.2. ' . shippingSummary() . '.';
 $pageType        = 'page';
-$canonical       = APP_URL . '/shop.php';
+$canonical       = absoluteUrl('/shop.php');
 
 $db = getDB();
 
 // Filters
-$categorySlug = $_GET['category'] ?? '';
-$sort         = $_GET['sort'] ?? 'newest';
-$search       = trim($_GET['q'] ?? '');
+$categorySlug = is_string($_GET['category'] ?? null) ? $_GET['category'] : '';
+$sort         = is_string($_GET['sort'] ?? null) ? $_GET['sort'] : 'newest';
+$search       = cleanText($_GET['q'] ?? '', 100);
+$lowStockAt   = (int) setting('low_stock_threshold');
+// Search results should not be indexed as separate pages
+$noIndex      = $search !== '';
 
 // Get data
 $categories = getCategoriesWithCount($db);
@@ -27,7 +30,8 @@ if ($categorySlug) {
     foreach ($categories as $cat) {
         if ($cat['slug'] === $categorySlug) {
             $activeCategoryName = $cat['name'];
-            $pageTitle = $cat['name'] . ' — Shop';
+            $pageTitle = $cat['name'] . ' — ' . storeName();
+            $canonical = absoluteUrl('/shop.php?category=' . rawurlencode($cat['slug']));
             break;
         }
     }
@@ -65,7 +69,7 @@ require_once __DIR__ . '/includes/header.php';
             <?php if ($sort !== 'newest'): ?><input type="hidden" name="sort" value="<?= e($sort) ?>"><?php endif; ?>
             <div class="relative">
                 <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
-                <input type="text" name="q" value="<?= e($search) ?>" placeholder="Search products…"
+                <input type="search" name="q" value="<?= e($search) ?>" placeholder="Search products…" aria-label="Search products"
                        class="w-full pl-9 pr-4 py-2.5 bg-dark-900/60 border border-white/[.06] rounded-xl text-sm text-white placeholder-gray-500
                               focus:outline-none focus:border-neon-blue/30 transition-colors">
             </div>
@@ -89,7 +93,7 @@ require_once __DIR__ . '/includes/header.php';
 
         <!-- Sort -->
         <div class="relative">
-            <select onchange="window.location.href=this.value"
+            <select onchange="window.location.href=this.value" aria-label="Sort products"
                     class="appearance-none pl-3 pr-8 py-2.5 bg-dark-900/60 border border-white/[.06] rounded-xl text-xs text-gray-300 focus:outline-none focus:border-neon-blue/30 cursor-pointer transition-colors">
                 <?php
                 $sortOptions = ['newest' => 'Newest', 'price_asc' => 'Price: Low → High', 'price_desc' => 'Price: High → Low', 'name_asc' => 'Name: A–Z', 'name_desc' => 'Name: Z–A'];
@@ -114,7 +118,7 @@ require_once __DIR__ . '/includes/header.php';
     <?php else: ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
         <?php foreach ($products as $product):
-            $effectivePrice = $product['sale_price'] ?? $product['price'];
+            $effectivePrice = effectivePrice($product);
             $inStock = $product['stock'] > 0;
         ?>
         <div class="group bg-dark-900/60 border border-white/[.06] rounded-2xl overflow-hidden hover:border-white/10 transition-all">
@@ -124,9 +128,9 @@ require_once __DIR__ . '/includes/header.php';
                     <img src="<?= e(APP_URL) ?>/<?= e($product['image']) ?>" alt="<?= e($product['name']) ?> headphones"
                          class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy">
                 </div>
-                <?php if ($product['sale_price']): ?>
+                <?php if (isOnSale($product)): ?>
                 <div class="absolute top-3 left-3 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
-                    -<?= round((1 - $product['sale_price'] / $product['price']) * 100) ?>%
+                    -<?= (int) round((1 - $effectivePrice / $product['price']) * 100) ?>%
                 </div>
                 <?php endif; ?>
                 <?php if ($product['featured']): ?>
@@ -151,19 +155,19 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="flex items-center justify-between mt-3">
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-white"><?= formatPrice($effectivePrice) ?></span>
-                        <?php if ($product['sale_price']): ?>
+                        <?php if (isOnSale($product)): ?>
                         <span class="text-xs text-gray-600 line-through"><?= formatPrice($product['price']) ?></span>
                         <?php endif; ?>
                     </div>
-                    <?php if ($inStock && $product['stock'] <= 10): ?>
-                    <span class="text-[10px] text-yellow-400">Only <?= $product['stock'] ?> left</span>
+                    <?php if ($inStock && $product['stock'] <= $lowStockAt): ?>
+                    <span class="text-[10px] text-yellow-400">Only <?= (int) $product['stock'] ?> left</span>
                     <?php endif; ?>
                 </div>
 
                 <?php if ($inStock): ?>
                 <button class="add-to-cart-btn w-full mt-3 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white/[.04] border border-white/[.06] text-sm font-medium text-gray-300 rounded-xl hover:bg-neon-blue hover:text-dark-950 hover:border-neon-blue transition-all"
                         data-id="<?= (int) $product['id'] ?>" data-name="<?= e($product['name']) ?>"
-                        data-price="<?= $effectivePrice ?>" data-img="<?= e(APP_URL) ?>/<?= e($product['image']) ?>">
+                        data-price="<?= e((string) $effectivePrice) ?>" data-img="<?= e(APP_URL) ?>/<?= e($product['image']) ?>">
                     <i class="ri-shopping-cart-2-line text-sm"></i> Add to Cart
                 </button>
                 <?php endif; ?>
@@ -176,32 +180,28 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- JSON-LD: ItemList for SEO -->
 <script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "<?= e($activeCategoryName ?: 'All Products') ?>",
-    "numberOfItems": <?= count($products) ?>,
-    "itemListElement": [
-        <?php foreach ($products as $i => $p): if ($i > 0) echo ','; ?>
-        {
-            "@type": "ListItem",
-            "position": <?= $i + 1 ?>,
-            "item": {
-                "@type": "Product",
-                "name": <?= json_encode($p['name']) ?>,
-                "url": <?= json_encode(APP_URL . '/product.php?slug=' . $p['slug']) ?>,
-                "image": <?= json_encode(APP_URL . '/' . $p['image']) ?>,
-                "offers": {
-                    "@type": "Offer",
-                    "price": "<?= number_format($p['sale_price'] ?? $p['price'], 2, '.', '') ?>",
-                    "priceCurrency": "USD",
-                    "availability": "<?= $p['stock'] > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' ?>"
-                }
-            }
-        }
-        <?php endforeach; ?>
-    ]
-}
+<?= jsonForScript([
+    '@context'        => 'https://schema.org',
+    '@type'           => 'ItemList',
+    'name'            => $activeCategoryName ?: 'All Products',
+    'numberOfItems'   => count($products),
+    'itemListElement' => array_map(fn($i, $p) => [
+        '@type'    => 'ListItem',
+        'position' => $i + 1,
+        'item'     => [
+            '@type'  => 'Product',
+            'name'   => $p['name'],
+            'url'    => absoluteUrl('/product.php?slug=' . rawurlencode($p['slug'])),
+            'image'  => absoluteUrl($p['image']),
+            'offers' => [
+                '@type'         => 'Offer',
+                'price'         => number_format(effectivePrice($p), 2, '.', ''),
+                'priceCurrency' => setting('currency_code'),
+                'availability'  => $p['stock'] > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            ],
+        ],
+    ], array_keys($products), $products),
+]) ?>
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

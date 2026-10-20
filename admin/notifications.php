@@ -23,7 +23,7 @@ try {
             'icon'  => 'ri-shopping-bag-3-line',
             'color' => 'text-neon-blue bg-neon-blue/10',
             'title' => 'New pending order from ' . e($o['shipping_name']),
-            'body'  => 'Order #' . e($o['order_number']) . ' · $' . number_format($o['total'], 2),
+            'body'  => 'Order #' . e($o['order_number']) . ' · '.formatPrice($o['total']),
             'time'  => $o['created_at'],
             'href'  => $basePath . '/admin/order-view.php?id=' . (int)$o['id'],
             'read'  => false,
@@ -55,12 +55,14 @@ try {
         $unreadCount++;
     }
 
-    // Low stock (< 5 critical, < 10 warning)
-    $lowStock = $db->query("
+    // Low stock (at or below the threshold in Settings; 3 or fewer is critical)
+    $lowStockStmt = $db->prepare("
         SELECT id, name, stock, price
-        FROM products WHERE stock < 10 AND is_active=1
+        FROM products WHERE stock <= ? AND is_active=1
         ORDER BY stock ASC LIMIT 20
-    ")->fetchAll();
+    ");
+    $lowStockStmt->execute([(int) setting('low_stock_threshold')]);
+    $lowStock = $lowStockStmt->fetchAll();
     foreach ($lowStock as $p) {
         $critical = $p['stock'] <= 3;
         $notifications[] = [

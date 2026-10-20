@@ -4,7 +4,10 @@
  * for the display-only Vercel deployment (Vercel runs no PHP or MySQL).
  *
  * Requires the local XAMPP site (Apache + MySQL) to be running.
- * Usage: C:\xampp\php\php.exe scripts/export-static.php [base-url]
+ * Usage: C:\xampp\php\php.exe scripts/export-static.php [source-url] [--site-url=https://your-demo.vercel.app]
+ *   source-url  where the PHP site runs locally (default: APP_URL)
+ *   --site-url  public address of the static demo; used for the sitemap and
+ *               for canonical / social-share links (they stay relative without it)
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -15,7 +18,11 @@ if (PHP_SAPI !== 'cli') {
 define('BASE_PATH', dirname(__DIR__));
 require_once BASE_PATH . '/includes/config.php';
 
-$baseUrl = rtrim($argv[1] ?? APP_URL, '/');
+$args    = array_slice($argv, 1);
+$siteArg = current(array_filter($args, fn($a) => str_starts_with($a, '--site-url='))) ?: '';
+$siteUrl = rtrim(substr($siteArg, strlen('--site-url=')), '/');
+$posArgs = array_values(array_filter($args, fn($a) => !str_starts_with($a, '--')));
+$baseUrl = rtrim($posArgs[0] ?? APP_URL, '/');
 $outDir  = BASE_PATH . '/static-site';
 
 // ============ CATALOG ============
@@ -68,7 +75,16 @@ function fetchPage(string $url, int $expectedStatus): string {
     return $html;
 }
 
-function rewriteHtml(string $html, string $baseUrl, array $staticRoutes): string {
+function rewriteHtml(string $html, string $baseUrl, array $staticRoutes, string $siteUrl = ''): string {
+    // Canonical and social-share URLs must stay absolute: point them at the public demo
+    if ($siteUrl !== '') {
+        $html = preg_replace_callback(
+            '#(<link rel="canonical" href="|<meta (?:property|name)="(?:og:url|og:image|twitter:image)" content=")' . preg_quote($baseUrl, '#') . '([^"]*)#',
+            fn($m) => $m[1] . $siteUrl . cleanStaticPath($m[2]),
+            $html
+        );
+    }
+
     // Absolute and base-path links → site root (plain and JSON-escaped forms)
     $basePath = rtrim(parse_url($baseUrl, PHP_URL_PATH) ?? '', '/');
     foreach (array_filter([$baseUrl, $basePath]) as $prefix) {
@@ -107,6 +123,22 @@ function rewriteHtml(string $html, string $baseUrl, array $staticRoutes): string
     return preg_replace('#<head\b[^>]*>#i', "$0\n    <script src=\"/assets/js/demo-mode.js\"></script>", $html, 1);
 }
 
+/**
+ * PHP path → the clean path the static build serves (/product.php?slug=x → /product/x).
+ */
+function cleanStaticPath(string $path): string {
+    $parts = parse_url($path);
+    parse_str(html_entity_decode($parts['query'] ?? ''), $query);
+    $file = $parts['path'] ?? '/';
+    return match (true) {
+        $file === '/' || $file === '/index.php'                => '/',
+        $file === '/product.php' && isset($query['slug'])       => '/product/' . rawurlencode($query['slug']),
+        $file === '/shop.php' && !empty($query['category'])     => '/shop/' . rawurlencode($query['category']),
+        str_ends_with($file, '.php')                            => substr($file, 0, -4),
+        default                                                 => $file,
+    };
+}
+
 function writeFile(string $path, string $contents): void {
     if (!is_dir(dirname($path))) mkdir(dirname($path), 0755, true);
     file_put_contents($path, $contents);
@@ -141,11 +173,12 @@ mkdir($outDir, 0755, true);
 
 foreach ($pages as $source => [$file, $status]) {
     $html = fetchPage($baseUrl . '/' . $source, $status);
-    writeFile("$outDir/$file", rewriteHtml($html, $baseUrl, $staticRoutes));
+    writeFile("$outDir/$file", rewriteHtml($html, $baseUrl, $staticRoutes, $siteUrl));
     echo "  $file\n";
 }
 
 copyDir(BASE_PATH . '/assets', "$outDir/assets");
+@unlink("$outDir/assets/css/tailwind.src.css");
 
 $demoProducts = array_map(fn($p) => [
     'id'         => (int) $p['id'],
@@ -161,7 +194,18 @@ $shim = file_get_contents(__DIR__ . '/static/demo-mode.js');
 $shim = str_replace('/*__DEMO_PRODUCTS__*/[]', json_encode($demoProducts, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $shim);
 writeFile("$outDir/assets/js/demo-mode.js", $shim);
 
-$robots = preg_replace('#^Sitemap:.*\R?#mi', '', file_get_contents(BASE_PATH . '/robots.txt'));
+// robots.txt + sitemap.xml for the public demo address
+$robots = preg_replace('#^Sitemap:.*\R?#mi', '', fetchPage($baseUrl . '/robots.txt', 200));
+if ($siteUrl !== '') {
+    $robots = rtrim($robots) . "\n\nSitemap: $siteUrl/sitemap.xml\n";
+    $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($pages as $source => [$file, $status]) {
+        if ($status !== 200 || str_starts_with($file, 'auth/')) continue;
+        $sitemap .= '    <url><loc>' . htmlspecialchars($siteUrl . cleanStaticPath('/' . $source), ENT_XML1) . "</loc></url>\n";
+    }
+    writeFile("$outDir/sitemap.xml", $sitemap . "</urlset>\n");
+    echo "  sitemap.xml\n";
+}
 writeFile("$outDir/robots.txt", $robots);
 
 // ============ LEFTOVER CHECK ============

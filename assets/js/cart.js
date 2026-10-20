@@ -15,7 +15,16 @@ const Cart = (() => {
     function esc(str) {
         const div = document.createElement('div');
         div.textContent = String(str);
-        return div.innerHTML;
+        return div.innerHTML.replace(/"/g, '&quot;');
+    }
+
+    // ---- Money (store currency from window.STORE_CURRENCY, set in the page header) ----
+    function formatMoney(amount) {
+        const cur = window.STORE_CURRENCY || { symbol: '$', decimals: 2 };
+        const n = Number(amount) || 0;
+        const num = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: cur.decimals, maximumFractionDigits: cur.decimals });
+        const formatted = /\p{L}$/u.test(cur.symbol) ? `${cur.symbol} ${num}` : `${cur.symbol}${num}`;
+        return (n < 0 ? '−' : '') + formatted;
     }
 
     // ---- CSRF Token ----
@@ -129,28 +138,30 @@ const Cart = (() => {
         }
 
         container.innerHTML = items.map(item => {
-            const effectivePrice = item.sale_price || item.price;
+            const effectivePrice = item.effective_price ?? item.price;
             const imgSrc = item.image.startsWith('http') ? item.image : basePath + '/' + item.image;
+            const id = Number(item.id);
+            const qty = Number(item.quantity);
             return `
-            <div class="cart-item" data-item-id="${esc(item.id)}">
+            <div class="cart-item" data-item-id="${id}">
                 <img src="${esc(imgSrc)}" alt="${esc(item.name)}">
                 <div class="cart-item-info">
                     <p class="cart-item-name">${esc(item.name)}</p>
-                    <p class="cart-item-price">$${Number(effectivePrice).toFixed(2)}</p>
+                    <p class="cart-item-price">${esc(formatMoney(effectivePrice))}</p>
                     <div class="cart-item-qty">
-                        <button onclick="Cart.updateQty(${esc(item.id)}, ${item.quantity - 1})" aria-label="Decrease quantity">−</button>
-                        <span>${esc(item.quantity)}</span>
-                        <button onclick="Cart.updateQty(${esc(item.id)}, ${item.quantity + 1})" aria-label="Increase quantity">+</button>
+                        <button onclick="Cart.updateQty(${id}, ${qty - 1})" aria-label="Decrease quantity">−</button>
+                        <span>${qty}</span>
+                        <button onclick="Cart.updateQty(${id}, ${qty + 1})" aria-label="Increase quantity">+</button>
                     </div>
                 </div>
-                <button class="cart-item-remove" onclick="Cart.removeItem(${esc(item.id)})" aria-label="Remove ${esc(item.name)}">
+                <button class="cart-item-remove" onclick="Cart.removeItem(${id})" aria-label="Remove ${esc(item.name)}">
                     <i class="ri-delete-bin-line"></i>
                 </button>
             </div>`;
         }).join('');
 
         if (footer) footer.classList.remove('hidden');
-        const fmtTotal = '$' + Number(total).toFixed(2);
+        const fmtTotal = formatMoney(total);
         if (totalEl) totalEl.textContent = fmtTotal;
         if (totalBtn) totalBtn.textContent = fmtTotal;
     }
@@ -169,7 +180,8 @@ const Cart = (() => {
     }
 
     // ---- Toast ----
-    function showToast(message, isError = false) {
+    // isError: red icon · plain: show the message as-is (no "added to cart")
+    function showToast(message, isError = false, plain = false) {
         const existing = document.querySelector('.toast');
         if (existing) existing.remove();
 
@@ -178,7 +190,7 @@ const Cart = (() => {
         if (isError) {
             toast.innerHTML = `<i class="ri-error-warning-line" style="color:#ef4444"></i> <span>${esc(message)}</span>`;
         } else {
-            toast.innerHTML = `<i class="ri-check-line"></i> <span>${esc(message)} added to cart</span>`;
+            toast.innerHTML = `<i class="ri-check-line"></i> <span>${esc(message)}${plain ? '' : ' added to cart'}</span>`;
         }
         document.body.appendChild(toast);
         requestAnimationFrame(() => toast.classList.add('show'));
@@ -252,5 +264,5 @@ const Cart = (() => {
     }
 
     // Public API
-    return { init, addItem, removeItem, updateQty, openDrawer, closeDrawer, clear: clearCart, bindButtons };
+    return { init, addItem, removeItem, updateQty, openDrawer, closeDrawer, clear: clearCart, bindButtons, formatMoney, esc, showToast };
 })();

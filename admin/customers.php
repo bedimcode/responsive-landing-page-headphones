@@ -85,7 +85,7 @@ $customers = $stmt->fetchAll();
                     </td>
                     <td class="px-4 py-4 text-gray-400 text-sm hidden md:table-cell"><?= e($c['phone'] ?: '—') ?></td>
                     <td class="px-4 py-4 text-center text-white text-sm hidden sm:table-cell"><?= (int)$c['order_count'] ?></td>
-                    <td class="px-4 py-4 text-right font-semibold text-white hidden lg:table-cell">$<?= number_format($c['total_spent'], 2) ?></td>
+                    <td class="px-4 py-4 text-right font-semibold text-white hidden lg:table-cell"><?= formatPrice($c['total_spent']) ?></td>
                     <td class="px-4 py-4 text-center">
                         <span class="inline-flex px-2.5 py-1 rounded-full text-[10px] font-semibold border <?= $c['is_active'] ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20' ?>">
                             <?= $c['is_active'] ? 'Active' : 'Inactive' ?>

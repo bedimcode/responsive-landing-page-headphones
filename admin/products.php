@@ -109,15 +109,15 @@ $products = $stmt->fetchAll();
                     </td>
                     <td class="px-4 py-4 text-gray-400 text-sm hidden md:table-cell"><?= e($p['category_name'] ?? '—') ?></td>
                     <td class="px-4 py-4 text-right">
-                        <?php if ($p['sale_price']): ?>
-                        <div class="text-white font-semibold">$<?= number_format($p['sale_price'], 2) ?></div>
-                        <div class="text-gray-600 text-xs line-through">$<?= number_format($p['price'], 2) ?></div>
+                        <?php if (isOnSale($p)): ?>
+                        <div class="text-white font-semibold"><?= formatPrice(effectivePrice($p)) ?></div>
+                        <div class="text-gray-600 text-xs line-through"><?= formatPrice($p['price']) ?></div>
                         <?php else: ?>
-                        <div class="text-white font-semibold">$<?= number_format($p['price'], 2) ?></div>
+                        <div class="text-white font-semibold"><?= formatPrice($p['price']) ?></div>
                         <?php endif; ?>
                     </td>
                     <td class="px-4 py-4 text-center">
-                        <span class="text-sm font-medium <?= $p['stock'] > 10 ? 'text-green-400' : ($p['stock'] > 0 ? 'text-yellow-400' : 'text-red-400') ?>">
+                        <span class="text-sm font-medium <?= $p['stock'] > (int) setting('low_stock_threshold') ? 'text-green-400' : ($p['stock'] > 0 ? 'text-yellow-400' : 'text-red-400') ?>">
                             <?= (int)$p['stock'] ?>
                         </span>
                     </td>

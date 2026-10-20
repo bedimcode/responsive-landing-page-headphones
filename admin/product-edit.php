@@ -2,7 +2,6 @@
 /**
  * Admin — Add / Edit Product
  */
-$db = getDB() ?: null; // pre-load to avoid header include re-init
 $editId = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 $isEdit = $editId > 0;
 
@@ -52,14 +51,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $feat  = isset($_POST['featured']) ? 1 : 0;
         $active= isset($_POST['is_active']) ? 1 : 0;
 
-        if (strlen($name) < 2)  $errors[] = 'Name is required (min 2 chars).';
-        if (strlen($slug) < 2)  $errors[] = 'Slug is required.';
-        if ($price <= 0)        $errors[] = 'Price must be greater than 0.';
-        if (strlen($image) < 1) $errors[] = 'Image path is required.';
-
         // Auto-generate slug if empty
-        if (empty($slug) && $name) {
-            $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $name));
+        $slug = slugify($slug !== '' ? $slug : $name);
+
+        if (mb_strlen($name) < 2) $errors[] = 'Name is required (min 2 chars).';
+        if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) $errors[] = 'Slug may only use lowercase letters, numbers and dashes.';
+        if ($price <= 0)          $errors[] = 'Price must be greater than 0.';
+        if ($salePr !== null && ($salePr <= 0 || $salePr >= $price)) $errors[] = 'Sale price must be lower than the regular price (leave it empty for no sale).';
+        if ($hex !== '' && preg_match('/[;{}<>]|url\s*\(/i', $hex)) $errors[] = 'Color must be a hex value or CSS gradient.';
+
+        // Image upload (replaces the path field when a file is chosen)
+        $upload = $_FILES['image_file'] ?? null;
+        if ($upload && $upload['error'] !== UPLOAD_ERR_NO_FILE) {
+            $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+            $mime = $upload['error'] === UPLOAD_ERR_OK ? (new finfo(FILEINFO_MIME_TYPE))->file($upload['tmp_name']) : '';
+            if ($upload['error'] !== UPLOAD_ERR_OK) {
+                $errors[] = $upload['error'] === UPLOAD_ERR_INI_SIZE || $upload['error'] === UPLOAD_ERR_FORM_SIZE
+                    ? 'Image is too large (max 3 MB).' : 'Image upload failed. Please try again.';
+            } elseif ($upload['size'] > 3 * 1024 * 1024) {
+                $errors[] = 'Image is too large (max 3 MB).';
+            } elseif (!isset($allowed[$mime]) || !getimagesize($upload['tmp_name'])) {
+                $errors[] = 'Image must be a JPG, PNG or WebP file.';
+            } elseif (!$errors) {
+                $relative = 'assets/uploads/products/' . ($slug ?: 'product') . '-' . bin2hex(random_bytes(4)) . '.' . $allowed[$mime];
+                if (move_uploaded_file($upload['tmp_name'], BASE_PATH . '/' . $relative)) {
+                    $image = $relative;
+                } else {
+                    $errors[] = 'Could not save the image. Check that assets/uploads/products is writable.';
+                }
+            }
+        }
+        if ($image === '') $errors[] = 'Upload an image or enter an image path.';
+        if ($image !== '' && (str_contains($image, '..') || !preg_match('#^assets/[A-Za-z0-9_./-]+\.(png|jpe?g|webp|gif|svg)$#i', $image))) {
+            $errors[] = 'Image path must point to an image inside the assets folder.';
         }
 
         if (empty($errors)) {
@@ -122,7 +146,7 @@ $inp = 'w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm t
 </div>
 <?php endif; ?>
 
-<form method="POST" class="grid lg:grid-cols-3 gap-6">
+<form method="POST" enctype="multipart/form-data" class="grid lg:grid-cols-3 gap-6">
     <?= csrfField() ?>
     <input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
 
@@ -146,8 +170,8 @@ $inp = 'w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm t
         <div class="bg-dark-900/60 border border-white/5 rounded-2xl p-6 space-y-5">
             <h2 class="font-semibold text-white">Pricing &amp; Stock</h2>
             <div class="grid sm:grid-cols-3 gap-4">
-                <?= field('Price ($)', '<input type="number" name="price" value="' . e((string)$product['price']) . '" required min="0.01" step="0.01" class="' . $inp . '" placeholder="249.00">') ?>
-                <?= field('Sale Price ($)', '<input type="number" name="sale_price" value="' . e((string)$product['sale_price']) . '" min="0.01" step="0.01" class="' . $inp . '" placeholder="Optional">') ?>
+                <?= field('Price (' . e(setting('currency_symbol')) . ')', '<input type="number" name="price" value="' . e((string)$product['price']) . '" required min="0.01" step="0.01" class="' . $inp . '" placeholder="249.00">') ?>
+                <?= field('Sale Price (' . e(setting('currency_symbol')) . ')', '<input type="number" name="sale_price" value="' . e((string)$product['sale_price']) . '" min="0.01" step="0.01" class="' . $inp . '" placeholder="Optional">') ?>
                 <?= field('Stock Qty', '<input type="number" name="stock" value="' . (int)$product['stock'] . '" min="0" class="' . $inp . '" placeholder="0">') ?>
             </div>
         </div>
@@ -174,8 +198,13 @@ $inp = 'w-full px-4 py-3 bg-dark-800 border border-white/10 rounded-xl text-sm t
                 <i class="ri-image-line text-4xl text-gray-700"></i>
             </div>
             <?php endif; ?>
-            <?= field('Image Path', '<input type="text" name="image" id="img-path" value="' . e($product['image']) . '" class="' . $inp . '" placeholder="assets/img/product1.png" oninput="previewImg(this)">') ?>
-            <p class="text-xs text-gray-600">Relative to site root. Place files in <code class="text-gray-500">assets/img/</code></p>
+            <div>
+                <label for="image_file" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Upload Image</label>
+                <input type="file" name="image_file" id="image_file" accept="image/jpeg,image/png,image/webp" onchange="previewFile(this)"
+                       class="block w-full text-xs text-gray-400 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-neon-blue/10 file:text-neon-blue file:font-semibold hover:file:bg-neon-blue/20">
+                <p class="text-[11px] text-gray-600 mt-1.5">JPG, PNG or WebP · max 3 MB · transparent PNG looks best</p>
+            </div>
+            <?= field('Or Image Path', '<input type="text" name="image" id="img-path" value="' . e($product['image']) . '" class="' . $inp . '" placeholder="assets/img/product1.png" oninput="previewImg(this)">') ?>
         </div>
 
         <!-- Category + Flags -->
@@ -219,11 +248,23 @@ function autoSlug(input) {
 document.getElementById('slug-field')?.addEventListener('input', function() {
     this.dataset.manual = '1';
 });
-function previewImg(input) {
-    const preview = document.getElementById('img-preview');
+function showPreview(src) {
+    let preview = document.getElementById('img-preview');
     const placeholder = document.getElementById('img-preview-placeholder');
-    if (preview) preview.src = '<?= e($basePath) ?>/' + input.value;
-    if (placeholder && input.value) placeholder.style.display = 'none';
+    if (!preview && placeholder) {
+        preview = document.createElement('img');
+        preview.id = 'img-preview';
+        preview.alt = 'Preview';
+        preview.className = 'w-full h-32 object-contain rounded-xl bg-dark-800 mb-3';
+        placeholder.replaceWith(preview);
+    }
+    if (preview) preview.src = src;
+}
+function previewImg(input) {
+    if (input.value) showPreview('<?= e($basePath) ?>/' + input.value);
+}
+function previewFile(input) {
+    if (input.files && input.files[0]) showPreview(URL.createObjectURL(input.files[0]));
 }
 </script>
 

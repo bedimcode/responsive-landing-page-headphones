@@ -116,9 +116,9 @@ $statusColors = ['pending'=>'#f59e0b','processing'=>'#3b82f6','shipped'=>'#a855f
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <?php
     $cards = [
-        ['Revenue',     '$' . number_format($kpi['revenue'], 0), 'ri-money-dollar-circle-line', 'neon-blue'],
+        ['Revenue',     formatPrice($kpi['revenue']), 'ri-money-dollar-circle-line', 'neon-blue'],
         ['Orders',      number_format($kpi['total_orders']),       'ri-shopping-bag-3-line',      'neon-purple'],
-        ['Avg. Order',  '$' . number_format($kpi['avg_order'], 2), 'ri-funds-line',               'neon-cyan'],
+        ['Avg. Order',  formatPrice($kpi['avg_order']), 'ri-funds-line',               'neon-cyan'],
         ['New Customers', $newCustomers,                           'ri-user-add-line',            'neon-pink'],
         ['Cancelled',   (int)$kpi['cancelled'],                    'ri-close-circle-line',        'red-400'],
     ];
@@ -199,7 +199,7 @@ $statusColors = ['pending'=>'#f59e0b','processing'=>'#3b82f6','shipped'=>'#a855f
                         <td class="px-5 py-3 text-gray-600 text-xs"><?= $i + 1 ?></td>
                         <td class="px-3 py-3 text-white font-medium"><?= e($p['name']) ?></td>
                         <td class="px-3 py-3 text-right text-gray-400"><?= number_format($p['sold']) ?></td>
-                        <td class="px-3 py-3 text-right text-white font-semibold">$<?= number_format($p['revenue'], 2) ?></td>
+                        <td class="px-3 py-3 text-right text-white font-semibold"><?= formatPrice($p['revenue']) ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -237,7 +237,7 @@ $statusColors = ['pending'=>'#f59e0b','processing'=>'#3b82f6','shipped'=>'#a855f
                         <?php endif; ?>
                     </p>
                     <p class="text-[11px] text-gray-500">
-                        <?= $t['amount'] > 0 ? '$'.number_format($t['amount'],2).' · ' : '' ?><?= adminTimeAgo($t['created_at']) ?>
+                        <?= $t['amount'] > 0 ? formatPrice($t['amount']).' · ' : '' ?><?= adminTimeAgo($t['created_at']) ?>
                     </p>
                 </div>
             </div>
@@ -254,7 +254,7 @@ $statusColors = ['pending'=>'#f59e0b','processing'=>'#3b82f6','shipped'=>'#a855f
         <?php foreach ($payMethods as $pm): ?>
         <div class="bg-white/[.02] border border-white/[.04] rounded-xl p-4">
             <div class="text-[11px] text-gray-500 uppercase tracking-wider mb-1"><?= e($pm['method'] ?: 'Unknown') ?></div>
-            <div class="font-display font-bold text-white text-lg">$<?= number_format($pm['total'], 2) ?></div>
+            <div class="font-display font-bold text-white text-lg"><?= formatPrice($pm['total']) ?></div>
             <div class="text-[11px] text-gray-500 mt-1"><?= (int)$pm['cnt'] ?> order<?= $pm['cnt'] > 1 ? 's' : '' ?></div>
         </div>
         <?php endforeach; ?>
@@ -265,6 +265,7 @@ $statusColors = ['pending'=>'#f59e0b','processing'=>'#3b82f6','shipped'=>'#a855f
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+const CUR = <?= jsonForScript(currencyPrefix()) ?>; // Store currency symbol
 const labels  = <?= json_encode($chartLabels) ?>;
 const revenue = <?= json_encode($chartRevenue) ?>;
 const orders  = <?= json_encode($chartOrders) ?>;
@@ -285,10 +286,10 @@ new Chart(document.getElementById('revenueChart'), {
         responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
         plugins:{legend:{display:false}, tooltip:{backgroundColor:'#141418',titleColor:'#fff',bodyColor:'#9ca3af',
                  borderColor:'rgba(255,255,255,.06)',borderWidth:1,cornerRadius:12,padding:12,
-                 callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.datasetIndex===0?'$'+ctx.parsed.y.toLocaleString():ctx.parsed.y)}}},
+                 callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.datasetIndex===0?CUR+ctx.parsed.y.toLocaleString():ctx.parsed.y)}}},
         scales:{
             x:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#555',font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:<?= min($days, 14) ?>}},
-            y:{position:'left',grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#555',font:{size:10},callback:v=>'$'+v.toLocaleString()}},
+            y:{position:'left',grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#555',font:{size:10},callback:v=>CUR+v.toLocaleString()}},
             y1:{position:'right',grid:{display:false},ticks:{color:'#555',font:{size:10},precision:0}}
         }
     }

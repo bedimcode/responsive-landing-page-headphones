@@ -57,7 +57,9 @@ try {
         FROM products p LEFT JOIN order_items oi ON oi.product_id=p.id GROUP BY p.id ORDER BY sold DESC LIMIT 5")->fetchAll();
 
     // Low stock
-    $lowStockProducts=$db->query("SELECT id,name,stock FROM products WHERE stock<10 AND is_active=1 ORDER BY stock ASC LIMIT 8")->fetchAll();
+    $lowStockQ=$db->prepare("SELECT id,name,stock FROM products WHERE stock<=? AND is_active=1 ORDER BY stock ASC LIMIT 8");
+    $lowStockQ->execute([(int) setting('low_stock_threshold')]);
+    $lowStockProducts=$lowStockQ->fetchAll();
 
 } catch (Exception $e) {}
 
@@ -106,7 +108,7 @@ $donutColorsJ = json_encode(array_slice($donutColors,0,count($chartStatus)));
             <span class="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Total Revenue</span>
             <span class="w-8 h-8 rounded-xl bg-neon-blue/10 flex items-center justify-center"><i class="ri-money-dollar-circle-line text-neon-blue"></i></span>
         </div>
-        <div class="font-display font-bold text-white text-2xl mb-1">$<?= number_format($stats['revenue'], 0) ?></div>
+        <div class="font-display font-bold text-white text-2xl mb-1"><?= formatPrice($stats['revenue']) ?></div>
         <div class="flex items-center gap-2"><?= trendBadge($trend['revenue'],$trend['rev_prev']) ?><span class="text-[11px] text-gray-500">vs last month</span></div>
     </div>
     <div class="bg-dark-900 border border-white/5 rounded-2xl p-5">
@@ -139,7 +141,7 @@ $donutColorsJ = json_encode(array_slice($donutColors,0,count($chartStatus)));
 <div class="grid grid-cols-3 gap-3 mb-6">
     <div class="bg-dark-900 border border-white/5 rounded-xl px-4 py-3 flex items-center gap-3">
         <i class="ri-sun-line text-neon-cyan text-lg flex-shrink-0"></i>
-        <div><div class="text-[11px] text-gray-500">Today's Revenue</div><div class="font-semibold text-white text-sm">$<?= number_format($stats['today_revenue'],2) ?></div></div>
+        <div><div class="text-[11px] text-gray-500">Today's Revenue</div><div class="font-semibold text-white text-sm"><?= formatPrice($stats['today_revenue']) ?></div></div>
     </div>
     <div class="bg-dark-900 border border-white/5 rounded-xl px-4 py-3 flex items-center gap-3">
         <i class="ri-box-3-line text-neon-purple text-lg flex-shrink-0"></i>
@@ -221,7 +223,7 @@ $donutColorsJ = json_encode(array_slice($donutColors,0,count($chartStatus)));
                         </td>
                         <td class="px-3 py-3 hidden sm:table-cell text-[13px] text-gray-300"><?= e($o['shipping_name']) ?></td>
                         <td class="px-3 py-3"><?= osBadge($o['status']) ?></td>
-                        <td class="px-3 py-3 text-right font-semibold text-white text-[13px]">$<?= number_format($o['total'],2) ?></td>
+                        <td class="px-3 py-3 text-right font-semibold text-white text-[13px]"><?= formatPrice($o['total']) ?></td>
                     </tr>
                     <?php endforeach; ?>
                     <?php endif; ?>
@@ -250,7 +252,7 @@ $donutColorsJ = json_encode(array_slice($donutColors,0,count($chartStatus)));
                         <div class="text-[12px] font-medium text-white truncate"><?= e($p['name']) ?></div>
                         <div class="text-[10px] text-gray-500"><?= (int)$p['sold'] ?> sold</div>
                     </div>
-                    <span class="text-[12px] font-medium text-gray-300">$<?= number_format($p['price'],0) ?></span>
+                    <span class="text-[12px] font-medium text-gray-300"><?= formatPrice($p['price']) ?></span>
                 </div>
                 <?php endforeach; ?>
                 <?php endif; ?>
@@ -303,6 +305,7 @@ $donutColorsJ = json_encode(array_slice($donutColors,0,count($chartStatus)));
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+const CUR = <?= jsonForScript(currencyPrefix()) ?>; // Store currency symbol
 Chart.defaults.color='#6b7280';
 Chart.defaults.borderColor='rgba(255,255,255,0.05)';
 
@@ -313,8 +316,8 @@ Chart.defaults.borderColor='rgba(255,255,255,0.05)';
     new Chart(ctx,{type:'line',data:{labels:<?=$chartLabelsJson?>,datasets:[
         {label:'Revenue',data:<?=$chartRevenueJson?>,borderColor:'#00d4ff',backgroundColor:bg,borderWidth:2,tension:0.4,fill:true,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#00d4ff',yAxisID:'y'},
         {label:'Orders',data:<?=$chartOrdersJson?>,borderColor:'#a855f7',backgroundColor:'transparent',borderWidth:2,tension:0.4,fill:false,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#a855f7',borderDash:[4,3],yAxisID:'y1'}
-    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,backgroundColor:'#0a0a0d',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:c=>c.datasetIndex===0?' $'+c.parsed.y.toFixed(2):' '+c.parsed.y+' orders'}}},
-    scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0}},y:{position:'left',grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{size:10},callback:v=>'$'+v}},y1:{position:'right',grid:{display:false},ticks:{font:{size:10}}}}}});
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,backgroundColor:'#0a0a0d',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:c=>c.datasetIndex===0?' '+CUR+c.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):' '+c.parsed.y+' orders'}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0}},y:{position:'left',min:0,grid:{color:'rgba(255,255,255,0.04)'},ticks:{font:{size:10},callback:v=>CUR+v.toLocaleString()}},y1:{position:'right',min:0,grid:{display:false},ticks:{font:{size:10},precision:0}}}}});
 })();
 
 (function(){

@@ -21,7 +21,7 @@ $basePath  = rtrim(APP_URL, '/');
 
 // ---- Handle Profile Update ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'profile') {
-    validateCsrf();
+    if (!validateCsrf()) $errors[] = 'Invalid security token. Please try again.';
     $newName  = trim($_POST['name']  ?? '');
     $newEmail = strtolower(trim($_POST['email'] ?? ''));
     $newPhone = trim($_POST['phone'] ?? '');
@@ -50,13 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'prof
 
 // ---- Handle Password Change ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'password') {
-    validateCsrf();
+    if (!validateCsrf()) $errors[] = 'Invalid security token. Please try again.';
     $current  = $_POST['current_password']  ?? '';
     $newPass  = $_POST['new_password']      ?? '';
     $confirm  = $_POST['confirm_password']  ?? '';
 
     if (empty($current))                    $errors[] = 'Current password is required.';
     if (strlen($newPass) < 8)               $errors[] = 'New password must be at least 8 characters.';
+    if (in_array($newPass, ['Admin@123', 'password'], true)) $errors[] = 'Choose a password that is not published in the installation guide.';
     if ($newPass !== $confirm)              $errors[] = 'New passwords do not match.';
 
     if (empty($errors)) {
@@ -70,7 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_action'] ?? '') === 'pass
 
     if (empty($errors)) {
         $stmt = $db->prepare("UPDATE users SET password_hash=? WHERE id=?");
-        $stmt->execute([password_hash($newPass, PASSWORD_BCRYPT), $userId]);
+        $stmt->execute([password_hash($newPass, PASSWORD_DEFAULT), $userId]);
+        unset($_SESSION['admin_default_pw']);
         setFlash('success', 'Password changed successfully. Please log in with your new password next time.');
         redirect($basePath . '/admin/profile.php?tab=password');
     }

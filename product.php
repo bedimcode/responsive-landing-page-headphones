@@ -14,7 +14,7 @@ $stmt = $db->prepare("
     SELECT p.*, c.name AS category_name, c.slug AS category_slug
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.slug = ?
+    WHERE p.slug = ? AND p.is_active = 1
     LIMIT 1
 ");
 $stmt->execute([$slug]);
@@ -26,18 +26,18 @@ if (!$product) { http_response_code(404); require __DIR__ . '/404.php'; exit; }
 $stmtVariants = $db->prepare("
     SELECT id, name, slug, color, image, price, sale_price, stock
     FROM products
-    WHERE category_id = ? AND id != ?
+    WHERE category_id = ? AND id != ? AND is_active = 1
     ORDER BY name
 ");
 $stmtVariants->execute([$product['category_id'], $product['id']]);
 $variants = $stmtVariants->fetchAll(PDO::FETCH_ASSOC);
 
-// Related products (different category or random)
+// Related products (in stock, random)
 $stmtRelated = $db->prepare("
     SELECT p.*, c.name AS category_name
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.id != ? AND p.stock > 0
+    WHERE p.id != ? AND p.stock > 0 AND p.is_active = 1
     ORDER BY RAND()
     LIMIT 4
 ");
@@ -50,26 +50,29 @@ if (isLoggedIn()) {
     $isWished = isInWishlist($db, $_SESSION['user_id'], $product['id']);
 }
 
-$effectivePrice = $product['sale_price'] ?? $product['price'];
+$effectivePrice = effectivePrice($product);
 $inStock        = $product['stock'] > 0;
-$discount       = $product['sale_price'] ? round((1 - $product['sale_price'] / $product['price']) * 100) : 0;
+$discount       = isOnSale($product) ? (int) round((1 - $effectivePrice / $product['price']) * 100) : 0;
+$lowStockAt     = (int) setting('low_stock_threshold');
+$sku            = $product['sku'] ?: 'P-' . str_pad((string) $product['id'], 4, '0', STR_PAD_LEFT);
 
-$pageTitle       = $product['name'] . ' — Shop';
-$pageDescription = substr(strip_tags($product['description']), 0, 155);
+$pageTitle       = $product['name'] . ' — ' . storeName();
+$pageDescription = mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($product['short_description'] ?: $product['description']))), 0, 155);
 $pageType        = 'product';
-$canonical       = APP_URL . '/product.php?slug=' . $product['slug'];
+$ogImage         = $product['image'];
+$canonical       = absoluteUrl('/product.php?slug=' . rawurlencode($product['slug']));
 
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
     <!-- Breadcrumb -->
-    <?php echo breadcrumb([
+    <?php echo breadcrumb(array_values(array_filter([
         ['label' => 'Home', 'url' => APP_URL . '/'],
         ['label' => 'Shop', 'url' => APP_URL . '/shop.php'],
         $product['category_name'] ? ['label' => $product['category_name'], 'url' => APP_URL . '/shop.php?category=' . $product['category_slug']] : null,
         ['label' => $product['name']]
-    ]); ?>
+    ]))); ?>
 
     <!-- Product Main -->
     <div class="grid lg:grid-cols-2 gap-6 lg:gap-10 mb-12 sm:mb-16">
@@ -111,9 +114,9 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Price -->
             <div class="flex items-center gap-3 mt-4">
                 <span class="font-display text-3xl font-bold text-white"><?= formatPrice($effectivePrice) ?></span>
-                <?php if ($product['sale_price']): ?>
+                <?php if ($discount): ?>
                 <span class="text-lg text-gray-600 line-through"><?= formatPrice($product['price']) ?></span>
-                <span class="px-2.5 py-0.5 bg-red-500/10 text-red-400 text-sm font-semibold rounded-full">Save <?= formatPrice($product['price'] - $product['sale_price']) ?></span>
+                <span class="px-2.5 py-0.5 bg-red-500/10 text-red-400 text-sm font-semibold rounded-full">Save <?= formatPrice($product['price'] - $effectivePrice) ?></span>
                 <?php endif; ?>
             </div>
 
@@ -125,8 +128,8 @@ require_once __DIR__ . '/includes/header.php';
                 <?php if ($inStock): ?>
                     <span class="w-2 h-2 rounded-full bg-green-400"></span>
                     <span class="text-sm text-green-400 font-medium">In Stock</span>
-                    <?php if ($product['stock'] <= 10): ?>
-                    <span class="text-xs text-yellow-400 ml-1">(Only <?= $product['stock'] ?> left)</span>
+                    <?php if ($product['stock'] <= $lowStockAt): ?>
+                    <span class="text-xs text-yellow-400 ml-1">(Only <?= (int) $product['stock'] ?> left)</span>
                     <?php endif; ?>
                 <?php else: ?>
                     <span class="w-2 h-2 rounded-full bg-red-400"></span>
@@ -163,7 +166,8 @@ require_once __DIR__ . '/includes/header.php';
                                 class="px-3 py-3 text-gray-400 hover:text-white hover:bg-white/[.04] transition-colors">
                             <i class="ri-subtract-line"></i>
                         </button>
-                        <input type="number" id="qty" value="1" min="1" max="<?= $product['stock'] ?>"
+                        <label for="qty" class="sr-only">Quantity</label>
+                        <input type="number" id="qty" value="1" min="1" max="<?= (int) $product['stock'] ?>"
                                class="w-12 text-center bg-transparent text-white text-sm font-medium focus:outline-none
                                       [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                         <button type="button" onclick="changeQty(1)"
@@ -205,10 +209,16 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <!-- SKU / Features -->
-            <div class="flex flex-wrap gap-x-6 gap-y-1 mt-5 text-xs text-gray-600">
-                <span>SKU: BTS-<?= str_pad($product['id'], 4, '0', STR_PAD_LEFT) ?></span>
-                <span><i class="ri-truck-line mr-1"></i>Free Shipping</span>
-                <span><i class="ri-shield-check-line mr-1"></i>1 Year Warranty</span>
+            <div class="flex flex-wrap gap-x-6 gap-y-1 mt-5 text-xs text-gray-500">
+                <span>SKU: <?= e($sku) ?></span>
+                <span><i class="ri-truck-line mr-1"></i><?= e(shippingSummary()) ?></span>
+                <span><i class="ri-time-line mr-1"></i>Delivery in <?= e(setting('delivery_estimate')) ?></span>
+                <?php if (warrantyText()): ?>
+                <span><i class="ri-shield-check-line mr-1"></i><?= e(ucfirst(warrantyText())) ?> warranty</span>
+                <?php endif; ?>
+                <?php if ((int) setting('return_days') > 0): ?>
+                <span><i class="ri-refresh-line mr-1"></i><?= (int) setting('return_days') ?>-day returns</span>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -222,7 +232,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             <?php foreach ($related as $rp):
-                $rPrice = $rp['sale_price'] ?? $rp['price'];
+                $rPrice = effectivePrice($rp);
             ?>
             <div class="group bg-dark-900/60 border border-white/[.06] rounded-2xl overflow-hidden hover:border-white/10 transition-all">
                 <a href="<?= APP_URL ?>/product.php?slug=<?= e($rp['slug']) ?>" class="block relative">
@@ -230,7 +240,7 @@ require_once __DIR__ . '/includes/header.php';
                         <img src="<?= e(APP_URL) ?>/<?= e($rp['image']) ?>" alt="<?= e($rp['name']) ?>"
                              class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy">
                     </div>
-                    <?php if ($rp['sale_price']): ?>
+                    <?php if (isOnSale($rp)): ?>
                     <div class="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">Sale</div>
                     <?php endif; ?>
                 </a>
@@ -240,7 +250,7 @@ require_once __DIR__ . '/includes/header.php';
                     </a>
                     <div class="flex items-center gap-2 mt-1.5">
                         <span class="font-bold text-white text-sm"><?= formatPrice($rPrice) ?></span>
-                        <?php if ($rp['sale_price']): ?>
+                        <?php if (isOnSale($rp)): ?>
                         <span class="text-[10px] text-gray-600 line-through"><?= formatPrice($rp['price']) ?></span>
                         <?php endif; ?>
                     </div>
@@ -257,7 +267,7 @@ require_once __DIR__ . '/includes/header.php';
 function changeQty(delta) {
     const input = document.getElementById('qty');
     let val = parseInt(input.value) || 1;
-    val = Math.max(1, Math.min(<?= $product['stock'] ?>, val + delta));
+    val = Math.max(1, Math.min(<?= (int) $product['stock'] ?>, val + delta));
     input.value = val;
 }
 
@@ -288,9 +298,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (wbtn) {
         wbtn.addEventListener('click', async function() {
             try {
-                const res = await fetch('<?= APP_URL ?>/api/wishlist.php', {
+                const res = await fetch('<?= e(APP_URL) ?>/api/wishlist.php', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
                     body: JSON.stringify({ product_id: this.dataset.productId })
                 });
                 const data = await res.json();
@@ -319,32 +332,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- JSON-LD: Product -->
 <script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": <?= json_encode($product['name']) ?>,
-    "description": <?= json_encode(substr(strip_tags($product['description']), 0, 300)) ?>,
-    "image": <?= json_encode(APP_URL . '/' . $product['image']) ?>,
-    "sku": "BTS-<?= str_pad($product['id'], 4, '0', STR_PAD_LEFT) ?>",
-    "brand": {
-        "@type": "Brand",
-        "name": "Beats 3"
-    },
-    <?php if ($product['category_name']): ?>
-    "category": <?= json_encode($product['category_name']) ?>,
-    <?php endif; ?>
-    "offers": {
-        "@type": "Offer",
-        "url": <?= json_encode($canonical) ?>,
-        "price": "<?= number_format($effectivePrice, 2, '.', '') ?>",
-        "priceCurrency": "USD",
-        "availability": "<?= $inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' ?>",
-        "seller": {
-            "@type": "Organization",
-            "name": "Beats 3 Store"
-        }
-    }
-}
+<?= jsonForScript(array_filter([
+    '@context'    => 'https://schema.org',
+    '@type'       => 'Product',
+    'name'        => $product['name'],
+    'description' => mb_substr(trim(strip_tags($product['description'] ?? '')), 0, 300),
+    'image'       => absoluteUrl($product['image']),
+    'sku'         => $sku,
+    'color'       => $product['color'] ?: null,
+    'category'    => $product['category_name'] ?: null,
+    'offers'      => [
+        '@type'         => 'Offer',
+        'url'           => $canonical,
+        'price'         => number_format($effectivePrice, 2, '.', ''),
+        'priceCurrency' => setting('currency_code'),
+        'availability'  => $inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        'itemCondition' => 'https://schema.org/NewCondition',
+        'seller'        => ['@type' => 'Organization', 'name' => storeName()],
+    ],
+])) ?>
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

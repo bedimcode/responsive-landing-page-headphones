@@ -1,5 +1,7 @@
 # ============================================
 # Headphones1.Duka — Apache Configuration
+# Installing at a different path? Change RewriteBase and the three
+# ErrorDocument lines below (e.g. "/" for a domain root install).
 # ============================================
 
 # Enable rewrite engine
@@ -9,29 +11,37 @@ RewriteEngine On
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    # Uncomment once the site is served over HTTPS:
+    # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
 
 # ---- Prevent directory listing ----
 Options -Indexes
 
 # ---- Block access to sensitive files/folders ----
-<FilesMatch "\.(sql|md|log|env|ini|htpasswd)$">
+<FilesMatch "\.(sql|md|log|env|ini|htpasswd|lock)$|^(package(-lock)?\.json|tailwind\.config\.js|config\.local.*\.php)$">
     Require all denied
 </FilesMatch>
 
-# Block access to includes, sql, and admin/includes dirs via URL
-RewriteRule ^includes/ - [F,L]
-RewriteRule ^sql/ - [F,L]
-RewriteRule ^admin/includes/ - [F,L]
-RewriteRule ^account/includes/ - [F,L]
-RewriteRule ^\.env$ - [F,L]
-RewriteRule ^admin/settings\.json$ - [F,L]
+# ---- Force HTTPS (uncomment for production) ----
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # ---- Clean URLs ----
 RewriteBase /headphones1.duka/
+
+# Block includes, SQL, tooling and the static demo build via URL
+RewriteRule ^(includes|sql|scripts|node_modules|static-site|logs)(/|$) - [F,L]
+RewriteRule ^(admin|account)/includes/ - [F,L]
+RewriteRule ^\.(git|env|vscode) - [F,L]
+RewriteRule ^admin/settings\.json$ - [F,L]
+
+# Dynamic sitemap and robots (use the site URL from config)
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+RewriteRule ^robots\.txt$ robots.php [L]
+
 RewriteRule ^product/([a-z0-9\-]+)/?$ product.php?slug=$1 [L,QSA]
 RewriteRule ^shop/?$ shop.php [L,QSA]
 RewriteRule ^shop/([a-z0-9\-]+)/?$ shop.php?category=$1 [L,QSA]
@@ -43,21 +53,19 @@ ErrorDocument 500 /headphones1.duka/404.php?code=500
 
 # ---- GZIP Compression ----
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml
 </IfModule>
 
 # ---- Browser Caching ----
+# CSS/JS links carry a ?v= version (assetUrl), so long cache times are safe.
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresByType image/png "access plus 1 month"
     ExpiresByType image/jpeg "access plus 1 month"
     ExpiresByType image/webp "access plus 1 month"
     ExpiresByType image/svg+xml "access plus 1 month"
-    ExpiresByType text/css "access plus 1 week"
-    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
     ExpiresByType image/x-icon "access plus 1 year"
 </IfModule>
-
-# ---- Force HTTPS (uncomment for production) ----
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

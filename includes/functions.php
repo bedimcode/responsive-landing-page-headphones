@@ -44,10 +44,13 @@ function e(string $value): string {
 }
 
 /**
- * Sanitize and trim a string input.
+ * Read a text input: trimmed, control characters removed, length capped.
+ * Values are stored as typed and escaped with e() when displayed.
  */
-function sanitize(string $input): string {
-    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+function cleanText(mixed $input, int $maxLength = 255): string {
+    if (!is_scalar($input)) return '';
+    $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', trim((string) $input)) ?? '';
+    return mb_substr($text, 0, $maxLength);
 }
 
 /**
@@ -55,6 +58,210 @@ function sanitize(string $input): string {
  */
 function isValidEmail(string $email): bool {
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+/**
+ * Encode data for a <script type="application/ld+json"> or inline JS value.
+ */
+function jsonForScript(mixed $data): string {
+    return json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+}
+
+/**
+ * Absolute URL for a site path ('assets/img/a.png' or '/shop.php').
+ */
+function absoluteUrl(string $path = ''): string {
+    if (preg_match('#^https?://#i', $path)) return $path;
+    return rtrim(APP_URL, '/') . '/' . ltrim($path, '/');
+}
+
+/**
+ * URL for a local asset with a cache-busting version (file modified time).
+ */
+function assetUrl(string $path): string {
+    $file = BASE_PATH . '/' . ltrim($path, '/');
+    $version = is_file($file) ? '?v=' . filemtime($file) : '';
+    return rtrim(APP_URL, '/') . '/' . ltrim($path, '/') . $version;
+}
+
+/**
+ * Client IP address (REMOTE_ADDR only — proxy headers are spoofable).
+ */
+function clientIp(): string {
+    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+}
+
+// ============ STORE SETTINGS ============
+
+/**
+ * Default values for every store setting. Admin → Settings saves overrides
+ * into the site_settings table; anything not saved falls back to these.
+ */
+function settingDefaults(): array {
+    return [
+        // Store
+        'store_name'            => APP_NAME,
+        'store_tagline'         => 'Studio-grade wireless headphones engineered for those who demand the best in sound, comfort, and style.',
+        'store_email'           => 'support@beats3.store',
+        'store_phone'           => '+1 (555) 123-4567',
+        'store_address'         => '123 Audio Street, Los Angeles, CA 90001',
+        'support_hours'         => 'Mon–Fri, 9 AM – 6 PM',
+        'whatsapp_number'       => '',
+        'social_facebook'       => '',
+        'social_instagram'      => '',
+        'social_x'              => '',
+        'social_tiktok'         => '',
+        'social_youtube'        => '',
+        // Commerce
+        'currency_symbol'       => '$',
+        'currency_code'         => 'USD',
+        'currency_decimals'     => '2',
+        'tax_label'             => 'Tax',
+        'tax_rate'              => '8',
+        'tax_inclusive'         => '0',
+        'shipping_flat_rate'    => '9.99',
+        'free_shipping_minimum' => '100',
+        'delivery_estimate'     => '2–5 business days',
+        'default_country'       => 'United States',
+        'low_stock_threshold'   => '10',
+        'orders_per_page'       => '20',
+        // Policies
+        'return_days'           => '30',
+        'warranty_months'       => '12',
+        'governing_law'         => '',
+        // Payments
+        'pay_cod_enabled'       => '1',
+        'pay_mpesa_enabled'     => '0',
+        'mpesa_type'            => 'paybill',
+        'mpesa_number'          => '',
+        'mpesa_account_name'    => '',
+        'pay_bank_enabled'      => DEMO_MODE ? '1' : '0',
+        'bank_name'             => DEMO_MODE ? 'Demo Bank' : '',
+        'bank_account_name'     => DEMO_MODE ? 'Beats 3 Store Ltd' : '',
+        'bank_account_number'   => DEMO_MODE ? '0123456789' : '',
+        'bank_branch'           => DEMO_MODE ? 'Main Branch' : '',
+        'bank_swift'            => '',
+        // Marketing
+        'promo_enabled'         => '1',
+        'promo_title'           => 'Holiday Sale',
+        'promo_text'            => 'Take 10% off any order with the code below. Ends when the timer hits zero.',
+        'promo_code'            => 'HOLIDAY10',
+        'promo_ends_at'         => '2026-12-31 23:59',
+        'newsletter_coupon'     => 'WELCOME10',
+        'show_testimonials'     => '1',
+        // Notifications
+        'order_email_notify'    => '1',
+        'stock_email_notify'    => '1',
+        'admin_notify_email'    => '',
+        // System
+        'maintenance_mode'      => '0',
+    ];
+}
+
+/**
+ * All store settings (saved values merged over defaults), cached per request.
+ */
+function settings(bool $refresh = false): array {
+    static $cache = null;
+    if ($cache === null || $refresh) {
+        $cache = settingDefaults();
+        try {
+            foreach (getDB()->query('SELECT setting_key, setting_value FROM site_settings')->fetchAll() as $row) {
+                if (array_key_exists($row['setting_key'], $cache) && $row['setting_value'] !== null) {
+                    $cache[$row['setting_key']] = $row['setting_value'];
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Settings load failed: ' . $e->getMessage());
+        }
+    }
+    return $cache;
+}
+
+/**
+ * A single store setting.
+ */
+function setting(string $key): string {
+    return (string) (settings()[$key] ?? '');
+}
+
+/**
+ * Boolean store setting ('1' / '0').
+ */
+function settingOn(string $key): bool {
+    return setting($key) === '1';
+}
+
+/**
+ * Save store settings (only keys that exist in settingDefaults()).
+ */
+function saveSettings(PDO $db, array $values): void {
+    $known = settingDefaults();
+    $stmt = $db->prepare('INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?)
+                          ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
+    foreach ($values as $key => $value) {
+        if (!array_key_exists($key, $known)) continue;
+        $stmt->execute([$key, is_bool($value) ? ($value ? '1' : '0') : (string) $value]);
+    }
+    settings(true);
+}
+
+/**
+ * Store name for titles, emails and legal pages.
+ */
+function storeName(): string {
+    return setting('store_name') ?: APP_NAME;
+}
+
+/**
+ * Email address that receives admin notifications.
+ */
+function adminNotifyEmail(): string {
+    return setting('admin_notify_email') ?: setting('store_email');
+}
+
+/**
+ * Social profile links that have been filled in: key => [url, icon, label].
+ */
+function socialLinks(): array {
+    $networks = [
+        'social_facebook'  => ['ri-facebook-fill', 'Facebook'],
+        'social_instagram' => ['ri-instagram-line', 'Instagram'],
+        'social_x'         => ['ri-twitter-x-line', 'X'],
+        'social_tiktok'    => ['ri-tiktok-fill', 'TikTok'],
+        'social_youtube'   => ['ri-youtube-line', 'YouTube'],
+    ];
+    $links = [];
+    foreach ($networks as $key => [$icon, $label]) {
+        $url = setting($key);
+        if (preg_match('#^https?://#i', $url)) $links[$key] = [$url, $icon, $label];
+    }
+    return $links;
+}
+
+/**
+ * WhatsApp chat link for the store number, or '' when not set.
+ */
+function whatsappLink(string $message = ''): string {
+    $digits = preg_replace('/\D+/', '', setting('whatsapp_number'));
+    if (strlen($digits) < 8) return '';
+    return 'https://wa.me/' . $digits . ($message !== '' ? '?text=' . rawurlencode($message) : '');
+}
+
+/**
+ * Show a maintenance page to visitors (admins and the login page stay reachable).
+ */
+function maintenanceGate(bool $json = false): void {
+    if (!settingOn('maintenance_mode') || isAdmin()) return;
+    http_response_code(503);
+    header('Retry-After: 3600');
+    if ($json) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'message' => 'The store is closed for maintenance. Please try again soon.']);
+        exit;
+    }
+    require BASE_PATH . '/includes/maintenance.php';
+    exit;
 }
 
 // ============ AUTH HELPERS ============
@@ -109,6 +316,7 @@ function requireAuth(): void {
  * Require admin role — redirects to home if not admin.
  */
 function requireAdmin(): void {
+    requireAuth();
     if (!isAdmin()) {
         redirect(APP_URL . '/');
     }
@@ -135,10 +343,95 @@ function getFlash(): ?array {
 // ============ FORMATTING ============
 
 /**
- * Format a price for display.
+ * Format an amount in the store currency ("$249.00", "KSh 34,999").
  */
-function formatPrice(float|null $price): string {
-    return '$' . number_format($price ?? 0, 2);
+function formatPrice(float|int|string|null $price): string {
+    $amount   = (float) ($price ?? 0);
+    $decimals = max(0, min(3, (int) setting('currency_decimals')));
+    return ($amount < 0 ? '−' : '') . currencyPrefix() . number_format(abs($amount), $decimals);
+}
+
+/**
+ * Currency symbol as written before an amount. Letter symbols get a
+ * space ("KSh 1,000"), sign symbols do not ("$1,000").
+ */
+function currencyPrefix(): string {
+    $symbol = setting('currency_symbol');
+    return preg_match('/\p{L}$/u', $symbol) ? $symbol . ' ' : $symbol;
+}
+
+/**
+ * Currency details for JavaScript price formatting.
+ */
+function currencyConfig(): array {
+    return [
+        'symbol'   => setting('currency_symbol'),
+        'code'     => setting('currency_code'),
+        'decimals' => max(0, min(3, (int) setting('currency_decimals'))),
+    ];
+}
+
+/**
+ * Shipping, tax and total for a cart subtotal, using the store settings.
+ * Free shipping applies when the discounted subtotal reaches the minimum
+ * (a minimum of 0 turns the free-shipping threshold off).
+ */
+function calculateTotals(float $subtotal, float $discount = 0): array {
+    $discount = round(min(max(0, $discount), $subtotal), 2);
+    $taxable  = round($subtotal - $discount, 2);
+
+    $freeMin  = (float) setting('free_shipping_minimum');
+    $flatRate = (float) setting('shipping_flat_rate');
+    $shipping = ($subtotal <= 0 || ($freeMin > 0 && $taxable >= $freeMin)) ? 0.0 : $flatRate;
+
+    $rate      = max(0, (float) setting('tax_rate')) / 100;
+    $inclusive = settingOn('tax_inclusive');
+    if ($inclusive) {
+        $tax   = round($taxable - $taxable / (1 + $rate), 2);
+        $total = $taxable + $shipping;
+    } else {
+        $tax   = round($taxable * $rate, 2);
+        $total = $taxable + $tax + $shipping;
+    }
+
+    return [
+        'subtotal'       => round($subtotal, 2),
+        'discount'       => $discount,
+        'shipping'       => round($shipping, 2),
+        'tax'            => $tax,
+        'total'          => round($total, 2),
+        'tax_inclusive'  => $inclusive,
+        'free_min'       => $freeMin,
+        'free_remaining' => ($freeMin > 0 && $flatRate > 0 && $taxable < $freeMin) ? round($freeMin - $taxable, 2) : 0.0,
+    ];
+}
+
+/**
+ * Tax line label, e.g. "Tax (8%)" or "VAT (16%, included)".
+ */
+function taxLabel(): string {
+    $rate = rtrim(rtrim(number_format((float) setting('tax_rate'), 2, '.', ''), '0'), '.');
+    return (setting('tax_label') ?: 'Tax') . ' (' . $rate . '%' . (settingOn('tax_inclusive') ? ', included' : '') . ')';
+}
+
+/**
+ * One-line shipping promise for banners and product pages.
+ */
+function shippingSummary(): string {
+    $freeMin  = (float) setting('free_shipping_minimum');
+    $flatRate = (float) setting('shipping_flat_rate');
+    if ($flatRate <= 0) return 'Free shipping on every order';
+    if ($freeMin > 0)   return 'Free shipping on orders over ' . formatPrice($freeMin);
+    return 'Shipping ' . formatPrice($flatRate) . ' per order';
+}
+
+/**
+ * Warranty length as text ("1-year", "6-month"), or '' when none is offered.
+ */
+function warrantyText(): string {
+    $months = (int) setting('warranty_months');
+    if ($months <= 0) return '';
+    return $months % 12 === 0 ? ($months / 12) . '-year' : $months . '-month';
 }
 
 /**
@@ -265,6 +558,22 @@ function getCartCount(PDO $db): int {
 // ============ PRODUCT HELPERS ============
 
 /**
+ * Price a customer pays: the sale price when it is a real discount.
+ */
+function effectivePrice(array $product): float {
+    $price = (float) $product['price'];
+    $sale  = (float) ($product['sale_price'] ?? 0);
+    return ($sale > 0 && $sale < $price) ? $sale : $price;
+}
+
+/**
+ * True when the product shows a sale price.
+ */
+function isOnSale(array $product): bool {
+    return effectivePrice($product) < (float) $product['price'];
+}
+
+/**
  * Get all active products.
  */
 function getActiveProducts(PDO $db, ?int $limit = null): array {
@@ -369,18 +678,185 @@ function getWishlistItems(PDO $db, int $userId): array {
     return $stmt->fetchAll();
 }
 
+// ============ PAYMENT METHODS ============
+
 /**
- * Get a site setting value.
+ * Payment methods the store offers. Enabled methods only, unless $all.
+ * Card / PayPal / Apple Pay are not listed: they need a payment gateway.
  */
-function getSiteSetting(PDO $db, string $key, string $default = ''): string {
-    try {
-        $stmt = $db->prepare('SELECT setting_value FROM site_settings WHERE setting_key = ?');
-        $stmt->execute([$key]);
-        $val = $stmt->fetchColumn();
-        return $val !== false ? $val : $default;
-    } catch (Exception $e) {
-        return $default;
+function paymentMethods(bool $all = false): array {
+    $mpesaHint = match (setting('mpesa_type')) {
+        'till'       => 'Buy Goods · Till ' . setting('mpesa_number'),
+        'send_money' => 'Send Money to ' . setting('mpesa_number'),
+        default      => 'Paybill ' . setting('mpesa_number'),
+    };
+    $methods = [
+        'cod'   => ['label' => 'Cash on Delivery', 'hint' => 'Pay when your order arrives', 'icon' => 'ri-hand-coin-line',  'color' => 'text-green-400 bg-green-500/10', 'enabled' => settingOn('pay_cod_enabled')],
+        'mpesa' => ['label' => 'M-Pesa',           'hint' => $mpesaHint,                    'icon' => 'ri-smartphone-line', 'color' => 'text-green-500 bg-green-600/10', 'enabled' => settingOn('pay_mpesa_enabled') && setting('mpesa_number') !== ''],
+        'bank'  => ['label' => 'Bank Transfer',    'hint' => 'Pay into our bank account',   'icon' => 'ri-bank-line',       'color' => 'text-blue-400 bg-blue-500/10',   'enabled' => settingOn('pay_bank_enabled') && setting('bank_account_number') !== ''],
+    ];
+    return $all ? $methods : array_filter($methods, fn($m) => $m['enabled']);
+}
+
+/**
+ * Human label for a stored payment method code.
+ */
+function paymentMethodLabel(string $code): string {
+    return paymentMethods(true)[$code]['label'] ?? ucfirst($code);
+}
+
+/**
+ * How to pay for an order with a manual method: ['title' => …, 'steps' => [...], 'note' => …].
+ * Returns null for methods that need no instructions (cash on delivery).
+ */
+function paymentInstructions(string $method, string $orderNumber, float $total): ?array {
+    $amount = formatPrice($total);
+    if ($method === 'mpesa') {
+        $number = setting('mpesa_number');
+        $name   = setting('mpesa_account_name');
+        $steps  = match (setting('mpesa_type')) {
+            'till' => [
+                'Open M-PESA and choose Lipa na M-PESA → Buy Goods and Services',
+                "Till number: $number" . ($name ? " ($name)" : ''),
+                "Amount: $amount",
+                'Enter your M-PESA PIN and confirm',
+            ],
+            'send_money' => [
+                'Open M-PESA and choose Send Money',
+                "Phone number: $number" . ($name ? " ($name)" : ''),
+                "Amount: $amount",
+                'Enter your M-PESA PIN and confirm',
+            ],
+            default => [
+                'Open M-PESA and choose Lipa na M-PESA → Pay Bill',
+                "Business number: $number" . ($name ? " ($name)" : ''),
+                "Account number: $orderNumber",
+                "Amount: $amount",
+                'Enter your M-PESA PIN and confirm',
+            ],
+        };
+        return [
+            'title' => 'Pay with M-Pesa',
+            'steps' => $steps,
+            'note'  => 'Then enter the M-PESA confirmation code (e.g. QHX1ABC2DE) on your order page so we can match your payment.',
+        ];
     }
+    if ($method === 'bank') {
+        $steps = array_filter([
+            "Amount: $amount",
+            'Bank: ' . setting('bank_name'),
+            'Account name: ' . setting('bank_account_name'),
+            'Account number: ' . setting('bank_account_number'),
+            setting('bank_branch') ? 'Branch: ' . setting('bank_branch') : null,
+            setting('bank_swift') ? 'SWIFT / BIC: ' . setting('bank_swift') : null,
+            "Payment reference: $orderNumber",
+        ]);
+        return [
+            'title' => 'Pay by bank transfer',
+            'steps' => array_values($steps),
+            'note'  => 'After paying, enter the bank transaction reference on your order page. We ship once the payment clears.',
+        ];
+    }
+    return null;
+}
+
+// ============ COUPONS ============
+
+/**
+ * Check a coupon code against a subtotal. Returns
+ * ['coupon' => row|null, 'discount' => float, 'error' => string|null].
+ */
+function applyCoupon(PDO $db, string $code, float $subtotal, ?int $userId = null, string $email = ''): array {
+    $code = strtoupper(trim($code));
+    $fail = fn(string $msg) => ['coupon' => null, 'discount' => 0.0, 'error' => $msg];
+    if ($code === '') return $fail('Enter a coupon code.');
+
+    $stmt = $db->prepare('SELECT * FROM coupons WHERE code = ? LIMIT 1');
+    $stmt->execute([$code]);
+    $coupon = $stmt->fetch();
+
+    if (!$coupon || !$coupon['is_active'])                               return $fail('That coupon code is not valid.');
+    if ($coupon['starts_at'] && strtotime($coupon['starts_at']) > time()) return $fail('That coupon is not active yet.');
+    if ($coupon['expires_at'] && strtotime($coupon['expires_at']) < time()) return $fail('That coupon has expired.');
+    if ($coupon['max_uses'] !== null && $coupon['used_count'] >= $coupon['max_uses']) return $fail('That coupon has reached its usage limit.');
+    if ($subtotal < (float) $coupon['min_subtotal']) {
+        return $fail('Spend at least ' . formatPrice($coupon['min_subtotal']) . ' to use this coupon.');
+    }
+    if ($coupon['once_per_customer'] && ($userId || $email !== '')) {
+        $used = $db->prepare("SELECT COUNT(*) FROM orders WHERE coupon_code = ? AND status != 'cancelled' AND (user_id = ? OR shipping_email = ?)");
+        $used->execute([$code, $userId ?? 0, $email]);
+        if ($used->fetchColumn() > 0) return $fail('You have already used this coupon.');
+    }
+
+    $discount = $coupon['type'] === 'percent'
+        ? round($subtotal * min(100, (float) $coupon['value']) / 100, 2)
+        : min($subtotal, (float) $coupon['value']);
+
+    return ['coupon' => $coupon, 'discount' => $discount, 'error' => null];
+}
+
+/**
+ * The active storefront promotion, or null when switched off or expired.
+ */
+function activePromo(): ?array {
+    if (!settingOn('promo_enabled') || setting('promo_title') === '') return null;
+    $ends = strtotime(setting('promo_ends_at'));
+    if ($ends && $ends < time()) return null;
+    return [
+        'title'   => setting('promo_title'),
+        'text'    => setting('promo_text'),
+        'code'    => strtoupper(setting('promo_code')),
+        'ends_at' => $ends ?: null,
+    ];
+}
+
+// ============ ATTEMPT THROTTLING ============
+
+/**
+ * True when an action (login, password reset…) has been tried too often
+ * for this key (usually an email) or from this IP address.
+ */
+function tooManyAttempts(PDO $db, string $action, string $key, int $max = 5, int $minutes = 15): bool {
+    try {
+        $since = date('Y-m-d H:i:s', time() - $minutes * 60);
+        $stmt = $db->prepare('SELECT
+                (SELECT COUNT(*) FROM auth_attempts WHERE action = ? AND attempt_key = ? AND created_at > ?) AS by_key,
+                (SELECT COUNT(*) FROM auth_attempts WHERE action = ? AND ip = ? AND created_at > ?) AS by_ip');
+        $stmt->execute([$action, strtolower($key), $since, $action, clientIp(), $since]);
+        $row = $stmt->fetch();
+        return $row['by_key'] >= $max || $row['by_ip'] >= $max * 4;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+function recordAttempt(PDO $db, string $action, string $key): void {
+    try {
+        $db->prepare('INSERT INTO auth_attempts (action, attempt_key, ip, created_at) VALUES (?, ?, ?, ?)')
+           ->execute([$action, strtolower($key), clientIp(), date('Y-m-d H:i:s')]);
+        // Keep the table small
+        if (random_int(1, 50) === 1) {
+            $db->prepare('DELETE FROM auth_attempts WHERE created_at < ?')->execute([date('Y-m-d H:i:s', time() - 86400)]);
+        }
+    } catch (Exception $e) {
+        error_log('Attempt log failed: ' . $e->getMessage());
+    }
+}
+
+function clearAttempts(PDO $db, string $action, string $key): void {
+    try {
+        $db->prepare('DELETE FROM auth_attempts WHERE action = ? AND attempt_key = ?')->execute([$action, strtolower($key)]);
+    } catch (Exception $e) {}
+}
+
+// ============ ORDER HELPERS ============
+
+/**
+ * Record an order status change in the timeline.
+ */
+function recordOrderStatus(PDO $db, int $orderId, ?string $oldStatus, string $newStatus, ?int $changedBy = null, ?string $note = null): void {
+    $db->prepare('INSERT INTO order_status_history (order_id, old_status, new_status, changed_by, note) VALUES (?, ?, ?, ?, ?)')
+       ->execute([$orderId, $oldStatus, $newStatus, $changedBy, $note]);
 }
 
 /**
@@ -503,3 +979,6 @@ function timeAgo(string $datetime): string {
     if ($diff < 604800) return floor($diff / 86400) . 'd ago';
     return date('M j, Y', strtotime($datetime));
 }
+
+// ============ EMAIL ============
+require_once __DIR__ . '/mailer.php';

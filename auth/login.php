@@ -30,7 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                if ($user && password_verify($password, $user['password_hash'])) {
+                if (tooManyAttempts($db, 'login', $email)) {
+                    $error = 'Too many failed sign-in attempts. Please wait 15 minutes or reset your password.';
+                } elseif ($user && password_verify($password, $user['password_hash'])) {
+                    clearAttempts($db, 'login', $email);
+                    if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
+                        $db->prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+                           ->execute([password_hash($password, PASSWORD_DEFAULT), $user['id']]);
+                    }
+                    $db->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$user['id']]);
+
                     // Save old session ID for cart migration BEFORE regeneration
                     $oldSessionId = session_id();
 
@@ -46,10 +55,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $defaultRedirect = $user['role'] === 'admin' ? APP_URL . '/admin/' : APP_URL . '/';
                     $redirect = $_SESSION['redirect_after_login'] ?? $defaultRedirect;
                     unset($_SESSION['redirect_after_login']);
-                    setFlash('success', 'Welcome back, ' . e($user['name']) . '!');
+                    // Only follow redirects back into this site
+                    $isLocalPath = str_starts_with($redirect, '/') && !str_starts_with($redirect, '//');
+                    if (!$isLocalPath && !str_starts_with($redirect, APP_URL . '/')) {
+                        $redirect = $defaultRedirect;
+                    }
+                    setFlash('success', 'Welcome back, ' . $user['name'] . '!');
                     header('Location: ' . $redirect);
                     exit;
                 } else {
+                    recordAttempt($db, 'login', $email);
                     $error = 'Invalid email or password.';
                 }
             } catch (Exception $e) {
@@ -60,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // HTML output starts here
-$pageTitle = 'Sign In — Beats Audio';
-$pageDescription = 'Sign in to your Beats Audio account.';
+$pageTitle = 'Sign In — ' . storeName();
+$pageDescription = 'Sign in to your ' . storeName() . ' account.';
 $pageType = 'page';
 $noIndex = true;
 
@@ -72,7 +87,7 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div class="text-center mb-10">
                 <h1 class="font-display text-3xl lg:text-4xl font-bold text-white mb-2">Welcome Back</h1>
-                <p class="text-gray-500">Sign in to your Beats Audio account</p>
+                <p class="text-gray-500">Sign in to your <?= e(storeName()) ?> account</p>
             </div>
 
             <?php if ($error): ?>
@@ -95,11 +110,7 @@ require_once __DIR__ . '/../includes/header.php';
                         class="w-full px-5 py-3.5 bg-dark-900/60 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none transition-colors"
                         placeholder="Enter your password">
                 </div>
-                <div class="flex items-center justify-between text-sm">
-                    <label class="flex items-center gap-2 text-gray-400 cursor-pointer">
-                        <input type="checkbox" name="remember" class="rounded border-white/20 bg-dark-900 text-neon-blue focus:ring-neon-blue/50">
-                        Remember me
-                    </label>
+                <div class="flex items-center justify-end text-sm">
                     <a href="<?= e($basePath) ?>/auth/forgot-password.php" class="text-neon-blue hover:underline">Forgot password?</a>
                 </div>
                 <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl font-bold text-dark-950 text-lg hover:scale-[1.02] transition-transform">

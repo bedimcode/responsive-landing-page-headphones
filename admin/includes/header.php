@@ -10,6 +10,7 @@ if (!defined('BASE_PATH')) {
 
 require_once BASE_PATH . '/includes/config.php';
 require_once BASE_PATH . '/includes/functions.php';
+require_once BASE_PATH . '/includes/migrations.php';
 
 requireAdmin();
 
@@ -22,18 +23,33 @@ $currentPage      = basename($_SERVER['PHP_SELF'], '.php');
 /* ------------------------------------------------------------------ */
 $_hdrUnreadMsgs = $pendingOrders = $lowStockCount = 0;
 $_hdrNotifItems = [];
+$_hdrDefaultPassword = false;
+$_hdrPendingMigrations = 0;
 
 try {
     $db = getDB();
+    // Setup warnings: published default passwords and missing database updates
+    // (bcrypt checks are slow, so the answer is cached per session; profile.php clears it)
+    if (!isset($_SESSION['admin_default_pw'])) {
+        $pwStmt = $db->prepare('SELECT password_hash FROM users WHERE id = ?');
+        $pwStmt->execute([currentUserId()]);
+        $pwHash = (string) $pwStmt->fetchColumn();
+        $_SESSION['admin_default_pw'] = password_verify('Admin@123', $pwHash) || password_verify('password', $pwHash);
+    }
+    $_hdrDefaultPassword = $_SESSION['admin_default_pw'];
+    $_hdrPendingMigrations = count(pendingMigrations($db));
+
     $_hdrUnreadMsgs = (int) $db->query("SELECT COUNT(*) FROM contact_messages WHERE is_read=0")->fetchColumn();
     $pendingOrders  = (int) $db->query("SELECT COUNT(*) FROM orders WHERE status='pending'")->fetchColumn();
-    $lowStockCount  = (int) $db->query("SELECT COUNT(*) FROM products WHERE stock<10 AND is_active=1")->fetchColumn();
+    $lowStockStmt   = $db->prepare("SELECT COUNT(*) FROM products WHERE stock <= ? AND is_active=1");
+    $lowStockStmt->execute([(int) setting('low_stock_threshold')]);
+    $lowStockCount  = (int) $lowStockStmt->fetchColumn();
 
     // -- build notification dropdown items --
     foreach ($db->query("SELECT id,order_number,shipping_name,total,created_at FROM orders WHERE status='pending' ORDER BY created_at DESC LIMIT 3")->fetchAll() as $o) {
         $_hdrNotifItems[] = ['icon'=>'ri-shopping-bag-3-line','cls'=>'text-neon-blue bg-neon-blue/10',
             'title'=>'Order #'.e($o['order_number']),
-            'sub'=>e($o['shipping_name']).' · $'.number_format($o['total'],2),
+            'sub'=>e($o['shipping_name']).' · '.formatPrice($o['total']),
             'time'=>$o['created_at'],
             'href'=>$basePath.'/admin/order-view.php?id='.(int)$o['id']];
     }
@@ -68,10 +84,12 @@ $navGroups = [
         ['href'=>$basePath.'/admin/orders.php',      'icon'=>'ri-shopping-bag-3-line', 'label'=>'Orders',        'page'=>'orders',       'badge'=>$pendingOrders],
         ['href'=>$basePath.'/admin/products.php',    'icon'=>'ri-headphone-line',      'label'=>'Products',      'page'=>'products'],
         ['href'=>$basePath.'/admin/payments.php',    'icon'=>'ri-bank-card-line',      'label'=>'Payments',      'page'=>'payments'],
+        ['href'=>$basePath.'/admin/coupons.php',     'icon'=>'ri-coupon-3-line',       'label'=>'Coupons',       'page'=>'coupons'],
     ],
     'CUSTOMERS' => [
         ['href'=>$basePath.'/admin/customers.php',   'icon'=>'ri-group-line',          'label'=>'Customers',     'page'=>'customers'],
         ['href'=>$basePath.'/admin/newsletter.php',  'icon'=>'ri-mail-send-line',      'label'=>'Newsletter',    'page'=>'newsletter'],
+        ['href'=>$basePath.'/admin/testimonials.php','icon'=>'ri-chat-quote-line',     'label'=>'Testimonials',  'page'=>'testimonials'],
     ],
     'SUPPORT' => [
         ['href'=>$basePath.'/admin/messages.php',    'icon'=>'ri-message-3-line',      'label'=>'Messages',      'page'=>'messages',        'badge'=>$_hdrUnreadMsgs],
@@ -98,28 +116,12 @@ function adminTimeAgo(?string $dt): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($adminPageTitle) ?> — Admin · Beats Audio</title>
+    <title><?= e($adminPageTitle) ?> — Admin · <?= e(storeName()) ?></title>
     <meta name="robots" content="noindex, nofollow">
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    dark:{50:'#f5f5f6',100:'#e5e5e8',200:'#cdcdd2',300:'#aaabb3',400:'#81828e',
-                          500:'#666773',600:'#565762',700:'#494a53',800:'#141418',900:'#0a0a0d',950:'#050507'},
-                    neon:{blue:'#00d4ff',purple:'#a855f7',pink:'#ec4899',cyan:'#06b6d4'}
-                },
-                fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['Space Grotesk','sans-serif']}
-            }
-        }
-    }
-    </script>
 
     <!-- Icons + Fonts -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -141,6 +143,7 @@ function adminTimeAgo(?string $dt): string {
         /* Print helper */
         @media print{aside,header,.no-print{display:none!important}.flex-1{margin-left:0!important}}
     </style>
+    <link rel="stylesheet" href="<?= e(assetUrl('assets/css/tailwind.css')) ?>">
 </head>
 <body class="bg-dark-950 text-gray-300 font-sans antialiased min-h-screen flex">
 
@@ -158,7 +161,7 @@ function adminTimeAgo(?string $dt): string {
             <i class="ri-headphone-fill text-neon-blue text-lg"></i>
         </div>
         <div class="flex-1 min-w-0">
-            <div class="font-display font-bold text-white text-[15px] leading-tight tracking-tight">Beats Audio</div>
+            <div class="font-display font-bold text-white text-[15px] leading-tight tracking-tight"><?= e(storeName()) ?></div>
             <div class="text-[10px] text-gray-500 font-medium uppercase tracking-[.18em]">Admin Panel</div>
         </div>
         <button onclick="closeSidebar()" class="lg:hidden w-7 h-7 rounded-lg flex items-center justify-center
@@ -367,6 +370,23 @@ function adminTimeAgo(?string $dt): string {
     </div>
     <?php endif; ?>
 
+    <?php if ($_hdrDefaultPassword): ?>
+    <!-- Security: default admin password still in use -->
+    <div class="mx-4 sm:mx-6 mt-4 p-3.5 rounded-xl text-sm flex flex-wrap items-center gap-3 bg-red-500/10 border border-red-500/30 text-red-300">
+        <i class="ri-shield-keyhole-line text-lg flex-shrink-0"></i>
+        <span class="flex-1">You are still using the default admin password from the installation guide. Anyone who reads it can sign in.</span>
+        <a href="<?= e($basePath) ?>/admin/profile.php?tab=password" class="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-400">Change password</a>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($_hdrPendingMigrations): ?>
+    <div class="mx-4 sm:mx-6 mt-4 p-3.5 rounded-xl text-sm flex flex-wrap items-center gap-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-300">
+        <i class="ri-database-2-line text-lg flex-shrink-0"></i>
+        <span class="flex-1"><?= $_hdrPendingMigrations ?> database update(s) are waiting. Some features will not work until they are applied.</span>
+        <a href="<?= e($basePath) ?>/admin/settings.php?tab=system" class="px-3 py-1.5 rounded-lg bg-yellow-400 text-dark-950 text-xs font-bold hover:opacity-90">Review updates</a>
+    </div>
+    <?php endif; ?>
+
     <!-- Page content -->
     <main class="flex-1 p-4 sm:p-6">
 
@@ -378,6 +398,11 @@ function adminTimeAgo(?string $dt): string {
             <input id="searchInput" type="text" placeholder="Search orders, products, customers…"
                    class="flex-1 bg-transparent text-sm text-white placeholder-gray-500 outline-none" autofocus>
             <kbd class="text-[10px] bg-white/[.06] px-1.5 py-0.5 rounded text-gray-600 cursor-pointer" onclick="document.getElementById('searchModal').classList.add('hidden')">ESC</kbd>
+        </div>
+        <div id="searchResults" class="hidden p-3 text-[12px] text-gray-300 space-y-1 border-b border-white/[.06]">
+            <a data-target="orders"    class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[.04] bg-white/[.03] transition-colors"><i class="ri-shopping-bag-3-line text-sm text-neon-blue"></i><span>Search orders for “<b></b>”</span><kbd class="ml-auto text-[10px] text-gray-600">Enter</kbd></a>
+            <a data-target="products"  class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[.04] transition-colors"><i class="ri-headphone-line text-sm text-neon-purple"></i><span>Search products for “<b></b>”</span></a>
+            <a data-target="customers" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[.04] transition-colors"><i class="ri-group-line text-sm text-neon-pink"></i><span>Search customers for “<b></b>”</span></a>
         </div>
         <div class="p-3 text-[12px] text-gray-500 space-y-1">
             <a href="<?= e($basePath) ?>/admin/orders.php"    class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/[.04] transition-colors"><i class="ri-shopping-bag-3-line text-sm"></i>Go to Orders</a>
@@ -412,5 +437,20 @@ sm.addEventListener('click',()=>sm.classList.add('hidden'));
 document.addEventListener('keydown',e=>{
     if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();sm.classList.toggle('hidden');setTimeout(()=>document.getElementById('searchInput')?.focus(),50)}
     if(e.key==='Escape') sm.classList.add('hidden');
+});
+/* Search: each result opens that list page filtered by ?q= */
+const searchInput=document.getElementById('searchInput');
+const searchResults=document.getElementById('searchResults');
+const adminBase=<?= jsonForScript($basePath . '/admin/') ?>;
+searchInput?.addEventListener('input',()=>{
+    const q=searchInput.value.trim();
+    searchResults.classList.toggle('hidden',!q);
+    searchResults.querySelectorAll('a').forEach(a=>{
+        a.querySelector('b').textContent=q;
+        a.href=adminBase+a.dataset.target+'.php?q='+encodeURIComponent(q);
+    });
+});
+searchInput?.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&searchInput.value.trim()) window.location.href=searchResults.querySelector('a').href;
 });
 </script>

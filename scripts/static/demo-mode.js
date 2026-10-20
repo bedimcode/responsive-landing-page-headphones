@@ -21,12 +21,15 @@
 
     const countOf = (lines) => lines.reduce((sum, l) => sum + l.quantity, 0);
 
+    // Same rule as effectivePrice() in includes/functions.php
+    const priceOf = (p) => (p.sale_price > 0 && p.sale_price < p.price) ? p.sale_price : p.price;
+
     // ---- Cart (mirrors api/cart.php responses; item id = product id) ----
     function getCart() {
         const items = loadCart().map(line => {
             const product = PRODUCTS.find(p => p.id === line.product_id);
             if (!product) return null;
-            const effectivePrice = product.sale_price || product.price;
+            const effectivePrice = priceOf(product);
             return {
                 ...product,
                 product_id: product.id,
@@ -94,7 +97,8 @@
         cart: (method, body) => (method === 'GET' ? getCart() : changeCart(body)),
         wishlist: (method, body) => toggleWishlist(body),
         contact: () => ({ success: true, message: 'Thanks! This is a display demo, so your message was not actually sent.' }),
-        newsletter: () => ({ success: true, message: 'Thanks for subscribing! (Display demo — nothing was saved.)' }),
+        newsletter: () => ({ success: true, message: 'Thanks for subscribing! (Display demo — nothing was saved and no email is sent.)' }),
+        coupon: () => ({ success: false, message: DEMO_MESSAGE }),
     };
 
     const realFetch = window.fetch.bind(window);

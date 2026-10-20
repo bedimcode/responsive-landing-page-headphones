@@ -25,6 +25,26 @@ if (!$order) {
     redirect(APP_URL . '/account/orders.php');
 }
 
+// Customer submits the M-Pesa / bank transaction code for a pending manual payment
+$awaitingPayment = $order['payment_status'] === 'pending' && $order['status'] !== 'cancelled'
+    && in_array($order['payment_method'], ['mpesa', 'bank'], true);
+$referenceError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'payment_reference') {
+    $reference = strtoupper(cleanText($_POST['payment_reference'] ?? '', 100));
+    if (!validateCsrf()) {
+        $referenceError = 'Invalid security token. Please try again.';
+    } elseif (!$awaitingPayment) {
+        $referenceError = 'This order is not waiting for a payment.';
+    } elseif (!preg_match('/^[A-Z0-9 \/-]{6,100}$/', $reference)) {
+        $referenceError = 'Enter the transaction code exactly as it appears on your confirmation message.';
+    } else {
+        $db->prepare('UPDATE orders SET payment_reference = ? WHERE id = ? AND user_id = ?')->execute([$reference, $orderId, $uid]);
+        recordOrderStatus($db, $orderId, $order['status'], $order['status'], $uid, 'Customer sent payment reference ' . $reference);
+        setFlash('success', 'Thanks! We will confirm your payment shortly.');
+        redirect(APP_URL . '/account/order-view.php?id=' . $orderId);
+    }
+}
+
 // Fetch order items
 $stmt = $db->prepare('SELECT oi.*, p.slug AS product_slug FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?');
 $stmt->execute([$orderId]);
@@ -32,6 +52,9 @@ $items = $stmt->fetchAll();
 
 // Fetch status history
 $history = getOrderStatusHistory($db, $orderId);
+
+$justPlaced = isset($_GET['placed']);
+$howToPay   = $awaitingPayment ? paymentInstructions($order['payment_method'], $order['order_number'], (float) $order['total']) : null;
 
 $accountPageTitle = 'Order #' . $order['order_number'];
 require_once __DIR__ . '/includes/header.php';
@@ -43,6 +66,51 @@ require_once __DIR__ . '/includes/header.php';
         <i class="ri-arrow-left-line"></i> Back to Orders
     </a>
 </div>
+
+<?php if ($justPlaced): ?>
+<!-- Thank-you banner after checkout -->
+<div class="mb-4 sm:mb-6 p-5 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-start gap-4">
+    <i class="ri-checkbox-circle-fill text-3xl text-green-400 flex-shrink-0"></i>
+    <div>
+        <h2 class="font-display font-semibold text-white text-lg">Thank you — your order is in!</h2>
+        <p class="text-sm text-gray-300 mt-1">Order <strong>#<?= e($order['order_number']) ?></strong> has been received. A confirmation has been sent to <?= e($order['shipping_email']) ?>.<?= $howToPay ? ' Complete your payment using the steps below.' : '' ?></p>
+    </div>
+</div>
+<?php endif; ?>
+
+<?php if ($howToPay): ?>
+<!-- How to pay (manual payment methods) -->
+<div class="mb-4 sm:mb-6 grid md:grid-cols-2 gap-4 p-5 rounded-2xl bg-neon-blue/[.04] border border-neon-blue/20">
+    <div>
+        <h2 class="font-display font-semibold text-white text-sm mb-3 flex items-center gap-2"><i class="ri-wallet-3-line text-neon-blue"></i> <?= e($howToPay['title']) ?></h2>
+        <ol class="text-sm text-gray-300 space-y-1.5 list-decimal list-inside">
+            <?php foreach ($howToPay['steps'] as $step): ?><li><?= e($step) ?></li><?php endforeach; ?>
+        </ol>
+    </div>
+    <div>
+        <?php if ($order['payment_reference']): ?>
+        <div class="h-full flex flex-col justify-center p-4 rounded-xl bg-dark-900/60 border border-white/[.06]">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Reference received</div>
+            <div class="font-mono text-white"><?= e($order['payment_reference']) ?></div>
+            <p class="text-xs text-gray-500 mt-2">We&rsquo;ll mark the order as paid once the payment is confirmed.</p>
+        </div>
+        <?php else: ?>
+        <form method="POST" class="space-y-2">
+            <?= csrfField() ?>
+            <input type="hidden" name="action" value="payment_reference">
+            <label for="payment_reference" class="block text-xs text-gray-400"><?= e($howToPay['note']) ?></label>
+            <div class="flex gap-2">
+                <input type="text" id="payment_reference" name="payment_reference" required maxlength="100" autocomplete="off"
+                       class="flex-1 min-w-0 px-3 py-2.5 bg-dark-900/60 border border-white/10 rounded-xl text-sm text-white uppercase font-mono placeholder-gray-600 focus:border-neon-blue/50 focus:outline-none"
+                       placeholder="<?= $order['payment_method'] === 'mpesa' ? 'e.g. QHX1ABC2DE' : 'Bank reference' ?>">
+                <button type="submit" class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-neon-blue text-dark-950 hover:bg-white transition-colors">Submit</button>
+            </div>
+            <?php if ($referenceError): ?><p class="text-xs text-red-400"><?= e($referenceError) ?></p><?php endif; ?>
+        </form>
+        <?php endif; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="grid lg:grid-cols-3 gap-4 sm:gap-6">
 
@@ -85,12 +153,18 @@ require_once __DIR__ . '/includes/header.php';
                     <span class="text-gray-400">Subtotal</span>
                     <span class="text-gray-300"><?= formatPrice($order['subtotal']) ?></span>
                 </div>
+                <?php if ($order['discount'] > 0): ?>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-400">Discount<?= $order['coupon_code'] ? ' <span class="font-mono text-xs">(' . e($order['coupon_code']) . ')</span>' : '' ?></span>
+                    <span class="text-green-400"><?= formatPrice(-$order['discount']) ?></span>
+                </div>
+                <?php endif; ?>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-400">Shipping</span>
                     <span class="text-gray-300"><?= $order['shipping_cost'] > 0 ? formatPrice($order['shipping_cost']) : 'Free' ?></span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-400">Tax</span>
+                    <span class="text-gray-400"><?= e(setting('tax_label') ?: 'Tax') ?></span>
                     <span class="text-gray-300"><?= formatPrice($order['tax']) ?></span>
                 </div>
                 <div class="flex justify-between text-sm font-semibold pt-2 border-t border-white/[.06]">
@@ -163,7 +237,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div>
                     <div class="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Payment</div>
                     <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-300 capitalize"><?= e($order['payment_method']) ?></span>
+                        <span class="text-sm text-gray-300"><?= e(paymentMethodLabel($order['payment_method'])) ?></span>
                         <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium <?= paymentStatusBadge($order['payment_status']) ?>">
                             <?= ucfirst(e($order['payment_status'])) ?>
                         </span>
