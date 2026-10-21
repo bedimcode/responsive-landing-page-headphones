@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /account/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /checkout.php
+Disallow: /includes/
+Disallow: /sql/
+Disallow: /*?q=
+

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/assets/js/demo-mode.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse our collection of premium wireless headphones. Studio-grade sound, 40-hour battery and Bluetooth 5.2. Free shipping on orders over $100.00.">
+        <meta name="theme-color" content="#050507">
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Beats 3 Store">
+    <meta property="og:title" content="Earphones — Beats 3 Store">
+    <meta property="og:description" content="Browse our collection of premium wireless headphones. Studio-grade sound, 40-hour battery and Bluetooth 5.2. Free shipping on orders over $100.00.">
+    <meta property="og:image" content="/assets/img/home.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="/shop/earphones">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Earphones — Beats 3 Store">
+    <meta name="twitter:description" content="Browse our collection of premium wireless headphones. Studio-grade sound, 40-hour battery and Bluetooth 5.2. Free shipping on orders over $100.00.">
+    <meta name="twitter:image" content="/assets/img/home.png">
+
+        <link rel="canonical" href="/shop/earphones">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/assets/css/styles.css?v=1775281746">
+
+    <!-- CSRF Token + store config for JS -->
+    <meta name="csrf-token" content="">
+    <meta name="cart-api" content="/api/cart.php">
+    <script>window.STORE_CURRENCY = {"symbol":"$","code":"USD","decimals":2};</script>
+
+    <!-- Compiled Tailwind (npm run build:css) — loaded last, like the old CDN build -->
+    <link rel="stylesheet" href="/assets/css/tailwind.css?v=1792521977">
+
+    <title>Earphones — Beats 3 Store</title>
+</head>
+<body class="bg-dark-950 text-gray-300 font-sans overflow-x-hidden ">
+
+    
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress" class="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink z-[200] transition-all" style="width: 0%"></div>
+
+    <!-- ============ HEADER / NAVBAR ============ -->
+    <header id="header" class="fixed top-0 left-0 w-full z-[150] transition-all duration-500">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20 transition-all duration-500">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 z-50">
+                <img src="/assets/img/logo.png" alt="Beats 3 Store" class="h-8 lg:h-10" width="40" height="40">
+            </a>
+
+            <!-- Desktop Nav -->
+            <div id="nav-menu" class="nav-menu fixed top-0 left-0 w-full h-screen bg-dark-950/98 backdrop-blur-xl flex flex-col items-center justify-center gap-8 z-40 transition-all duration-500 opacity-0 pointer-events-none lg:static lg:w-auto lg:h-auto lg:bg-transparent lg:flex-row lg:opacity-100 lg:pointer-events-auto lg:backdrop-blur-none">
+                <ul class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                                        <li><a href="/" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative ">Home</a></li>
+                    <li><a href="/shop" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative active">Shop</a></li>
+                    <li><a href="/contact" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative ">Contact</a></li>
+                    <li><a href="/#faq" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative">FAQ</a></li>
+                                    </ul>
+                <!-- Mobile close -->
+                <button id="nav-close" class="absolute top-6 right-6 text-3xl text-white lg:hidden"><i class="ri-close-line"></i></button>
+            </div>
+
+            <!-- Right side: Cart + Auth + Mobile toggle -->
+            <div class="flex items-center gap-4 z-50">
+                                <a href="/auth/login" class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                    <i class="ri-user-line"></i> Sign In
+                </a>
+                
+                <!-- Cart Button -->
+                <button id="cart-toggle" class="relative group" aria-label="Open cart">
+                    <i class="ri-shopping-bag-3-line text-xl text-gray-300 group-hover:text-neon-blue transition-colors"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 w-5 h-5 bg-neon-blue text-dark-950 text-xs font-bold rounded-full flex items-center justify-center opacity-0 scale-0 transition-all">0</span>
+                </button>
+                <!-- Mobile Toggle -->
+                <button id="nav-toggle" class="text-2xl text-white lg:hidden" aria-label="Open menu"><i class="ri-menu-4-line"></i></button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ============ CART DRAWER ============ -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[160] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 w-full max-w-md h-full bg-dark-900/95 backdrop-blur-2xl border-l border-white/5 z-[170] translate-x-full transition-transform duration-500 ease-out flex flex-col" role="dialog" aria-label="Shopping cart">
+        <div class="flex items-center justify-between p-6 border-b border-white/5">
+            <h3 class="text-xl font-display font-bold text-white">Your Cart</h3>
+            <button id="cart-close" class="text-2xl text-gray-400 hover:text-white transition-colors"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <p id="cart-empty" class="text-center text-gray-500 py-12">Your cart is empty</p>
+        </div>
+        <div id="cart-footer" class="p-6 border-t border-white/5 hidden">
+            <div class="flex justify-between mb-4">
+                <span class="text-gray-400">Subtotal</span>
+                <span id="cart-total" class="text-xl font-bold text-white">$0</span>
+            </div>
+            <a href="/auth/register" class="block w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform text-center">
+                Checkout — <span id="cart-total-btn">$0</span>
+            </a>
+            <p class="text-center text-xs text-gray-500 mt-3">Free shipping on orders over $100.00</p>
+        </div>
+    </aside>
+
+    <!-- ============ QUICK VIEW MODAL ============ -->
+    <div id="quickview-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[180] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <div id="quickview-modal" class="fixed inset-0 z-[190] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-500 scale-95" role="dialog" aria-label="Product quick view">
+        <div class="bg-dark-800/95 backdrop-blur-2xl rounded-3xl border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
+            <button id="quickview-close" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-white transition-colors z-10"><i class="ri-close-line"></i></button>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="flex items-center justify-center bg-gradient-to-br from-dark-900 to-dark-800 rounded-2xl p-8">
+                    <img id="qv-image" src="" alt="Product" class="w-full max-w-[280px] drop-shadow-2xl">
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span class="text-neon-blue text-sm font-medium uppercase tracking-widest mb-2">Quick View</span>
+                    <h3 id="qv-title" class="text-3xl font-display font-bold text-white mb-2"></h3>
+                    <p id="qv-price" class="text-2xl font-bold text-white mb-4"></p>
+                    <div class="space-y-3 mb-6 text-sm text-gray-400">
+                        <div class="flex items-center gap-3"><i class="ri-bluetooth-line text-neon-blue"></i> Bluetooth 5.2</div>
+                        <div class="flex items-center gap-3"><i class="ri-battery-charge-line text-neon-blue"></i> 40h Battery Life</div>
+                        <div class="flex items-center gap-3"><i class="ri-mic-line text-neon-blue"></i> Built-in Microphone</div>
+                                                <div class="flex items-center gap-3"><i class="ri-shield-check-line text-neon-blue"></i> 1-year Warranty</div>
+                                                <div class="flex items-center gap-3"><i class="ri-truck-line text-neon-blue"></i> Free shipping on orders over $100.00</div>
+                    </div>
+                    <!-- Color swatches in modal -->
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-400 mb-3">Color: <span id="qv-color-name" class="text-white"></span></p>
+                        <div id="qv-colors" class="flex gap-3"></div>
+                    </div>
+                    <button id="qv-add-btn" class="w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2" data-id="" data-name="" data-price="" data-img="">
+                        <i class="ri-shopping-bag-line"></i> Add to Cart
+                    </button>
+                    <a id="qv-link" href="/shop" class="mt-3 text-center text-sm text-gray-400 hover:text-neon-blue transition-colors">View full details <i class="ri-arrow-right-line"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live region for accessibility announcements -->
+    <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <main>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24">
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="mb-4 sm:mb-6"><ol class="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-gray-500" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><a href="/" itemprop="item" class="hover:text-neon-blue transition-colors"><span itemprop="name">Home</span></a><meta itemprop="position" content="1"></li><li class="text-gray-700"><i class="ri-arrow-right-s-line text-xs"></i></li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><a href="/shop" itemprop="item" class="hover:text-neon-blue transition-colors"><span itemprop="name">Shop</span></a><meta itemprop="position" content="2"></li><li class="text-gray-700"><i class="ri-arrow-right-s-line text-xs"></i></li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem"><span itemprop="name" class="text-gray-300 font-medium">Earphones</span><meta itemprop="position" content="3"></li></ol></nav>
+    <!-- Page Header -->
+    <div class="mb-6 sm:mb-8">
+        <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+            Earphones        </h1>
+        <p class="text-sm sm:text-base text-gray-400 mt-2">
+            0 products available
+        </p>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-6 sm:mb-8">
+        <!-- Search -->
+        <form method="get" class="flex-1">
+            <input type="hidden" name="category" value="earphones">                        <div class="relative">
+                <i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                <input type="search" name="q" value="" placeholder="Search products…" aria-label="Search products"
+                       class="w-full pl-9 pr-4 py-2.5 bg-dark-900/60 border border-white/[.06] rounded-xl text-sm text-white placeholder-gray-500
+                              focus:outline-none focus:border-neon-blue/30 transition-colors">
+            </div>
+        </form>
+
+        <!-- Category Filter -->
+        <div class="flex flex-wrap gap-1.5">
+            <a href="/shop"
+               class="px-3 py-2 rounded-xl text-[11px] sm:text-xs font-medium border transition-all
+                      bg-dark-900/60 text-gray-400 border-white/[.06] hover:text-white hover:border-white/10">
+                All
+            </a>
+                        <a href="/shop/headphones"
+               class="px-3 py-2 rounded-xl text-[11px] sm:text-xs font-medium border transition-all
+                      bg-dark-900/60 text-gray-400 border-white/[.06] hover:text-white hover:border-white/10">
+                Headphones <span class="text-gray-600 ml-0.5">5</span>
+            </a>
+                    </div>
+
+        <!-- Sort -->
+        <div class="relative">
+            <select onchange="window.location.href=this.value" aria-label="Sort products"
+                    class="appearance-none pl-3 pr-8 py-2.5 bg-dark-900/60 border border-white/[.06] rounded-xl text-xs text-gray-300 focus:outline-none focus:border-neon-blue/30 cursor-pointer transition-colors">
+                                <option value="/shop/earphones" selected>Newest</option>
+                                <option value="/shop/earphones" >Price: Low → High</option>
+                                <option value="/shop/earphones" >Price: High → Low</option>
+                                <option value="/shop/earphones" >Name: A–Z</option>
+                                <option value="/shop/earphones" >Name: Z–A</option>
+                            </select>
+            <i class="ri-arrow-down-s-line absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none"></i>
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+        <div class="text-center py-20">
+        <i class="ri-headphone-line text-5xl text-gray-700 mb-4 block"></i>
+        <p class="text-gray-400 mb-2">No products found.</p>
+        <p class="text-sm text-gray-600 mb-6">Try adjusting your search or filters.</p>
+        <a href="/shop" class="text-sm text-neon-blue hover:text-white transition-colors">Clear Filters</a>
+    </div>
+    </div>
+
+<!-- JSON-LD: ItemList for SEO -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ItemList","name":"Earphones","numberOfItems":0,"itemListElement":[]}</script>
+
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="border-t border-white/5 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <a href="/" class="inline-block mb-6"><img src="/assets/img/logo.png" alt="Beats 3 Store" class="h-10" width="40" height="40" loading="lazy"></a>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6">Studio-grade wireless headphones engineered for those who demand the best in sound, comfort, and style.</p>
+                                    </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Products</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/shop" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">All Products</a></li>
+                                                                        <li><a href="/shop/headphones" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Headphones</a></li>
+                                            </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Support</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/#faq" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">FAQs</a></li>
+                        <li><a href="/contact" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Contact Us</a></li>
+                        <li><a href="/auth/login" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Track Your Order</a></li>
+                        <li><a href="/legal/terms-of-service#returns" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Shipping &amp; Returns</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Ways to Pay</h4>
+                    <ul class="space-y-3 mb-6">
+                                                <li class="flex items-center gap-2.5 text-gray-400 text-sm"><i class="ri-hand-coin-line text-neon-blue"></i> Cash on Delivery</li>
+                                                <li class="flex items-center gap-2.5 text-gray-400 text-sm"><i class="ri-bank-line text-neon-blue"></i> Bank Transfer</li>
+                                            </ul>
+                    <p class="text-gray-500 text-xs flex items-center gap-1.5"><i class="ri-truck-line"></i> Free shipping on orders over $100.00</p>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-gray-600 text-sm">&copy; 2026 Beats 3 Store. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="/legal/privacy-policy" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Privacy Policy</a>
+                    <a href="/legal/terms-of-service" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Terms of Service</a>
+                    <a href="/legal/cookie-policy" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============ COOKIE CONSENT BANNER ============ -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 z-[200] p-4 bg-dark-900/95 backdrop-blur-2xl border-t border-white/5 translate-y-full transition-transform duration-500" style="display:none;">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-gray-400 text-sm text-center sm:text-left">We use one essential cookie to keep you signed in and remember your cart &mdash; no tracking or ads. <a href="/legal/cookie-policy" class="text-neon-blue hover:underline">Cookie Policy</a></p>
+            <div class="flex gap-3">
+                <button id="cookie-reject" class="px-4 py-2 text-sm text-gray-400 border border-white/10 rounded-xl hover:bg-white/5 transition-colors">Reject</button>
+                <button id="cookie-accept" class="px-4 py-2 text-sm text-dark-950 bg-neon-blue rounded-xl font-medium hover:bg-neon-blue/90 transition-colors">Accept</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- ============ DEMO NOTICE ============ -->
+    <div class="fixed bottom-6 left-6 z-[140] hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-900/90 backdrop-blur-xl border border-yellow-500/20 text-[11px] text-yellow-300/90 pointer-events-none" role="note">
+        <i class="ri-flask-line"></i> Demo store &mdash; orders are not fulfilled
+    </div>
+    
+    
+    <!-- ============ BACK TO TOP ============ -->
+    <a href="#" id="scroll-up" class="fixed bottom-6 right-6 w-12 h-12 bg-dark-900/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center text-neon-blue z-[140] opacity-0 translate-y-10 pointer-events-none transition-all duration-500 hover:border-neon-blue/30 hover:scale-110" aria-label="Back to top">
+        <i class="ri-arrow-up-s-line text-xl"></i>
+    </a>
+
+    <!-- ============ SCRIPTS ============ -->
+        <script src="/assets/js/cart.js"></script>
+    
+    <!-- Cookie consent logic -->
+    <script>
+    (function() {
+        const banner = document.getElementById('cookie-banner');
+        if (!banner) return;
+        if (!localStorage.getItem('cookie_consent')) {
+            banner.style.display = '';
+            setTimeout(() => banner.classList.remove('translate-y-full'), 100);
+        }
+        document.getElementById('cookie-accept')?.addEventListener('click', () => {
+            localStorage.setItem('cookie_consent', 'accepted');
+            banner.classList.add('translate-y-full');
+            setTimeout(() => banner.style.display = 'none', 500);
+        });
+        document.getElementById('cookie-reject')?.addEventListener('click', () => {
+            localStorage.setItem('cookie_consent', 'rejected');
+            banner.classList.add('translate-y-full');
+            setTimeout(() => banner.style.display = 'none', 500);
+        });
+    })();
+    </script>
+
+    <!-- Simple navigation for non-home pages (no GSAP) -->
+        <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Mobile nav
+        const navMenu = document.getElementById('nav-menu');
+        document.getElementById('nav-toggle')?.addEventListener('click', () => navMenu?.classList.add('open'));
+        document.getElementById('nav-close')?.addEventListener('click', () => navMenu?.classList.remove('open'));
+        document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', () => navMenu?.classList.remove('open')));
+
+        // Header scroll
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80) header?.classList.add('scrolled');
+            else header?.classList.remove('scrolled');
+        });
+
+        // Scroll progress
+        const progressBar = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement.scrollHeight - window.innerHeight;
+            if (progressBar && h > 0) progressBar.style.width = (window.scrollY / h * 100) + '%';
+        });
+
+        // Back to top
+        const scrollUp = document.getElementById('scroll-up');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) scrollUp?.classList.add('visible');
+            else scrollUp?.classList.remove('visible');
+        });
+        scrollUp?.addEventListener('click', (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+        // Cart init
+        if (typeof Cart !== 'undefined') Cart.init();
+
+        // Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (typeof Cart !== 'undefined') Cart.closeDrawer();
+                navMenu?.classList.remove('open');
+            }
+        });
+    });
+    </script>
+    </body>
+</html>

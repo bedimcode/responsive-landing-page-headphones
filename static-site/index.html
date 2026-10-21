@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/assets/js/demo-mode.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Beats 3 studio-grade wireless headphones with 40h battery, Bluetooth 5.2 and premium sound. Free shipping on orders over $100.00.">
+        <meta name="theme-color" content="#050507">
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Beats 3 Store">
+    <meta property="og:title" content="Beats 3 — Studio-Grade Wireless Headphones | Beats 3 Store">
+    <meta property="og:description" content="Beats 3 studio-grade wireless headphones with 40h battery, Bluetooth 5.2 and premium sound. Free shipping on orders over $100.00.">
+    <meta property="og:image" content="/assets/img/home.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="/">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Beats 3 — Studio-Grade Wireless Headphones | Beats 3 Store">
+    <meta name="twitter:description" content="Beats 3 studio-grade wireless headphones with 40h battery, Bluetooth 5.2 and premium sound. Free shipping on orders over $100.00.">
+    <meta name="twitter:image" content="/assets/img/home.png">
+
+        <link rel="canonical" href="/">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/img/favicon.png" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/assets/css/styles.css?v=1775281746">
+
+    <!-- CSRF Token + store config for JS -->
+    <meta name="csrf-token" content="">
+    <meta name="cart-api" content="/api/cart.php">
+    <script>window.STORE_CURRENCY = {"symbol":"$","code":"USD","decimals":2};</script>
+
+    <!-- Compiled Tailwind (npm run build:css) — loaded last, like the old CDN build -->
+    <link rel="stylesheet" href="/assets/css/tailwind.css?v=1792521977">
+
+    <title>Beats 3 — Studio-Grade Wireless Headphones | Beats 3 Store</title>
+</head>
+<body class="bg-dark-950 text-gray-300 font-sans overflow-x-hidden ">
+
+    
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress" class="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink z-[200] transition-all" style="width: 0%"></div>
+
+    <!-- ============ HEADER / NAVBAR ============ -->
+    <header id="header" class="fixed top-0 left-0 w-full z-[150] transition-all duration-500">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20 transition-all duration-500">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 z-50">
+                <img src="/assets/img/logo.png" alt="Beats 3 Store" class="h-8 lg:h-10" width="40" height="40">
+            </a>
+
+            <!-- Desktop Nav -->
+            <div id="nav-menu" class="nav-menu fixed top-0 left-0 w-full h-screen bg-dark-950/98 backdrop-blur-xl flex flex-col items-center justify-center gap-8 z-40 transition-all duration-500 opacity-0 pointer-events-none lg:static lg:w-auto lg:h-auto lg:bg-transparent lg:flex-row lg:opacity-100 lg:pointer-events-auto lg:backdrop-blur-none">
+                <ul class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                                        <li><a href="#home" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="home">Home</a></li>
+                    <li><a href="#specs" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="specs">Specs</a></li>
+                    <li><a href="#case" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="case">Case</a></li>
+                    <li><a href="#products" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="products">Products</a></li>
+                    <li><a href="#testimonials" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="testimonials">Reviews</a></li>
+                    <li><a href="#faq" class="nav-link text-lg lg:text-sm font-medium uppercase tracking-widest text-gray-400 hover:text-white transition-colors relative" data-section="faq">FAQ</a></li>
+                                    </ul>
+                <!-- Mobile close -->
+                <button id="nav-close" class="absolute top-6 right-6 text-3xl text-white lg:hidden"><i class="ri-close-line"></i></button>
+            </div>
+
+            <!-- Right side: Cart + Auth + Mobile toggle -->
+            <div class="flex items-center gap-4 z-50">
+                                <a href="/auth/login" class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+                    <i class="ri-user-line"></i> Sign In
+                </a>
+                
+                <!-- Cart Button -->
+                <button id="cart-toggle" class="relative group" aria-label="Open cart">
+                    <i class="ri-shopping-bag-3-line text-xl text-gray-300 group-hover:text-neon-blue transition-colors"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 w-5 h-5 bg-neon-blue text-dark-950 text-xs font-bold rounded-full flex items-center justify-center opacity-0 scale-0 transition-all">0</span>
+                </button>
+                <!-- Mobile Toggle -->
+                <button id="nav-toggle" class="text-2xl text-white lg:hidden" aria-label="Open menu"><i class="ri-menu-4-line"></i></button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ============ CART DRAWER ============ -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[160] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 w-full max-w-md h-full bg-dark-900/95 backdrop-blur-2xl border-l border-white/5 z-[170] translate-x-full transition-transform duration-500 ease-out flex flex-col" role="dialog" aria-label="Shopping cart">
+        <div class="flex items-center justify-between p-6 border-b border-white/5">
+            <h3 class="text-xl font-display font-bold text-white">Your Cart</h3>
+            <button id="cart-close" class="text-2xl text-gray-400 hover:text-white transition-colors"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <p id="cart-empty" class="text-center text-gray-500 py-12">Your cart is empty</p>
+        </div>
+        <div id="cart-footer" class="p-6 border-t border-white/5 hidden">
+            <div class="flex justify-between mb-4">
+                <span class="text-gray-400">Subtotal</span>
+                <span id="cart-total" class="text-xl font-bold text-white">$0</span>
+            </div>
+            <a href="/auth/register" class="block w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform text-center">
+                Checkout — <span id="cart-total-btn">$0</span>
+            </a>
+            <p class="text-center text-xs text-gray-500 mt-3">Free shipping on orders over $100.00</p>
+        </div>
+    </aside>
+
+    <!-- ============ QUICK VIEW MODAL ============ -->
+    <div id="quickview-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[180] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <div id="quickview-modal" class="fixed inset-0 z-[190] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-500 scale-95" role="dialog" aria-label="Product quick view">
+        <div class="bg-dark-800/95 backdrop-blur-2xl rounded-3xl border border-white/10 max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
+            <button id="quickview-close" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-white transition-colors z-10"><i class="ri-close-line"></i></button>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="flex items-center justify-center bg-gradient-to-br from-dark-900 to-dark-800 rounded-2xl p-8">
+                    <img id="qv-image" src="" alt="Product" class="w-full max-w-[280px] drop-shadow-2xl">
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span class="text-neon-blue text-sm font-medium uppercase tracking-widest mb-2">Quick View</span>
+                    <h3 id="qv-title" class="text-3xl font-display font-bold text-white mb-2"></h3>
+                    <p id="qv-price" class="text-2xl font-bold text-white mb-4"></p>
+                    <div class="space-y-3 mb-6 text-sm text-gray-400">
+                        <div class="flex items-center gap-3"><i class="ri-bluetooth-line text-neon-blue"></i> Bluetooth 5.2</div>
+                        <div class="flex items-center gap-3"><i class="ri-battery-charge-line text-neon-blue"></i> 40h Battery Life</div>
+                        <div class="flex items-center gap-3"><i class="ri-mic-line text-neon-blue"></i> Built-in Microphone</div>
+                                                <div class="flex items-center gap-3"><i class="ri-shield-check-line text-neon-blue"></i> 1-year Warranty</div>
+                                                <div class="flex items-center gap-3"><i class="ri-truck-line text-neon-blue"></i> Free shipping on orders over $100.00</div>
+                    </div>
+                    <!-- Color swatches in modal -->
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-400 mb-3">Color: <span id="qv-color-name" class="text-white"></span></p>
+                        <div id="qv-colors" class="flex gap-3"></div>
+                    </div>
+                    <button id="qv-add-btn" class="w-full py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2" data-id="" data-name="" data-price="" data-img="">
+                        <i class="ri-shopping-bag-line"></i> Add to Cart
+                    </button>
+                    <a id="qv-link" href="/shop" class="mt-3 text-center text-sm text-gray-400 hover:text-neon-blue transition-colors">View full details <i class="ri-arrow-right-line"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live region for accessibility announcements -->
+    <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <main>
+
+        <!-- ============ HERO SECTION ============ -->
+        <section id="home" class="relative min-h-screen flex items-center overflow-hidden pt-20">
+            <!-- Ambient bg effects -->
+            <div class="absolute inset-0 pointer-events-none">
+                <div class="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-neon-blue/5 rounded-full blur-[150px]"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-neon-purple/5 rounded-full blur-[150px]"></div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center relative z-10 w-full py-12">
+                <!-- Text -->
+                <div class="order-2 lg:order-1 text-center lg:text-left">
+                    <div class="hero-text">
+                        <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-neon-blue/10 border border-neon-blue/20 rounded-full text-neon-blue text-xs font-semibold uppercase tracking-widest mb-6">
+                            <span class="w-2 h-2 bg-neon-blue rounded-full animate-pulse"></span> Now Available
+                        </span>
+                        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-white leading-[0.95] mb-4">
+                            <span class="block hero-line">On Ear</span>
+                            <span class="block bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink bg-clip-text text-transparent hero-line">Beats 3</span>
+                        </h1>
+                        <p class="text-lg sm:text-xl text-gray-400 max-w-lg mx-auto lg:mx-0 mb-8 leading-relaxed hero-desc">
+                            Studio-grade sound that disappears into your world. 40 hours of wireless freedom, wrapped in premium comfort.
+                        </p>
+
+                        <!-- Color swatches -->
+                        <div class="flex items-center gap-4 justify-center lg:justify-start mb-8 hero-colors">
+                            <span class="text-sm text-gray-500 uppercase tracking-wide">Color:</span>
+                            <div class="flex gap-3" id="hero-colors">
+                                                                <button type="button" class="color-swatch w-8 h-8 rounded-full border-2 border-white/30 active transition-all hover:scale-110"
+                                    data-id="1"
+                                    data-name="Beats 3 — Black"
+                                    data-price="249"
+                                    data-price-label="$249.00"
+                                    data-img="assets/img/product1.png"
+                                    style="background: #1a1a1a"
+                                    title="Black" aria-label="Black"></button>
+                                                                <button type="button" class="color-swatch w-8 h-8 rounded-full border-2 border-transparent transition-all hover:scale-110"
+                                    data-id="4"
+                                    data-name="Beats 3 — Blue"
+                                    data-price="249"
+                                    data-price-label="$249.00"
+                                    data-img="assets/img/product4.png"
+                                    style="background: #2563eb"
+                                    title="Blue" aria-label="Blue"></button>
+                                                                <button type="button" class="color-swatch w-8 h-8 rounded-full border-2 border-transparent transition-all hover:scale-110"
+                                    data-id="2"
+                                    data-name="Beats 3 — Red Black"
+                                    data-price="249"
+                                    data-price-label="$249.00"
+                                    data-img="assets/img/product2.png"
+                                    style="background: linear-gradient(135deg, #dc2626 50%, #1a1a1a 50%)"
+                                    title="Red Black" aria-label="Red Black"></button>
+                                                                <button type="button" class="color-swatch w-8 h-8 rounded-full border-2 border-transparent transition-all hover:scale-110"
+                                    data-id="3"
+                                    data-name="Beats 3 — Night Black"
+                                    data-price="249"
+                                    data-price-label="$249.00"
+                                    data-img="assets/img/product3.png"
+                                    style="background: #0f0f0f"
+                                    title="Night Black" aria-label="Night Black"></button>
+                                                                <button type="button" class="color-swatch w-8 h-8 rounded-full border-2 border-transparent transition-all hover:scale-110"
+                                    data-id="5"
+                                    data-name="Beats 3 — Twilight Gray"
+                                    data-price="249"
+                                    data-price-label="$249.00"
+                                    data-img="assets/img/product5.png"
+                                    style="background: #6b7280"
+                                    title="Twilight Gray" aria-label="Twilight Gray"></button>
+                                                            </div>
+                        </div>
+
+                        <!-- Price + CTA -->
+                        <div class="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start hero-cta">
+                                                        <button id="hero-add-to-cart" class="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-2xl font-bold text-dark-950 text-lg flex items-center gap-3 hover:scale-105 transition-all duration-300 overflow-hidden add-to-cart-trigger"
+                                data-id="1"
+                                data-name="Beats 3 — Black"
+                                data-price="249"
+                                data-img="assets/img/product1.png">
+                                <span class="relative z-10 flex items-center gap-3">
+                                    <i class="ri-shopping-bag-line text-xl"></i> Add to Bag
+                                </span>
+                                <span id="hero-price" class="relative z-10 px-3 py-1 bg-dark-950/20 rounded-xl text-sm">$249.00</span>
+                                <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12"></div>
+                            </button>
+                            <div class="flex items-center gap-2 text-sm text-gray-500">
+                                <i class="ri-truck-line text-neon-blue"></i>
+                                <span>Free shipping on orders over $100.00</span>
+                            </div>
+                                                    </div>
+                    </div>
+                </div>
+
+                <!-- Hero Image -->
+                <div class="order-1 lg:order-2 flex justify-center relative">
+                    <div class="relative" id="hero-image-wrapper">
+                        <div class="absolute inset-0 bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 rounded-full blur-[100px] scale-75"></div>
+                        <img id="hero-product-img" 
+                             src="assets/img/product1.png" 
+                             alt="Beats 3 — Black"
+                             width="375" height="500" fetchpriority="high"
+                             class="relative z-10 w-full max-w-[400px] lg:max-w-[500px] drop-shadow-2xl">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scroll indicator -->
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-500 z-10 scroll-hint">
+                <span class="text-xs uppercase tracking-widest">Scroll</span>
+                <div class="w-5 h-8 border-2 border-gray-600 rounded-full flex justify-center">
+                    <div class="w-1 h-2 bg-gray-400 rounded-full mt-1 animate-bounce"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ SPECS / FEATURES ============ -->
+        <section id="specs" class="py-24 lg:py-32 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-neon-purple/5 rounded-full blur-[200px] pointer-events-none"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center mb-16">
+                    <span class="text-neon-blue text-sm font-semibold uppercase tracking-widest">Technical Excellence</span>
+                    <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mt-3">Built for <span class="bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">Perfection</span></h2>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-12 items-center">
+                    <!-- Left specs -->
+                    <div class="space-y-8">
+                        <div class="spec-card group p-6 rounded-2xl border border-white/5 bg-dark-900/50 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500">
+                            <div class="w-12 h-12 bg-neon-blue/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-neon-blue/20 transition-colors">
+                                <i class="ri-bluetooth-line text-2xl text-neon-blue"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg mb-1">Bluetooth 5.2</h3>
+                            <p class="text-gray-500 text-sm">Ultra-fast, stable connection up to 30ft. Multipoint pairing for seamless device switching.</p>
+                        </div>
+                        <div class="spec-card group p-6 rounded-2xl border border-white/5 bg-dark-900/50 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500">
+                            <div class="w-12 h-12 bg-neon-purple/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-neon-purple/20 transition-colors">
+                                <i class="ri-battery-charge-line text-2xl text-neon-purple"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg mb-1">40h Battery</h3>
+                            <p class="text-gray-500 text-sm">Marathon listening sessions. 10 minutes of Fast Fuel charging gives you 3 hours of playback.</p>
+                        </div>
+                    </div>
+
+                    <!-- Center image -->
+                    <div class="flex justify-center" id="specs-image-wrap">
+                        <img src="assets/img/specs.png" alt="Beats 3 specifications view" class="w-full max-w-[350px] drop-shadow-2xl" loading="lazy">
+                    </div>
+
+                    <!-- Right specs -->
+                    <div class="space-y-8">
+                        <div class="spec-card group p-6 rounded-2xl border border-white/5 bg-dark-900/50 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500">
+                            <div class="w-12 h-12 bg-neon-pink/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-neon-pink/20 transition-colors">
+                                <i class="ri-plug-line text-2xl text-neon-pink"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg mb-1">Fast Charge 4.2</h3>
+                            <p class="text-gray-500 text-sm">USB-C fast charging with AAC codec support. Full charge in under 90 minutes.</p>
+                        </div>
+                        <div class="spec-card group p-6 rounded-2xl border border-white/5 bg-dark-900/50 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500">
+                            <div class="w-12 h-12 bg-neon-cyan/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-neon-cyan/20 transition-colors">
+                                <i class="ri-mic-line text-2xl text-neon-cyan"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg mb-1">Smart Assistant</h3>
+                            <p class="text-gray-500 text-sm">Built-in mic with support for Apple Siri, Google Assistant, and Alexa voice control.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats counter -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
+                    <div class="text-center p-6 rounded-2xl border border-white/5 bg-dark-900/30">
+                        <span class="counter block text-3xl lg:text-4xl font-display font-bold text-white" data-target="40">0</span>
+                        <span class="text-gray-500 text-sm">Hours Battery</span>
+                    </div>
+                    <div class="text-center p-6 rounded-2xl border border-white/5 bg-dark-900/30">
+                        <span class="counter block text-3xl lg:text-4xl font-display font-bold text-white" data-target="5">0</span>
+                        <span class="text-gray-500 text-sm">Premium Colors</span>
+                    </div>
+                    <div class="text-center p-6 rounded-2xl border border-white/5 bg-dark-900/30">
+                        <span class="counter block text-3xl lg:text-4xl font-display font-bold text-neon-blue" data-target="30">0</span>
+                        <span class="text-gray-500 text-sm">Ft Wireless Range</span>
+                    </div>
+                    <div class="text-center p-6 rounded-2xl border border-white/5 bg-dark-900/30">
+                        <span class="counter block text-3xl lg:text-4xl font-display font-bold text-white" data-target="3">0</span>
+                        <span class="text-gray-500 text-sm">Hours Play from 10 Min Charge</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CASE SECTION ============ -->
+        <section id="case" class="py-24 lg:py-32 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-neon-blue/5 rounded-full blur-[200px] pointer-events-none"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                    <div class="case-image relative flex justify-center">
+                        <div class="absolute inset-0 bg-gradient-to-br from-neon-blue/10 to-neon-purple/10 rounded-3xl blur-[80px] scale-90"></div>
+                        <img src="assets/img/case.png" alt="Beats 3 premium carrying case" class="relative z-10 w-full max-w-[450px] drop-shadow-2xl rounded-2xl" loading="lazy">
+                    </div>
+                    <div class="case-text">
+                        <span class="text-neon-blue text-sm font-semibold uppercase tracking-widest">Premium Protection</span>
+                        <h2 class="font-display text-4xl lg:text-5xl font-bold text-white mt-3 mb-6">Travel in <span class="bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">Style</span></h2>
+                        <p class="text-gray-400 text-lg leading-relaxed mb-6">
+                            A sleek, hard-shell case designed to protect your Beats 3 wherever life takes you. Ultra-lightweight, water-resistant, and magnetically sealed for maximum durability.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center gap-3 text-gray-400"><i class="ri-check-line text-neon-blue text-lg"></i> Impact-resistant hard shell</li>
+                            <li class="flex items-center gap-3 text-gray-400"><i class="ri-check-line text-neon-blue text-lg"></i> Magnetic snap closure</li>
+                            <li class="flex items-center gap-3 text-gray-400"><i class="ri-check-line text-neon-blue text-lg"></i> Included free with every order</li>
+                        </ul>
+                        <a href="#products" class="inline-flex items-center gap-2 px-6 py-3 border border-neon-blue/30 text-neon-blue rounded-xl hover:bg-neon-blue/10 transition-all duration-300 font-medium">
+                            <i class="ri-information-line"></i> Explore Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ WHY CHOOSE US ============ -->
+        <section class="py-24 lg:py-32 relative overflow-hidden border-y border-white/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <span class="text-neon-purple text-sm font-semibold uppercase tracking-widest">Why Shop With Us</span>
+                    <h2 class="font-display text-4xl lg:text-5xl font-bold text-white mt-3">Shop with <span class="bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent">Confidence</span></h2>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="trust-card group text-center p-8 rounded-3xl border border-white/5 bg-dark-900/30 hover:bg-dark-900/60 hover:border-neon-blue/20 transition-all duration-500">
+                        <div class="w-16 h-16 mx-auto bg-gradient-to-br from-neon-blue/20 to-neon-blue/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="ri-truck-line text-3xl text-neon-blue"></i>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">Delivered in 2–5 business days</h3>
+                        <p class="text-gray-500 text-sm">Free shipping on orders over $100.00. Track every order from your account.</p>
+                    </div>
+                    <div class="trust-card group text-center p-8 rounded-3xl border border-white/5 bg-dark-900/30 hover:bg-dark-900/60 hover:border-neon-purple/20 transition-all duration-500">
+                        <div class="w-16 h-16 mx-auto bg-gradient-to-br from-neon-purple/20 to-neon-purple/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="ri-shield-check-line text-3xl text-neon-purple"></i>
+                        </div>
+                                                <h3 class="text-white font-semibold text-lg mb-2">1-year Warranty</h3>
+                        <p class="text-gray-500 text-sm">Covers manufacturing defects under normal use. We repair or replace faulty units.</p>
+                                            </div>
+                    <div class="trust-card group text-center p-8 rounded-3xl border border-white/5 bg-dark-900/30 hover:bg-dark-900/60 hover:border-neon-pink/20 transition-all duration-500">
+                        <div class="w-16 h-16 mx-auto bg-gradient-to-br from-neon-pink/20 to-neon-pink/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i class="ri-refresh-line text-3xl text-neon-pink"></i>
+                        </div>
+                                                <h3 class="text-white font-semibold text-lg mb-2">30-Day Returns</h3>
+                        <p class="text-gray-500 text-sm">Not in love? Return unused items in their original packaging within 30 days of delivery.</p>
+                                            </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PRODUCTS (Dynamic from DB) ============ -->
+        <section id="products" class="py-24 lg:py-32 relative overflow-hidden">
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-neon-blue/5 rounded-full blur-[200px] pointer-events-none"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center mb-16">
+                    <span class="text-neon-blue text-sm font-semibold uppercase tracking-widest">Collection</span>
+                    <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mt-3">Choose Your <span class="bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">Style</span></h2>
+                    <p class="text-gray-500 mt-4 max-w-md mx-auto">5 colorways, one iconic sound. Tap a pair for a quick look.</p>
+                </div>
+
+                <div class="products-scroll flex lg:grid lg:grid-cols-5 gap-6 overflow-x-auto pb-4 snap-x snap-mandatory lg:overflow-visible scrollbar-hide">
+                                        <article class="product-card group min-w-[260px] lg:min-w-0 snap-center flex-shrink-0 cursor-pointer"
+                        data-id="1"
+                        data-name="Beats 3 — Black"
+                        data-price="249"
+                        data-img="assets/img/product1.png"
+                        data-url="/product/beats3-black"
+                        data-color="Black"
+                        data-color-hex="#1a1a1a">
+                        <div class="relative p-6 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500 overflow-hidden">
+                                                        <div class="absolute top-3 right-3 text-xs px-2 py-1 bg-neon-blue/10 text-neon-blue rounded-full font-medium">Featured</div>
+                                                                                    <div class="flex justify-center py-6 mb-4">
+                                <img src="assets/img/product1.png" alt="Beats 3 — Black" width="160" height="160" class="w-40 h-40 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">Black</h3>
+                            <div class="flex items-center justify-between mt-2">
+                                                                <span class="text-xl font-bold text-white">$249.00</span>
+                                                                                                <button class="add-to-cart-btn w-10 h-10 bg-neon-blue/10 hover:bg-neon-blue text-neon-blue hover:text-dark-950 rounded-xl flex items-center justify-center transition-all duration-300" aria-label="Add Black to cart">
+                                    <i class="ri-shopping-bag-line"></i>
+                                </button>
+                                                            </div>
+                                                    </div>
+                    </article>
+                                        <article class="product-card group min-w-[260px] lg:min-w-0 snap-center flex-shrink-0 cursor-pointer"
+                        data-id="4"
+                        data-name="Beats 3 — Blue"
+                        data-price="249"
+                        data-img="assets/img/product4.png"
+                        data-url="/product/beats3-blue"
+                        data-color="Blue"
+                        data-color-hex="#2563eb">
+                        <div class="relative p-6 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500 overflow-hidden">
+                                                        <div class="absolute top-3 right-3 text-xs px-2 py-1 bg-neon-blue/10 text-neon-blue rounded-full font-medium">Featured</div>
+                                                                                    <div class="flex justify-center py-6 mb-4">
+                                <img src="assets/img/product4.png" alt="Beats 3 — Blue" width="160" height="160" class="w-40 h-40 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">Blue</h3>
+                            <div class="flex items-center justify-between mt-2">
+                                                                <span class="text-xl font-bold text-white">$249.00</span>
+                                                                                                <button class="add-to-cart-btn w-10 h-10 bg-neon-blue/10 hover:bg-neon-blue text-neon-blue hover:text-dark-950 rounded-xl flex items-center justify-center transition-all duration-300" aria-label="Add Blue to cart">
+                                    <i class="ri-shopping-bag-line"></i>
+                                </button>
+                                                            </div>
+                                                    </div>
+                    </article>
+                                        <article class="product-card group min-w-[260px] lg:min-w-0 snap-center flex-shrink-0 cursor-pointer"
+                        data-id="2"
+                        data-name="Beats 3 — Red Black"
+                        data-price="249"
+                        data-img="assets/img/product2.png"
+                        data-url="/product/beats3-redblack"
+                        data-color="Red Black"
+                        data-color-hex="linear-gradient(135deg, #dc2626 50%, #1a1a1a 50%)">
+                        <div class="relative p-6 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500 overflow-hidden">
+                                                                                    <div class="flex justify-center py-6 mb-4">
+                                <img src="assets/img/product2.png" alt="Beats 3 — Red Black" width="160" height="160" class="w-40 h-40 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">Red Black</h3>
+                            <div class="flex items-center justify-between mt-2">
+                                                                <span class="text-xl font-bold text-white">$249.00</span>
+                                                                                                <button class="add-to-cart-btn w-10 h-10 bg-neon-blue/10 hover:bg-neon-blue text-neon-blue hover:text-dark-950 rounded-xl flex items-center justify-center transition-all duration-300" aria-label="Add Red Black to cart">
+                                    <i class="ri-shopping-bag-line"></i>
+                                </button>
+                                                            </div>
+                                                    </div>
+                    </article>
+                                        <article class="product-card group min-w-[260px] lg:min-w-0 snap-center flex-shrink-0 cursor-pointer"
+                        data-id="3"
+                        data-name="Beats 3 — Night Black"
+                        data-price="249"
+                        data-img="assets/img/product3.png"
+                        data-url="/product/beats3-nightblack"
+                        data-color="Night Black"
+                        data-color-hex="#0f0f0f">
+                        <div class="relative p-6 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500 overflow-hidden">
+                                                                                    <div class="flex justify-center py-6 mb-4">
+                                <img src="assets/img/product3.png" alt="Beats 3 — Night Black" width="160" height="160" class="w-40 h-40 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">Night Black</h3>
+                            <div class="flex items-center justify-between mt-2">
+                                                                <span class="text-xl font-bold text-white">$249.00</span>
+                                                                                                <button class="add-to-cart-btn w-10 h-10 bg-neon-blue/10 hover:bg-neon-blue text-neon-blue hover:text-dark-950 rounded-xl flex items-center justify-center transition-all duration-300" aria-label="Add Night Black to cart">
+                                    <i class="ri-shopping-bag-line"></i>
+                                </button>
+                                                            </div>
+                                                    </div>
+                    </article>
+                                        <article class="product-card group min-w-[260px] lg:min-w-0 snap-center flex-shrink-0 cursor-pointer"
+                        data-id="5"
+                        data-name="Beats 3 — Twilight Gray"
+                        data-price="249"
+                        data-img="assets/img/product5.png"
+                        data-url="/product/beats3-gray"
+                        data-color="Twilight Gray"
+                        data-color-hex="#6b7280">
+                        <div class="relative p-6 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm hover:border-neon-blue/30 transition-all duration-500 overflow-hidden">
+                                                                                    <div class="flex justify-center py-6 mb-4">
+                                <img src="assets/img/product5.png" alt="Beats 3 — Twilight Gray" width="160" height="160" class="w-40 h-40 object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                            </div>
+                            <h3 class="text-white font-semibold text-lg">Twilight Gray</h3>
+                            <div class="flex items-center justify-between mt-2">
+                                                                <span class="text-xl font-bold text-white">$249.00</span>
+                                                                                                <button class="add-to-cart-btn w-10 h-10 bg-neon-blue/10 hover:bg-neon-blue text-neon-blue hover:text-dark-950 rounded-xl flex items-center justify-center transition-all duration-300" aria-label="Add Twilight Gray to cart">
+                                    <i class="ri-shopping-bag-line"></i>
+                                </button>
+                                                            </div>
+                                                    </div>
+                    </article>
+                                    </div>
+            </div>
+        </section>
+
+                <!-- ============ TESTIMONIALS ============ -->
+        <section id="testimonials" class="py-24 lg:py-32 relative overflow-hidden border-t border-white/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <span class="text-neon-pink text-sm font-semibold uppercase tracking-widest">Reviews</span>
+                    <h2 class="font-display text-4xl lg:text-5xl font-bold text-white mt-3">What Customers <span class="bg-gradient-to-r from-neon-pink to-neon-purple bg-clip-text text-transparent">Say</span></h2>
+                </div>
+
+                <div class="testimonial-track relative overflow-hidden">
+                    <div id="testimonial-slider" class="flex transition-transform duration-700 ease-out">
+                                                <div class="testimonial-slide min-w-full md:min-w-[50%] lg:min-w-[33.333%] px-3">
+                            <div class="p-8 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm h-full">
+                                <div class="flex text-yellow-400 text-sm mb-4" aria-label="5 out of 5 stars">
+                                    <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i>                                </div>
+                                <p class="text-gray-300 mb-6 leading-relaxed">&ldquo;The sound quality is absolutely insane. These are now my daily drivers in the studio. The bass is deep without being muddy.&rdquo;</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-neon-blue to-neon-purple rounded-full flex items-center justify-center text-white font-bold text-sm">JR</div>
+                                    <div><p class="text-white font-medium text-sm">James Rodriguez</p><p class="text-gray-500 text-xs">Music Producer</p></div>
+                                </div>
+                            </div>
+                        </div>
+                                                <div class="testimonial-slide min-w-full md:min-w-[50%] lg:min-w-[33.333%] px-3">
+                            <div class="p-8 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm h-full">
+                                <div class="flex text-yellow-400 text-sm mb-4" aria-label="5 out of 5 stars">
+                                    <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i>                                </div>
+                                <p class="text-gray-300 mb-6 leading-relaxed">&ldquo;40 hours of battery is no joke. I use these on long flights and still have charge left when I land.&rdquo;</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-neon-pink to-neon-purple rounded-full flex items-center justify-center text-white font-bold text-sm">SK</div>
+                                    <div><p class="text-white font-medium text-sm">Sarah Kim</p><p class="text-gray-500 text-xs">Travel Blogger</p></div>
+                                </div>
+                            </div>
+                        </div>
+                                                <div class="testimonial-slide min-w-full md:min-w-[50%] lg:min-w-[33.333%] px-3">
+                            <div class="p-8 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm h-full">
+                                <div class="flex text-yellow-400 text-sm mb-4" aria-label="4 out of 5 stars">
+                                    <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-line text-gray-600"></i>                                </div>
+                                <p class="text-gray-300 mb-6 leading-relaxed">&ldquo;The build quality feels premium, the cushions are like clouds, and they fold flat for my backpack.&rdquo;</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-neon-blue to-neon-cyan rounded-full flex items-center justify-center text-white font-bold text-sm">MT</div>
+                                    <div><p class="text-white font-medium text-sm">Marcus Thompson</p><p class="text-gray-500 text-xs">Tech Reviewer</p></div>
+                                </div>
+                            </div>
+                        </div>
+                                                <div class="testimonial-slide min-w-full md:min-w-[50%] lg:min-w-[33.333%] px-3">
+                            <div class="p-8 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm h-full">
+                                <div class="flex text-yellow-400 text-sm mb-4" aria-label="5 out of 5 stars">
+                                    <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i>                                </div>
+                                <p class="text-gray-300 mb-6 leading-relaxed">&ldquo;Clear mids, controlled highs and a fun low end. They look great too.&rdquo;</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">AN</div>
+                                    <div><p class="text-white font-medium text-sm">Aisha Nakamura</p><p class="text-gray-500 text-xs">Audio Engineer</p></div>
+                                </div>
+                            </div>
+                        </div>
+                                                <div class="testimonial-slide min-w-full md:min-w-[50%] lg:min-w-[33.333%] px-3">
+                            <div class="p-8 rounded-3xl border border-white/5 bg-dark-900/40 backdrop-blur-sm h-full">
+                                <div class="flex text-yellow-400 text-sm mb-4" aria-label="5 out of 5 stars">
+                                    <i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i><i class="ri-star-fill"></i>                                </div>
+                                <p class="text-gray-300 mb-6 leading-relaxed">&ldquo;Fast charging is a lifesaver. Ten minutes on the cable gave me enough for my whole workout.&rdquo;</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-sm">CP</div>
+                                    <div><p class="text-white font-medium text-sm">Carlos Perez</p><p class="text-gray-500 text-xs">Fitness Coach</p></div>
+                                </div>
+                            </div>
+                        </div>
+                                            </div>
+                </div>
+
+                <!-- Testimonial controls -->
+                <div class="flex items-center justify-center gap-4 mt-10">
+                    <button id="test-prev" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-neon-blue/30 transition-all" aria-label="Previous review">
+                        <i class="ri-arrow-left-s-line text-xl"></i>
+                    </button>
+                    <div id="test-dots" class="flex gap-2"></div>
+                    <button id="test-next" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:border-neon-blue/30 transition-all" aria-label="Next review">
+                        <i class="ri-arrow-right-s-line text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+                <!-- ============ PROMOTION (Admin → Settings → Marketing) ============ -->
+        <section id="offer" class="py-24 lg:py-32 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-neon-blue/5 via-neon-purple/10 to-neon-pink/5 pointer-events-none"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="discount-text">
+                        <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-red-500/10 border border-red-500/20 rounded-full text-red-400 text-xs font-semibold uppercase tracking-widest mb-6">
+                            <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> Limited Time Offer                        </span>
+                        <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mb-4">Holiday Sale</h2>
+                        <p class="text-gray-400 text-lg mb-8">Take 10% off any order with the code below. Ends when the timer hits zero.</p>
+
+                                                <!-- Countdown to the real end date set in Admin → Settings -->
+                        <div class="flex gap-4 mb-8" id="countdown" data-ends="1798761540000">
+                            <div class="text-center">
+                                <span id="countdown-days" class="block text-3xl lg:text-4xl font-display font-bold text-white bg-dark-900/60 border border-white/5 rounded-2xl px-4 py-3 min-w-[80px]">00</span>
+                                <span class="text-xs text-gray-500 mt-2 block">Days</span>
+                            </div>
+                            <div class="text-center">
+                                <span id="countdown-hours" class="block text-3xl lg:text-4xl font-display font-bold text-white bg-dark-900/60 border border-white/5 rounded-2xl px-4 py-3 min-w-[80px]">00</span>
+                                <span class="text-xs text-gray-500 mt-2 block">Hours</span>
+                            </div>
+                            <div class="text-center">
+                                <span id="countdown-mins" class="block text-3xl lg:text-4xl font-display font-bold text-white bg-dark-900/60 border border-white/5 rounded-2xl px-4 py-3 min-w-[80px]">00</span>
+                                <span class="text-xs text-gray-500 mt-2 block">Minutes</span>
+                            </div>
+                            <div class="text-center">
+                                <span id="countdown-secs" class="block text-3xl lg:text-4xl font-display font-bold text-neon-blue bg-dark-900/60 border border-neon-blue/10 rounded-2xl px-4 py-3 min-w-[80px]">00</span>
+                                <span class="text-xs text-gray-500 mt-2 block">Seconds</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 -mt-4 mb-8">Offer ends December 31, 2026.</p>
+                        
+                        <div class="flex flex-wrap items-center gap-4">
+                            <a href="/shop" class="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-2xl font-bold text-dark-950 text-lg flex items-center gap-3 hover:scale-105 transition-all duration-300 overflow-hidden">
+                                <i class="ri-shopping-bag-line text-xl"></i> Shop Now
+                                <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12"></div>
+                            </a>
+                                                        <button type="button" class="promo-code inline-flex items-center gap-2 px-5 py-4 rounded-2xl border border-dashed border-neon-blue/40 text-neon-blue font-mono font-bold tracking-widest hover:bg-neon-blue/10 transition-colors" data-code="HOLIDAY10" aria-label="Copy code HOLIDAY10">
+                                HOLIDAY10 <i class="ri-file-copy-line text-base"></i>
+                            </button>
+                                                    </div>
+                    </div>
+                    <div class="discount-image flex justify-center relative">
+                        <div class="absolute inset-0 bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 rounded-full blur-[100px] scale-75"></div>
+                        <img src="assets/img/discount.png" alt="Holiday Sale" width="525" height="361" class="relative z-10 w-full max-w-[400px] drop-shadow-2xl" loading="lazy">
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ============ FAQ ============ -->
+        <section id="faq" class="py-24 lg:py-32 relative overflow-hidden border-t border-white/5">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <span class="text-neon-cyan text-sm font-semibold uppercase tracking-widest">Support</span>
+                    <h2 class="font-display text-4xl lg:text-5xl font-bold text-white mt-3">Frequently Asked <span class="bg-gradient-to-r from-neon-cyan to-neon-blue bg-clip-text text-transparent">Questions</span></h2>
+                </div>
+
+                <div class="space-y-4" id="faq-accordion">
+                    <div class="faq-item border border-white/5 rounded-2xl overflow-hidden bg-dark-900/30">
+                        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left text-white font-medium hover:text-neon-blue transition-colors" aria-expanded="false">
+                            <span>What&rsquo;s the battery life of Beats 3?</span>
+                            <i class="ri-add-line text-xl faq-icon transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 overflow-hidden" style="height: 0">
+                            <p class="text-gray-400 pb-6 leading-relaxed">Beats 3 delivers up to 40 hours of listening time on a single charge. With Fast Fuel, a 10-minute charge gives you 3 hours of playback &mdash; perfect for when you&rsquo;re on the go.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item border border-white/5 rounded-2xl overflow-hidden bg-dark-900/30">
+                        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left text-white font-medium hover:text-neon-blue transition-colors" aria-expanded="false">
+                            <span>Are Beats 3 good for working out?</span>
+                            <i class="ri-add-line text-xl faq-icon transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 overflow-hidden" style="height: 0">
+                            <p class="text-gray-400 pb-6 leading-relaxed">While Beats 3 are on-ear headphones designed for premium listening, they feature a secure fit and sweat-resistant coating. For intense workouts, we recommend pairing them with the sport ear hooks (sold separately).</p>
+                        </div>
+                    </div>
+                    <div class="faq-item border border-white/5 rounded-2xl overflow-hidden bg-dark-900/30">
+                        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left text-white font-medium hover:text-neon-blue transition-colors" aria-expanded="false">
+                            <span>What&rsquo;s included in the box?</span>
+                            <i class="ri-add-line text-xl faq-icon transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 overflow-hidden" style="height: 0">
+                            <p class="text-gray-400 pb-6 leading-relaxed">Every Beats 3 comes with: the headphones, a premium hard-shell carrying case, a USB-C charging cable, a 3.5mm audio cable for wired use, a Quick Start guide, and a warranty card. Everything you need, right out of the box.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item border border-white/5 rounded-2xl overflow-hidden bg-dark-900/30">
+                        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left text-white font-medium hover:text-neon-blue transition-colors" aria-expanded="false">
+                            <span>Can I connect to multiple devices?</span>
+                            <i class="ri-add-line text-xl faq-icon transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 overflow-hidden" style="height: 0">
+                            <p class="text-gray-400 pb-6 leading-relaxed">Yes! Beats 3 features Bluetooth 5.2 with multipoint pairing. You can stay connected to your phone and laptop simultaneously, seamlessly switching audio between devices without the need to disconnect and reconnect.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item border border-white/5 rounded-2xl overflow-hidden bg-dark-900/30">
+                        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left text-white font-medium hover:text-neon-blue transition-colors" aria-expanded="false">
+                            <span>What&rsquo;s the return policy?</span>
+                            <i class="ri-add-line text-xl faq-icon transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 overflow-hidden" style="height: 0">
+                                                        <p class="text-gray-400 pb-6 leading-relaxed">You can return unused items in their original packaging within 30 days of delivery for a full refund. <a href="/contact" class="text-neon-blue hover:underline">Contact us</a> to start a return. Faulty units are covered by our 1-year warranty.</p>
+                                                    </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ FINAL CTA + NEWSLETTER ============ -->
+        <section id="newsletter" class="py-24 lg:py-32 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-neon-blue/5 to-transparent pointer-events-none"></div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mb-6">Ready to Experience<br><span class="bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink bg-clip-text text-transparent">Pure Sound?</span></h2>
+                <p class="text-gray-400 text-lg max-w-xl mx-auto mb-10">Get new releases and subscriber-only offers in your inbox. Subscribe now and we&rsquo;ll email you a welcome code for your first order.</p>
+
+                <form id="newsletter-form" class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mb-6" action="api/newsletter.php" method="POST">
+                    <input type="hidden" name="csrf_token" value="">                    <label for="newsletter-email" class="sr-only">Email address</label>
+                    <input type="email" id="newsletter-email" name="email" placeholder="Enter your email" required class="flex-1 px-6 py-4 bg-dark-900/60 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:border-neon-blue/50 focus:outline-none transition-colors" autocomplete="email">
+                    <button type="submit" class="px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple text-dark-950 font-bold rounded-2xl hover:scale-105 transition-transform flex items-center justify-center gap-2 whitespace-nowrap">
+                        <i class="ri-send-plane-line"></i> Subscribe
+                    </button>
+                </form>
+                <p id="newsletter-note" class="text-xs text-gray-600">No spam, ever. Every email has a one-click unsubscribe link.</p>
+            </div>
+        </section>
+
+    <!-- Floating Add to Cart (dynamic from hero product) -->
+        <div id="floating-cta" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[140] opacity-0 translate-y-10 pointer-events-none transition-all duration-500">
+        <button class="flex items-center gap-3 px-6 py-3 bg-dark-900/90 backdrop-blur-xl border border-neon-blue/30 rounded-full shadow-2xl shadow-neon-blue/10 hover:border-neon-blue/60 transition-all add-to-cart-trigger"
+            data-id="1"
+            data-name="Beats 3 — Black"
+            data-price="249"
+            data-img="assets/img/product1.png">
+            <i class="ri-shopping-bag-line text-neon-blue"></i>
+            <span class="text-white font-medium text-sm">Add Black to Cart</span>
+            <span class="text-neon-blue font-bold">$249.00</span>
+        </button>
+    </div>
+    
+<!-- JSON-LD: Organization + WebSite -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Beats 3 Store","url":"/","logo":"/assets/img/logo.png","email":"support@beats3.store","telephone":"+1 (555) 123-4567"},{"@type":"WebSite","name":"Beats 3 Store","url":"/","potentialAction":{"@type":"SearchAction","target":"/shop","query-input":"required name=search_term_string"}}]}</script>
+
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="border-t border-white/5 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <a href="/" class="inline-block mb-6"><img src="/assets/img/logo.png" alt="Beats 3 Store" class="h-10" width="40" height="40" loading="lazy"></a>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6">Studio-grade wireless headphones engineered for those who demand the best in sound, comfort, and style.</p>
+                                    </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Products</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/shop" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">All Products</a></li>
+                                                                        <li><a href="/shop/headphones" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Headphones</a></li>
+                                            </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Support</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/#faq" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">FAQs</a></li>
+                        <li><a href="/contact" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Contact Us</a></li>
+                        <li><a href="/auth/login" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Track Your Order</a></li>
+                        <li><a href="/legal/terms-of-service#returns" class="text-gray-500 hover:text-neon-blue transition-colors text-sm">Shipping &amp; Returns</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-6">Ways to Pay</h4>
+                    <ul class="space-y-3 mb-6">
+                                                <li class="flex items-center gap-2.5 text-gray-400 text-sm"><i class="ri-hand-coin-line text-neon-blue"></i> Cash on Delivery</li>
+                                                <li class="flex items-center gap-2.5 text-gray-400 text-sm"><i class="ri-bank-line text-neon-blue"></i> Bank Transfer</li>
+                                            </ul>
+                    <p class="text-gray-500 text-xs flex items-center gap-1.5"><i class="ri-truck-line"></i> Free shipping on orders over $100.00</p>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-gray-600 text-sm">&copy; 2026 Beats 3 Store. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="/legal/privacy-policy" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Privacy Policy</a>
+                    <a href="/legal/terms-of-service" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Terms of Service</a>
+                    <a href="/legal/cookie-policy" class="text-gray-600 hover:text-gray-400 text-sm transition-colors">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============ COOKIE CONSENT BANNER ============ -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 z-[200] p-4 bg-dark-900/95 backdrop-blur-2xl border-t border-white/5 translate-y-full transition-transform duration-500" style="display:none;">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-gray-400 text-sm text-center sm:text-left">We use one essential cookie to keep you signed in and remember your cart &mdash; no tracking or ads. <a href="/legal/cookie-policy" class="text-neon-blue hover:underline">Cookie Policy</a></p>
+            <div class="flex gap-3">
+                <button id="cookie-reject" class="px-4 py-2 text-sm text-gray-400 border border-white/10 rounded-xl hover:bg-white/5 transition-colors">Reject</button>
+                <button id="cookie-accept" class="px-4 py-2 text-sm text-dark-950 bg-neon-blue rounded-xl font-medium hover:bg-neon-blue/90 transition-colors">Accept</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- ============ DEMO NOTICE ============ -->
+    <div class="fixed bottom-6 left-6 z-[140] hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-900/90 backdrop-blur-xl border border-yellow-500/20 text-[11px] text-yellow-300/90 pointer-events-none" role="note">
+        <i class="ri-flask-line"></i> Demo store &mdash; orders are not fulfilled
+    </div>
+    
+    
+    <!-- ============ BACK TO TOP ============ -->
+    <a href="#" id="scroll-up" class="fixed bottom-6 right-6 w-12 h-12 bg-dark-900/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center text-neon-blue z-[140] opacity-0 translate-y-10 pointer-events-none transition-all duration-500 hover:border-neon-blue/30 hover:scale-110" aria-label="Back to top">
+        <i class="ri-arrow-up-s-line text-xl"></i>
+    </a>
+
+    <!-- ============ SCRIPTS ============ -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Observer.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+        <script src="/assets/js/cart.js"></script>
+        <script src="/assets/js/main.js"></script>
+    
+    <!-- Cookie consent logic -->
+    <script>
+    (function() {
+        const banner = document.getElementById('cookie-banner');
+        if (!banner) return;
+        if (!localStorage.getItem('cookie_consent')) {
+            banner.style.display = '';
+            setTimeout(() => banner.classList.remove('translate-y-full'), 100);
+        }
+        document.getElementById('cookie-accept')?.addEventListener('click', () => {
+            localStorage.setItem('cookie_consent', 'accepted');
+            banner.classList.add('translate-y-full');
+            setTimeout(() => banner.style.display = 'none', 500);
+        });
+        document.getElementById('cookie-reject')?.addEventListener('click', () => {
+            localStorage.setItem('cookie_consent', 'rejected');
+            banner.classList.add('translate-y-full');
+            setTimeout(() => banner.style.display = 'none', 500);
+        });
+    })();
+    </script>
+
+    <!-- Simple navigation for non-home pages (no GSAP) -->
+    </body>
+</html>
